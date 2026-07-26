@@ -1,8 +1,8 @@
-# Kubera Architecture
+# Sampada Architecture
 
 ## Overview
 
-Kubera is a Rails 7.2 application with a Tailwind CSS + Hotwire frontend. It follows a debt-first financial philosophy: **Negative → Zero → Positive**.
+Sampada is a Rails 7.2 application with a Tailwind CSS + Hotwire frontend. It follows a debt-first financial philosophy: **Negative → Zero → Positive**.
 
 ## Tech Stack
 
@@ -22,7 +22,7 @@ Kubera is a Rails 7.2 application with a Tailwind CSS + Hotwire frontend. It fol
 ## Directory Structure
 
 ```
-kubera/
+sampada/
 ├── app/
 │   ├── controllers/      # Rails controllers + API::V1 namespace
 │   │   └── api/          # v2.0+: exports, reports, households, budgets, transactions

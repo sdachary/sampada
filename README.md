@@ -1,12 +1,11 @@
 <div align="center">
 
 ```
-  ██╗  ██╗██╗   ██╗██████╗ ███████╗██████╗  █████╗
-  ██║ ██╔╝██║   ██║██╔══██╗██╔════╝██╔══██╗██╔══██╗
-  █████╔╝ ██║   ██║██████╔╝█████╗  ██████╔╝███████║
-  ██╔═██╗ ██║   ██║██╔══██╗██╔══╝  ██╔══██╗██╔══██║
-  ██║  ██╗╚██████╔╝██████╔╝███████╗██║  ██║██║  ██║
-  ╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝
+ █████  █████  ███    ███  █████  ██████   █████  ██████   █████
+██   ██ ██   ██ ████  ████ ██   ██ ██   ██ ██   ██ ██   ██ ██   ██
+███████ ███████ ██ ████ ██ ███████ ██████  ███████ ██   ██ ███████
+██   ██ ██   ██ ██  ██  ██ ██   ██ ██      ██   ██ ██   ██ ██   ██
+██   ██ ██   ██ ██      ██ ██   ██ ██      ██   ██ ██████  ██   ██
 ```
 
 **Zero is better than negative.**
@@ -15,15 +14,13 @@ Personal finance OS · Self-hosted · Open source
 
 ![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)
 
-</div>
-
 ---
 
-## What is Kubera?
+## What is Sampada?
 
-Kubera is a **standalone, self-hosted personal finance OS** that takes you from **debt → zero → wealth** in a defined timeline.
+Sampada is a **standalone, self-hosted personal finance OS** that takes you from **debt → zero → wealth** in a defined timeline.
 
-Most finance apps are either budgeting tools or investment dashboards. Kubera is the full arc:
+Most finance apps are either budgeting tools or investment dashboards. Sampada is the full arc:
 
 ```
 Negative  →  Zero  →  Positive
@@ -63,9 +60,9 @@ The app follows one rule: **clear your liabilities before building wealth.** It 
 
 ---
 
-## Why Kubera? (vs. Other Finance Apps)
+## Why Sampada? (vs. Other Finance Apps)
 
-| Feature | **Kubera** | YNAB | Mint† | Empower | Rocket Money |
+| Feature | **Sampada** | YNAB | Mint† | Empower | Rocket Money |
 |---------|---------------|------|--------|----------|--------------|
 | Self-hosted | ✅ | ❌ | ❌ | ❌ | ❌ |
 | Free (no subscription) | ✅ | ❌ ~$15/mo | Was free | Freemium | Freemium |
@@ -86,7 +83,7 @@ The app follows one rule: **clear your liabilities before building wealth.** It 
 
 † Mint shut down March 2024
 
-**What makes Kubera different:**
+**What makes Sampada different:**
 1. **Philosophy-first** — "Debt first, then wealth" isn't a feature, it's the foundation
 2. **Your data stays yours** — self-hosted, no surveillance capitalism
 3. **Free AI from day one** — no $20/month for AI features
@@ -100,25 +97,25 @@ The app follows one rule: **clear your liabilities before building wealth.** It 
 ## The Journey
 
 ### Phase 1 — Debt Freedom
-List all loans and EMIs. Kubera suggests payoff order (avalanche = highest interest first, snowball = smallest balance first). Tracks monthly progress and projects your debt-free date.
+List all loans and EMIs. Sampada suggests payoff order (avalanche = highest interest first, snowball = smallest balance first). Tracks monthly progress and projects your debt-free date.
 
 ### Phase 2 — Foundation Building
 Once debt is healthy, SIP suggestions activate. You set a monthly contribution — even ₹500 works. AI picks 2–3 dividend stocks aligned with your timeline and goals.
 
 ### Phase 3 — Income Target
-You define the goal: *"₹25,000/month passive income by 2030."* Kubera reverse-engineers the path — what SIP amount, which stocks, when to rebalance — and checks in monthly.
+You define the goal: *"₹25,000/month passive income by 2030."* Sampada reverse-engineers the path — what SIP amount, which stocks, when to rebalance — and checks in monthly.
 
 ---
 
 ## Install in One Line
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/sdachary/kubera/main/installer/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/sdachary/sampada/main/installer/install.sh | bash
 ```
 
 The installer clones the repo, installs Ruby and Node dependencies, runs setup, and starts the server on `http://localhost:3002`:
 
-- ✅ Clones the repository into `~/kubera`
+- ✅ Clones the repository into `~/sampada`
 - ✅ Installs Ruby gems and Node packages
 - ✅ Runs `bin/setup` (database creation, migration, seeding)
 - ✅ Starts the Rails server on port 3002
@@ -127,7 +124,7 @@ The installer clones the repo, installs Ruby and Node dependencies, runs setup, 
 
 ## AI Assistant — Bring Your Own Key
 
-Kubera works with any OpenAI-compatible endpoint. **Free options work great.**
+Sampada works with any OpenAI-compatible endpoint. **Free options work great.**
 
 | Provider | Cost | Notes |
 |---|---|---|
@@ -143,7 +140,7 @@ The installer walks you through choosing one. You can also skip and configure la
 
 ## Architecture
 
-Kubera is a **native Rails 7.2 application** built for self-hosting.
+Sampada is a **native Rails 7.2 application** built for self-hosting.
 
 - **Frontend**: Tailwind CSS + Hotwire (Turbo/Stimulus)
 - **Backend**: Ruby on Rails, PostgreSQL, Redis
@@ -162,8 +159,8 @@ Kubera is a **native Rails 7.2 application** built for self-hosting.
 Prefer to set it up yourself?
 
 ```bash
-git clone https://github.com/sdachary/kubera.git
-cd kubera
+git clone https://github.com/sdachary/sampada.git
+cd sampada
 cp .env.example .env
 # Edit .env — set SECRET_KEY_BASE and POSTGRES_PASSWORD at minimum
 docker compose up -d
@@ -217,6 +214,6 @@ The short version: contributions should serve the philosophy — debt first, the
 
 ---
 
-*Kubera (कुबेर) is the Hindu god of wealth and treasurer of the gods.*
+*Sampada (संपदा) means wealth in Sanskrit.*
 *The name is aspirational — but you have to get to zero first.*
 
