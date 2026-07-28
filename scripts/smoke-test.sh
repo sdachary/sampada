@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set +H 2>/dev/null  # disable bash ! history expansion
-API="${API:-http://kubera.140.245.227.176.nip.io}"
+API="${API:-http://acharylab.140.245.227.176.nip.io}"
 FRONTEND="${FRONTEND:-https://kubera-d4k.pages.dev}"
 EMAIL="${EMAIL:-demo@kubera.app}"
 PASS="${PASS:-demo123!}"
