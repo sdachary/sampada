@@ -70,7 +70,7 @@ export default function PayoffPlanModal({ plan, onClose, onSave }) {
 
   return (
     <Modal open title={isEdit ? 'Edit Plan' : 'New Payoff Plan'} onClose={onClose} style={{ maxWidth: 520 }}>
-      {error && <div style={{ background: 'rgba(237,111,92,0.1)', color: 'var(--coral)', padding: '10px 14px', borderRadius: 8, fontSize: 13, marginBottom: 16 }}>{error}</div>}
+      {error && <div style={{ background: 'var(--coral-bg)', color: 'var(--coral)', padding: '10px 14px', borderRadius: 8, fontSize: 13, marginBottom: 16 }}>{error}</div>}
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <Field label="Plan Name *">
@@ -95,7 +95,7 @@ export default function PayoffPlanModal({ plan, onClose, onSave }) {
               <label key={d.id} style={{
                 display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px',
                 borderRadius: 8, cursor: 'pointer', fontSize: 13,
-                background: form.debt_ids.includes(d.id) ? 'rgba(237,111,92,0.06)' : 'transparent',
+                background: form.debt_ids.includes(d.id) ? 'var(--coral-active-bg)' : 'transparent',
                 border: `1px solid ${form.debt_ids.includes(d.id) ? 'var(--coral)' : 'var(--line-soft)'}`,
               }}>
                 <input type="checkbox" checked={form.debt_ids.includes(d.id)} onChange={() => toggleDebt(d.id)} style={{ accentColor: 'var(--coral)' }} />

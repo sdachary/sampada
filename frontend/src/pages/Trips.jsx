@@ -6,7 +6,7 @@ function AddExpenseForm({ tripId, members, categories, onDone }) {
   const [saving, setSaving] = useState(false)
   const handleSubmit = async (e) => { e.preventDefault(); setSaving(true); try { await api.request(`/api/v1/trips/${tripId}/trip_expenses`, { method: 'POST', body: JSON.stringify({ ...form, amount: +form.amount }) }); onDone() } catch {} finally { setSaving(false) } }
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: 16, background: '#faf9f7', borderRadius: 10, border: '1px solid var(--line)', marginBottom: 16 }}>
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: 16, background: 'var(--paper-card)', borderRadius: 10, border: '1px solid var(--line)', marginBottom: 16 }}>
       <p style={{ fontSize: 13, fontWeight: 600 }}>Add expense</p>
       <input className="input" placeholder="Description" value={form.description} onChange={e => setForm({...form, description: e.target.value})} required />
       <input className="input" type="number" step="0.01" placeholder="Amount" value={form.amount} onChange={e => setForm({...form, amount: e.target.value})} required />
@@ -162,7 +162,7 @@ export default function Trips() {
       </div>
 
       {showCreate && (
-        <form onSubmit={createTrip} style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: 16, background: '#faf9f7', borderRadius: 10, border: '1px solid var(--line)', marginBottom: 16 }}>
+        <form onSubmit={createTrip} style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: 16, background: 'var(--paper-card)', borderRadius: 10, border: '1px solid var(--line)', marginBottom: 16 }}>
           <input className="input" placeholder="Trip name" value={form.name} onChange={e => setForm({...form, name: e.target.value})} required />
           <input className="input" placeholder="Destination" value={form.destination} onChange={e => setForm({...form, destination: e.target.value})} />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>

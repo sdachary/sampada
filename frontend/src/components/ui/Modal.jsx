@@ -28,7 +28,7 @@ export default function Modal({ open, onClose, title, children, style }) {
       padding: 16,
     }} onClick={onClose}>
       <div style={{
-        background: '#faf9f7', borderRadius: 16, padding: 28,
+        background: 'var(--paper-card)', borderRadius: 16, padding: 28,
         width: '100%', maxWidth: 480, maxHeight: '90dvh', overflowY: 'auto',
         border: '1px solid var(--line)', boxShadow: '0 24px 80px rgba(21,20,15,0.2)',
         ...style,

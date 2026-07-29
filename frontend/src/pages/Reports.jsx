@@ -1,6 +1,83 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
 
+function CalendarHeatmap() {
+  const [txns, setTxns] = useState([])
+  const [loading, setLoading] = useState(true)
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = now.getMonth()
+
+  useEffect(() => {
+    const start = new Date(year, month, 1).toISOString().slice(0, 10)
+    const end = new Date(year, month + 1, 0).toISOString().slice(0, 10)
+    api.request(`/api/v1/transactions?start_date=${start}&end_date=${end}`)
+      .then(d => setTxns(Array.isArray(d?.transactions) ? d.transactions : []))
+      .catch(() => {}).finally(() => setLoading(false))
+  }, [year, month])
+
+  const daysInMonth = new Date(year, month + 1, 0).getDate()
+  const firstDow = new Date(year, month, 1).getDay()
+  const labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+  const daily = {}
+  txns.filter(t => +t.amount > 0).forEach(t => {
+    const d = t.date?.slice(0, 10)
+    if (d) daily[d] = (daily[d] || 0) + Math.abs(+t.amount)
+  })
+  const amounts = Object.values(daily)
+  const max = Math.max(...amounts, 1)
+
+  function intensity(day) {
+    const key = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+    const amt = daily[key] || 0
+    if (amt === 0) return { bg: 'var(--line-soft)', opacity: 0.3 }
+    const pct = amt / max
+    return { bg: 'var(--coral)', opacity: 0.15 + pct * 0.75 }
+  }
+
+  return (
+    <div>
+      <div className="card" style={{ padding: '16px 18px' }}>
+        <p style={{ fontSize: 10, color: 'var(--ink-faint)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>
+          {now.toLocaleString('default', { month: 'long', year: 'numeric' })} spend
+        </p>
+        {loading ? <div className="skeleton" style={{ height: 200 }} /> : (
+          <>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4, textAlign: 'center' }}>
+              {labels.map(l => <div key={l} style={{ fontSize: 9, color: 'var(--ink-faint)', padding: '2px 0' }}>{l}</div>)}
+              {Array.from({ length: firstDow }, (_, i) => <div key={`e${i}`} />)}
+              {Array.from({ length: daysInMonth }, (_, i) => {
+                const day = i + 1
+                const c = intensity(day)
+                return (
+                  <div key={day}
+                    title={daily[`${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`]
+                      ? `₹${daily[`${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`].toLocaleString('en-IN')}`
+                      : ''}
+                    style={{
+                      aspectRatio: '1', borderRadius: 6,
+                      background: c.bg, opacity: c.opacity,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 9, color: 'var(--ink-mute)',
+                    }}>{day}</div>
+                )
+              })}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'flex-end', marginTop: 8 }}>
+              <span style={{ fontSize: 9, color: 'var(--ink-faint)' }}>Less</span>
+              {[0.15, 0.3, 0.5, 0.7, 0.9].map(o => (
+                <span key={o} style={{ width: 12, height: 12, borderRadius: 3, background: 'var(--coral)', opacity: o, display: 'inline-block' }} />
+              ))}
+              <span style={{ fontSize: 9, color: 'var(--ink-faint)' }}>More</span>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function Reports() {
   const [annual, setAnnual] = useState(null)
   const [forecast, setForecast] = useState(null)
@@ -21,6 +98,7 @@ export default function Reports() {
 
   const tabs = [
     { key: 'annual', label: 'Annual' },
+    { key: 'heatmap', label: 'Heatmap' },
     { key: 'forecast', label: 'Forecast' },
     { key: 'anomalies', label: 'Anomalies' },
     { key: 'goals', label: 'Goals' },
@@ -86,6 +164,8 @@ export default function Reports() {
           )}
         </div>
       )}
+
+      {activeTab === 'heatmap' && <CalendarHeatmap />}
 
       {activeTab === 'forecast' && forecast && (
         <div>

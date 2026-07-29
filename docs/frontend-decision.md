@@ -1,26 +1,28 @@
-# Frontend Decision: Hotwire (Turbo + Stimulus)
+# Frontend Decision: React 19 SPA + Rails API
 
 ## Decision
 
-Use **Rails 7.2 + Hotwire** (Turbo + Stimulus) + Tailwind CSS for the frontend. No React, no Vite, no separate SPA.
+The frontend is a **React 19 SPA** built with Vite, located in `frontend/`. Rails is API-only — `app/views/` only contains a layout template and a mailer. All dynamic UI is served by the React SPA.
 
-## Rationale
+## Stack
 
-| Factor | Hotwire | React/Vite SPA |
-|--------|---------|----------------|
-| Complexity | Low — server-rendered HTML with progressive enhancement | High — separate build pipeline, state management, routing |
-| Dependencies | Built into Rails (turbo-rails, stimulus-rails) | npm packages (react, react-dom, react-router, etc.) |
-| Build time | ~2s (asset pipeline) | ~10-30s (Vite/Webpack) |
-| Bundle size | ~100KB (Turbo + Stimulus) | ~200KB+ (React + ecosystem) |
-| SEO | Natural — server-rendered HTML | Requires SSR/SSG |
-| Accessibility | Standard HTML semantics | ARIA-dependent |
-| Maintenance | Minimal — 2 packages | ~10+ packages with frequent breaking changes |
-| Learning curve | Low for Rails developers | Medium-high |
+| Layer | Tech |
+|-------|------|
+| Framework | React 19 |
+| Build | Vite |
+| Routing | react-router-dom |
+| Icons | lucide-react |
+| Styling | CSS custom properties + inline styles (hand-rolled, no Tailwind) |
+| API | Rails JSON endpoints at `/api/v1/*` |
+| Auth | Custom `useAuth` hook + httpOnly cookie |
 
-## When to Revisit
+## Key Decisions
 
-- If the UI needs complex client-side interactivity (e.g., drag-and-drop spreadsheet, real-time collaborative editing)
-- If offline-first capability becomes a requirement
-- If third-party integrations demand a decoupled API client
+- **No UI kit.** The design system is custom: warm paper palette, coral accent, Playfair Display serif for editorial touches, Inter sans for headings. Documented in `DESIGN.md`.
+- **No state management library.** Each page manages its own state via `useState`/`useEffect`. No Redux, Zustand, or similar.
+- **SVG charts, no chart library.** Net worth trend and projection charts are hand-drawn SVG inline.
+- **Rails is API-only.** The React SPA communicates via `fetch` calls to `/api/v1/*`. No Hotwire, no Turbo, no server-rendered pages except the initial HTML shell.
 
-As of v2.3, none of these conditions apply.
+## Historical context
+
+Early versions of the project evaluated Rails 7.2 + Hotwire (Turbo + Stimulus) as documented in earlier drafts. That approach was ultimately not adopted — the project uses the React SPA architecture described above. If you find references to Hotwire or server-rendered views in old docs, they are stale and should be disregarded.

@@ -62,7 +62,7 @@ export default function DebtFormModal({ debt, onClose, onSave }) {
 
   return (
     <Modal open title={isEdit ? 'Edit Debt' : 'Add Debt'} onClose={onClose} style={{ maxWidth: 480 }}>
-      {error && <div style={{ background: 'rgba(237,111,92,0.1)', color: 'var(--coral)', padding: '10px 14px', borderRadius: 8, fontSize: 13, marginBottom: 16 }}>{error}</div>}
+      {error && <div style={{ background: 'var(--coral-bg)', color: 'var(--coral)', padding: '10px 14px', borderRadius: 8, fontSize: 13, marginBottom: 16 }}>{error}</div>}
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <Field label="Name *">

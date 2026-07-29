@@ -1,11 +1,13 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Outlet, useNavigate, useLocation, Link } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
+import useTheme from '../lib/useTheme'
+import CommandPalette from '../components/CommandPalette'
 import {
   LayoutDashboard, ArrowRightLeft, Wallet, RefreshCw,
   CircleDollarSign, Target, Calculator, Briefcase, TrendingUp,
   Clock, Map, Plane, Users, MessageSquare, BarChart3,
-  Download, Settings, Shield, LogOut, ChevronUp, X,
+  Download, Settings, Shield, LogOut, ChevronUp, X, Sun, Moon,
 } from 'lucide-react'
 
 const iconMap = {
@@ -95,10 +97,23 @@ function NavLink({ item, current, depth, onNav }) {
 
 export default function Layout() {
   const { user, logout } = useAuth()
+  const { theme, toggle: toggleTheme } = useTheme()
   const navigate = useNavigate()
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
+  const [cmdOpen, setCmdOpen] = useState(false)
+
+  useEffect(() => {
+    function handler(e) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        setCmdOpen(o => !o)
+      }
+    }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [])
 
   const handleLogout = async () => { await logout(); navigate('/') }
   const initials = user ? (user.first_name?.[0] || '') + (user.last_name?.[0] || '') : '?'
@@ -128,6 +143,20 @@ export default function Layout() {
           ))}
         </nav>
 
+        {/* theme toggle + palette hint */}
+        <div style={{ padding: '8px 14px', borderTop: '1px solid var(--line)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <button onClick={toggleTheme}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px',
+              background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-mute)',
+              borderRadius: 6, fontSize: 12, fontFamily: 'inherit',
+            }}>
+            {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+            <span>{theme === 'dark' ? 'Light' : 'Dark'} mode</span>
+          </button>
+          <span style={{ fontSize: 10, color: 'var(--ink-faint)', fontFamily: 'monospace' }}>⌘K</span>
+        </div>
+
         {/* user menu */}
         <div style={{ position: 'relative', borderTop: '1px solid var(--line)' }}>
           <button onClick={() => setMenuOpen(!menuOpen)}
@@ -151,7 +180,7 @@ export default function Layout() {
           {menuOpen && (
             <div style={{
               position: 'absolute', bottom: '100%', left: 8, right: 8,
-              background: '#faf9f7', border: '1px solid var(--line)', borderRadius: 10,
+              background: 'var(--paper-card)', border: '1px solid var(--line)', borderRadius: 10,
               boxShadow: '0 -8px 30px rgba(21,20,15,0.1)', padding: 6, marginBottom: 4,
             }}>
               {[
@@ -243,7 +272,7 @@ export default function Layout() {
                       display: 'flex', alignItems: 'center', gap: 12, padding: '12px 12px',
                       borderRadius: 8, fontSize: 14, fontWeight: active ? 500 : 400,
                       color: active ? 'var(--coral)' : 'var(--ink)',
-                      background: active ? 'rgba(237,111,92,0.08)' : 'transparent',
+                      background: active ? 'var(--coral-active-bg)' : 'transparent',
                       textDecoration: 'none',
                     }}>
                     <NavIcon name={item.icon} size={20} />
@@ -258,6 +287,8 @@ export default function Layout() {
 
       {/* main */}
       <main className="main-area"><Outlet /></main>
+
+      <CommandPalette open={cmdOpen} onClose={() => setCmdOpen(false)} />
     </div>
   )
 }
