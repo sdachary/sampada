@@ -3,9 +3,7 @@ var CACHE = "sampada-v1";
 var SHELL = [
   "/",
   "/offline.html",
-  "/logo-offline.svg",
-  "/assets/index.css",
-  "/assets/index.js"
+  "/logo-offline.svg"
 ];
 
 self.addEventListener("install", function (event) {
