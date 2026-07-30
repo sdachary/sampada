@@ -7,6 +7,10 @@ Sentry.init({
 
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js')
+}
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './lib/auth'
 import App from './App.jsx'

@@ -1,8 +1,8 @@
-# Contributing to Kubera
+# Contributing to Sampada
 
 ## Philosophy
 
-Kubera follows one rule: **debt first, then wealth.** Every contribution should serve this philosophy. Features that undermine the debt-first priority won't be merged regardless of technical quality.
+Sampada follows one rule: **debt first, then wealth.** Every contribution should serve this philosophy. Features that undermine the debt-first priority won't be merged regardless of technical quality.
 
 ## How to Contribute
 
@@ -36,7 +36,7 @@ Kubera follows one rule: **debt first, then wealth.** Every contribution should 
 - Ruby 3.3+, Rails 7.2+
 - RSpec for tests (with FactoryBot and SimpleCov)
 - ViewComponents + Tailwind CSS for UI
-- RuboCop with kubera config (see `.rubocop.yml`)
+- RuboCop with sampada config (see `.rubocop.yml`)
 - No external bank sync — all data is user-entered
 
 ## First Time?
