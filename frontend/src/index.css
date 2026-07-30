@@ -170,3 +170,14 @@ input, button, textarea { font-family: var(--body); }
 .l-feature-num em { font-family: var(--serif); font-style: italic; font-size: 14px; color: var(--coral); }
 .l-feature-title { font-family: var(--sans); font-size: 17px; font-weight: 600; margin: 10px 0 6px; letter-spacing: -0.02em; }
 .l-feature-desc { font-size: 13.5px; color: var(--ink-mute); line-height: 1.55; }
+
+/* Landing page responsive rules */
+.landing-feature-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.landing-stage-grid { display: grid; }
+.landing-compare-table th, .landing-compare-table td { white-space: nowrap; }
+
+@media (max-width: 680px) {
+  .landing-hero-h1 { font-size: 30px !important; }
+  .landing-stage-grid { grid-template-columns: 1fr !important; }
+  .landing-feature-grid { grid-template-columns: 1fr !important; }
+}
