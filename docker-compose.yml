@@ -1,7 +1,7 @@
 services:
   app:
     build: .
-    image: kubera:latest
+    image: sampada:latest
     restart: unless-stopped
     network_mode: host
     env_file:
@@ -12,10 +12,10 @@ services:
       DB_PORT: ${DB_PORT:-5432}
       REDIS_URL: redis://${REDIS_HOST:-10.0.1.46}:6379/0
     volumes:
-      - kubera-storage:/rails/storage
+      - sampada-storage:/rails/storage
 
   sidekiq:
-    image: kubera:latest
+    image: sampada:latest
     restart: unless-stopped
     depends_on:
       - app
@@ -28,7 +28,7 @@ services:
       DB_PORT: ${DB_PORT:-5432}
       REDIS_URL: redis://${REDIS_HOST:-10.0.1.46}:6379/0
     volumes:
-      - kubera-storage:/rails/storage
+      - sampada-storage:/rails/storage
 
 volumes:
-  kubera-storage:
+  sampada-storage:
