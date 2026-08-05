@@ -24,7 +24,6 @@ class AnnualReportService
   private
 
   def full_summary
-    transactions = @user.transactions.for_month(@year, 1)
     year_start = Date.new(@year, 1, 1)
     year_end = Date.new(@year, 12, 31)
 
@@ -96,7 +95,7 @@ class AnnualReportService
   def debt_summary
     debts = @user.debts
     {
-      total: debts.sum { |d| convert(d.amount, d.currency_code) }.round(2),
+      total: debts.sum { |d| convert(d.remaining_amount, d.currency_code) }.round(2),
       active_count: debts.active.count,
       paid_off: debts.where(status: "paid_off").count,
       by_category: debts.group(:category).count

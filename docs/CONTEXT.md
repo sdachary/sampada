@@ -12,7 +12,7 @@
 | Framework | Rails | 7.2 |
 | Database | PostgreSQL | 16 |
 | Deploy | Oracle Cloud Mumbai / Hostinger India | — |
-| Auth | Google OAuth (OmniAuth) | — |
+| Auth | Better-Auth (email + Google/GitHub social) | — |
 
 ---
 

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
-import { api } from '../lib/api'
+import { auth } from '../lib/api'
 
 export default function ResetPassword() {
   const { token } = useParams()
@@ -16,7 +16,7 @@ export default function ResetPassword() {
     e.preventDefault()
     if (password !== passwordConfirmation) return setError('Passwords do not match')
     try {
-      await api.request('/api/v1/auth/reset-password', { method: 'POST', body: JSON.stringify({ token, password, password_confirmation: passwordConfirmation }) })
+      await auth.resetPassword(token, password)
       setDone(true)
     } catch (err) {
       setError(err.message)
@@ -46,7 +46,7 @@ export default function ResetPassword() {
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 24px' }}>
       <div style={{ width: '100%', maxWidth: 360 }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <Link to="/" style={{ fontFamily: 'var(--sans)', fontWeight: 700, fontSize: 20, letterSpacing: '-0.02em', color: 'var(--ink)' }}>Kubera</Link>
+          <Link to="/" style={{ fontFamily: 'var(--sans)', fontWeight: 700, fontSize: 20, letterSpacing: '-0.02em', color: 'var(--ink)' }}>Sampada</Link>
         </div>
         <div className="card" style={{ padding: 32 }}>
           <h1 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', marginBottom: 4 }}>Set new password</h1>

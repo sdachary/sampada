@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../lib/auth'
-import { api } from '../lib/api'
+import { api, auth as authApi } from '../lib/api'
 import { useNavigate } from 'react-router-dom'
 import { Field } from '../components/ui'
 
@@ -47,14 +47,14 @@ export default function Settings() {
   const handleExport = async () => {
     try {
       const token = localStorage.getItem('token')
-      const res = await fetch('/api/dpdp/full-export', {
+      const res = await fetch('/api/v1/dpdp/full-export', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
       })
       const blob = await res.blob()
       const a = document.createElement('a')
       a.href = URL.createObjectURL(blob)
-      a.download = `kubera-full-export-${new Date().toISOString().slice(0, 10)}.json`
+      a.download = `sampada-full-export-${new Date().toISOString().slice(0, 10)}.json`
       a.click()
       setMsg('Full export downloaded')
     } catch { setMsg('Export failed') }

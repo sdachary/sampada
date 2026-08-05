@@ -6,8 +6,6 @@ gem "pg"
 gem "puma", ">= 5.0"
 
 gem "rack-cors"
-gem "bcrypt", "~> 3.1"
-gem "argon2", "~> 2.2"
 gem "bootsnap", require: false
 gem "dotenv-rails"
 gem "money-rails"
@@ -18,12 +16,10 @@ gem "rack-attack"
 gem "redis", "~> 5.0"
 gem "sentry-ruby"
 gem "sentry-rails"
+gem "faraday"
+gem "faraday-retry"
 
-# Phase 14: Auth + DPDP
-gem "omniauth", "~> 2.1"
-gem "omniauth-google-oauth2", "~> 1.1"
-gem "omniauth-github", "~> 2.0"
-gem "omniauth-rails_csrf_protection", "~> 1.0"
+# DPDP — Google Sheets sync
 gem "google-apis-sheets_v4", "~> 0.36"
 gem "googleauth", "~> 1.11"
 

@@ -994,68 +994,7 @@ class InitialSchema < ActiveRecord::Migration[7.2]
         t.index ["user_id", "device_id"], name: "index_mobile_devices_on_user_id_and_device_id", unique: true
         t.index ["user_id"], name: "index_mobile_devices_on_user_id"
       end
-    
-      create_table "oauth_access_grants", force: :cascade do |t|
-        t.string "resource_owner_id", null: false
-        t.bigint "application_id", null: false
-        t.string "token", null: false
-        t.integer "expires_in", null: false
-        t.text "redirect_uri", null: false
-        t.string "scopes", default: "", null: false
-        t.datetime "created_at", null: false
-        t.datetime "revoked_at"
-        t.index ["application_id"], name: "index_oauth_access_grants_on_application_id"
-        t.index ["resource_owner_id"], name: "index_oauth_access_grants_on_resource_owner_id"
-        t.index ["token"], name: "index_oauth_access_grants_on_token", unique: true
-      end
-    
-      create_table "oauth_access_tokens", force: :cascade do |t|
-        t.string "resource_owner_id"
-        t.bigint "application_id", null: false
-        t.string "token", null: false
-        t.string "refresh_token"
-        t.integer "expires_in"
-        t.string "scopes"
-        t.datetime "created_at", null: false
-        t.datetime "revoked_at"
-        t.string "previous_refresh_token", default: "", null: false
-        t.uuid "mobile_device_id"
-        t.index ["application_id"], name: "index_oauth_access_tokens_on_application_id"
-        t.index ["mobile_device_id"], name: "index_oauth_access_tokens_on_mobile_device_id"
-        t.index ["refresh_token"], name: "index_oauth_access_tokens_on_refresh_token", unique: true
-        t.index ["resource_owner_id"], name: "index_oauth_access_tokens_on_resource_owner_id"
-        t.index ["token"], name: "index_oauth_access_tokens_on_token", unique: true
-      end
-    
-      create_table "oauth_applications", force: :cascade do |t|
-        t.string "name", null: false
-        t.string "uid", null: false
-        t.string "secret", null: false
-        t.text "redirect_uri", null: false
-        t.string "scopes", default: "", null: false
-        t.boolean "confidential", default: true, null: false
-        t.datetime "created_at", null: false
-        t.datetime "updated_at", null: false
-        t.uuid "owner_id"
-        t.string "owner_type"
-        t.index ["owner_id", "owner_type"], name: "index_oauth_applications_on_owner_id_and_owner_type"
-        t.index ["uid"], name: "index_oauth_applications_on_uid", unique: true
-      end
-    
-      create_table "oidc_identities", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-        t.uuid "user_id", null: false
-        t.string "provider", null: false
-        t.string "uid", null: false
-        t.jsonb "info", default: {}
-        t.datetime "last_authenticated_at"
-        t.datetime "created_at", null: false
-        t.datetime "updated_at", null: false
-        t.string "issuer"
-        t.index ["issuer"], name: "index_oidc_identities_on_issuer"
-        t.index ["provider", "uid"], name: "index_oidc_identities_on_provider_and_uid", unique: true
-        t.index ["user_id"], name: "index_oidc_identities_on_user_id"
-      end
-    
+
       create_table "other_assets", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
         t.datetime "created_at", null: false
         t.datetime "updated_at", null: false
@@ -1249,22 +1188,7 @@ class InitialSchema < ActiveRecord::Migration[7.2]
         t.index ["security_id"], name: "index_security_prices_on_security_id"
       end
     
-      create_table "sessions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-        t.uuid "user_id", null: false
-        t.string "user_agent"
-        t.string "ip_address"
-        t.datetime "created_at", null: false
-        t.datetime "updated_at", null: false
-        t.uuid "active_impersonator_session_id"
-        t.datetime "subscribed_at"
-        t.jsonb "prev_transaction_page_params", default: {}
-        t.jsonb "data", default: {}
-        t.string "ip_address_digest"
-        t.index ["active_impersonator_session_id"], name: "index_sessions_on_active_impersonator_session_id"
-        t.index ["ip_address_digest"], name: "index_sessions_on_ip_address_digest"
-        t.index ["user_id"], name: "index_sessions_on_user_id"
-      end
-    
+          
       create_table "settings", force: :cascade do |t|
         t.string "var", null: false
         t.text "value"
@@ -1594,6 +1518,7 @@ class InitialSchema < ActiveRecord::Migration[7.2]
         t.string "locale"
         t.string "ui_layout"
         t.uuid "default_account_id"
+        t.string "better_auth_user_id"
         t.index ["default_account_id"], name: "index_users_on_default_account_id"
         t.index ["email"], name: "index_users_on_email", unique: true
         t.index ["family_id"], name: "index_users_on_family_id"
@@ -1601,6 +1526,7 @@ class InitialSchema < ActiveRecord::Migration[7.2]
         t.index ["locale"], name: "index_users_on_locale"
         t.index ["otp_secret"], name: "index_users_on_otp_secret", unique: true, where: "(otp_secret IS NOT NULL)"
         t.index ["preferences"], name: "index_users_on_preferences", using: :gin
+        t.index ["better_auth_user_id"], name: "index_users_on_better_auth_user_id", unique: true, where: "better_auth_user_id IS NOT NULL"
       end
     
       create_table "valuations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -1679,9 +1605,6 @@ class InitialSchema < ActiveRecord::Migration[7.2]
       add_foreign_key "mercury_items", "families"
       add_foreign_key "messages", "chats"
       add_foreign_key "mobile_devices", "users"
-      add_foreign_key "oauth_access_grants", "oauth_applications", column: "application_id"
-      add_foreign_key "oauth_access_tokens", "oauth_applications", column: "application_id"
-      add_foreign_key "oidc_identities", "users"
       add_foreign_key "plaid_accounts", "plaid_items"
       add_foreign_key "plaid_items", "families"
       add_foreign_key "recurring_transactions", "accounts"
@@ -1695,8 +1618,6 @@ class InitialSchema < ActiveRecord::Migration[7.2]
       add_foreign_key "rule_runs", "rules"
       add_foreign_key "rules", "families"
       add_foreign_key "security_prices", "securities"
-      add_foreign_key "sessions", "impersonation_sessions", column: "active_impersonator_session_id"
-      add_foreign_key "sessions", "users"
       add_foreign_key "simplefin_accounts", "simplefin_items"
       add_foreign_key "simplefin_items", "families"
       add_foreign_key "snaptrade_accounts", "snaptrade_items"
@@ -1815,7 +1736,7 @@ class InitialSchema < ActiveRecord::Migration[7.2]
 
   end
   def down
-    tables = ["net_worth_snapshots", "journeys", "recurring_expenses", "portfolios", "dividend_sips", "debts", "notifications", "vehicles", "valuations", "users", "transfers", "transactions", "trades", "tool_calls", "tags", "taggings", "syncs", "subscriptions", "sso_providers", "sso_audit_logs", "sophtron_items", "sophtron_accounts", "snaptrade_items", "snaptrade_accounts", "simplefin_items", "simplefin_accounts", "settings", "sessions", "security_prices", "securities", "rules", "rule_runs", "rule_conditions", "rule_actions", "rejected_transfers", "recurring_transactions", "properties", "plaid_items", "plaid_accounts", "other_liabilities", "other_assets", "oidc_identities", "oauth_applications", "oauth_access_tokens", "oauth_access_grants", "mobile_devices", "messages", "mercury_items", "mercury_accounts", "merchants", "lunchflow_items", "lunchflow_accounts", "loans", "llm_usages", "invite_codes", "invitations", "investments", "indexa_capital_items", "indexa_capital_accounts", "imports", "import_rows", "import_mappings", "impersonation_sessions", "impersonation_session_logs", "holdings", "family_merchant_associations", "family_exports", "family_documents", "families", "exchange_rates", "exchange_rate_pairs", "eval_samples", "eval_runs", "eval_results", "eval_datasets", "entries", "enable_banking_items", "enable_banking_accounts", "depositories", "data_enrichments", "cryptos", "credit_cards", "coinstats_items", "coinstats_accounts", "coinbase_items", "coinbase_accounts", "chats", "categories", "budgets", "budget_categories", "binance_items", "binance_accounts", "balances", "archived_exports", "api_keys", "addresses", "active_storage_variant_records", "active_storage_blobs", "active_storage_attachments", "accounts", "account_shares", "account_providers"]
+    tables = ["net_worth_snapshots", "journeys", "recurring_expenses", "portfolios", "dividend_sips", "debts", "notifications", "vehicles", "valuations", "users", "transfers", "transactions", "trades", "tool_calls", "tags", "taggings", "syncs", "subscriptions", "sso_providers", "sso_audit_logs", "sophtron_items", "sophtron_accounts", "snaptrade_items", "snaptrade_accounts", "simplefin_items", "simplefin_accounts", "settings", "security_prices", "securities", "rules", "rule_runs", "rule_conditions", "rule_actions", "rejected_transfers", "recurring_transactions", "properties", "plaid_items", "plaid_accounts", "other_liabilities", "other_assets", "mobile_devices", "messages", "mercury_items", "mercury_accounts", "merchants", "lunchflow_items", "lunchflow_accounts", "loans", "llm_usages", "invite_codes", "invitations", "investments", "indexa_capital_items", "indexa_capital_accounts", "imports", "import_rows", "import_mappings", "impersonation_sessions", "impersonation_session_logs", "holdings", "family_merchant_associations", "family_exports", "family_documents", "families", "exchange_rates", "exchange_rate_pairs", "eval_samples", "eval_runs", "eval_results", "eval_datasets", "entries", "enable_banking_items", "enable_banking_accounts", "depositories", "data_enrichments", "cryptos", "credit_cards", "coinstats_items", "coinstats_accounts", "coinbase_items", "coinbase_accounts", "chats", "categories", "budgets", "budget_categories", "binance_items", "binance_accounts", "balances", "archived_exports", "api_keys", "addresses", "active_storage_variant_records", "active_storage_blobs", "active_storage_attachments", "accounts", "account_shares", "account_providers"]
     tables.each { |t| drop_table t, if_exists: true rescue nil }
     execute "DROP TYPE IF EXISTS account_status CASCADE" rescue nil
   end

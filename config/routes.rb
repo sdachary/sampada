@@ -7,22 +7,19 @@ Rails.application.routes.draw do
 
   # API Auth
   scope '/api/v1', module: 'api' do
-    post 'auth/register', to: 'auth#register'
-    post 'auth/login', to: 'auth#login'
     get 'auth/me', to: 'auth#me'
     patch 'auth/profile', to: 'auth#update_profile'
-    post 'auth/logout', to: 'auth#logout'
-    post 'auth/forgot-password', to: 'auth#forgot_password'
-    post 'auth/reset-password', to: 'auth#reset_password'
   end
 
   # DPDP
-  post "/api/dpdp/consent", to: "dpdp#consent"
-  get "/api/dpdp/consent", to: "dpdp#consent_status"
-  post "/api/dpdp/erasure", to: "dpdp#erasure"
-  post "/api/dpdp/cancel-deletion", to: "dpdp#cancel_deletion"
-  post "/api/dpdp/full-export", to: "dpdp#full_export"
-  post "/api/dpdp/grievance", to: "dpdp#grievance"
+  scope '/api/v1', module: 'api', as: 'api' do
+    post 'dpdp/consent', to: 'dpdp#consent'
+    get 'dpdp/consent', to: 'dpdp#consent_status'
+    post 'dpdp/erasure', to: 'dpdp#erasure'
+    post 'dpdp/cancel-deletion', to: 'dpdp#cancel_deletion'
+    post 'dpdp/full-export', to: 'dpdp#full_export'
+    post 'dpdp/grievance', to: 'dpdp#grievance'
+  end
 
   # Conversations
   resources :conversations, only: [:index, :show, :create, :destroy] do

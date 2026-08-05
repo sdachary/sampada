@@ -14,11 +14,12 @@ class NetWorthSnapshot < TenantRecord
   def self.create_snapshot(user)
     currency = user.currency
     exchange_service = ExchangeRateService.new
-    debts_total = Debt.where(user: user, status: "active")
+    active_debts = Debt.where(user: user, status: "active")
     portfolio_value = Portfolio.where(user: user)
 
-    total_liabilities = debts_total.sum do |d|
-      exchange_service.convert(d.amount, from: d.currency_code, to: currency) || d.amount
+    total_liabilities = active_debts.sum do |d|
+      remaining = d.remaining_amount
+      exchange_service.convert(remaining, from: d.currency_code, to: currency) || remaining
     end
 
     total_assets = portfolio_value.sum do |p|

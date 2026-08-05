@@ -21,7 +21,7 @@ class HouseholdDashboardService
 
   def member_finances(user)
     {
-      debts: user.debts.sum { |d| convert(d.amount, d.currency_code) },
+      debts: user.debts.sum { |d| convert(d.remaining_amount, d.currency_code) },
       portfolios: user.portfolios.sum(&:total_value),
       monthly_expenses: user.recurring_expenses.active.sum(&:monthly_amount),
       transactions: Transaction.where(user: user, transaction_date: 30.days.ago..)
@@ -36,11 +36,11 @@ class HouseholdDashboardService
     total_liabilities = 0.0
 
     @members.each do |user|
-      total_liabilities += user.debts.sum { |d| convert(d.amount, d.currency_code) }
+      total_liabilities += user.debts.sum { |d| convert(d.remaining_amount, d.currency_code) }
       total_assets += user.portfolios.sum(&:total_value)
     end
 
-    @household.debts.each { |d| total_liabilities += convert(d.amount, d.currency_code) }
+    @household.debts.each { |d| total_liabilities += convert(d.remaining_amount, d.currency_code) }
     @household.portfolios.each { |p| total_assets += p.total_value }
 
     {

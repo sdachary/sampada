@@ -7,21 +7,23 @@ class WealthJourneyTracker
 
   def debt_progress
     debts = Debt.where(user: @user, status: "active")
-    total_debt = debts.sum { |d| convert(d.amount, d.currency_code) }
+    total_debt = debts.sum { |d| convert(d.remaining_amount, d.currency_code) }
     total_emi = debts.sum { |d| convert(d.emi_amount.to_f, d.currency_code) }
+    payoff = payoff_projection(debts)
 
     {
       total_debt: total_debt,
       total_emi: total_emi,
       debt_count: debts.count,
-      months_to_zero: debts.map(&:months_remaining).max || 0,
-      estimated_debt_free_date: debts.map(&:debt_free_date).compact.max,
+      months_to_zero: payoff ? payoff[:months] : 0,
+      estimated_debt_free_date: payoff ? payoff[:debt_free_date] : nil,
       progress_percentage: debts.any? ? debts.sum(&:progress_percentage) / debts.count : 100.0,
       base_currency: @base_currency,
       debts: debts.map { |d|
         {
-          id: d.id, name: d.name, amount: d.amount, interest_rate: d.interest_rate,
-          emi_amount: d.emi_amount, due_date: d.due_date, status: d.status,
+          id: d.id, name: d.name, amount: d.amount, remaining: d.remaining_amount,
+          interest_rate: d.interest_rate, emi_amount: d.emi_amount,
+          due_date: d.due_date, status: d.status,
           months_remaining: d.months_remaining, debt_free_date: d.debt_free_date,
           currency_code: d.currency_code
         }
@@ -60,10 +62,12 @@ class WealthJourneyTracker
     current = NetWorthSnapshot.current(@user)
     debts = Debt.where(user: @user, status: "active")
     total_emi = debts.sum { |d| convert(d.emi_amount.to_f, d.currency_code) }
+    payoff = payoff_projection(debts)
+    max_months = payoff ? payoff[:months] : 0
 
     trajectory = (0..months).map do |m|
       month_date = Date.today + m.months
-      debt_reduction = total_emi * [m, debts.map(&:months_remaining).max || 0].min
+      debt_reduction = total_emi * [m, max_months].min
       asset_growth = current.total_assets * 1.005 ** m
       liability = [current.total_liabilities - debt_reduction, 0].max
 
@@ -114,14 +118,15 @@ class WealthJourneyTracker
     debts = Debt.where(user: @user, status: "active")
     return { reached: true, estimated_date: Date.today, message: "You are debt-free!" } if debts.empty?
 
-    max_months = debts.map(&:months_remaining).max || 0
+    payoff = payoff_projection(debts)
+    max_months = payoff ? payoff[:months] : debts.map(&:months_remaining).max || 0
     est_date = Date.today + max_months.months
 
     {
       reached: false,
       estimated_date: est_date,
       months_remaining: max_months,
-      total_debt: debts.sum { |d| convert(d.amount, d.currency_code) },
+      total_debt: debts.sum { |d| convert(d.remaining_amount, d.currency_code) },
       base_currency: @base_currency,
       message: max_months > 0 ? "Debt-free by #{est_date.strftime('%b %Y')}" : "No active debts"
     }
@@ -157,6 +162,27 @@ class WealthJourneyTracker
   end
 
   private
+
+  def payoff_projection(debts)
+    return nil if debts.empty?
+
+    debt_attrs = debts.map do |d|
+      { id: d.id, balance: d.remaining_amount.to_f, interest_rate: d.interest_rate.to_f, min_payment: d.emi_amount.to_f }
+    end
+
+    service = DebtPayoffService.new(debt_attrs)
+    result = service.avalanche_plan
+    return nil if result.nil? || result[:months] == 0
+
+    {
+      months: result[:months],
+      total_interest: result[:total_interest],
+      debt_free_date: Date.today + result[:months].months
+    }
+  rescue => e
+    Rails.logger.warn "[WealthJourneyTracker] Payoff projection failed: #{e.message}"
+    nil
+  end
 
   def convert(amount, from_currency)
     @exchange_service.convert(amount, from: from_currency || @base_currency, to: @base_currency) || amount

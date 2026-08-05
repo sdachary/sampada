@@ -11,6 +11,10 @@ services:
       DB_HOST: ${DB_HOST:-10.0.1.46}
       DB_PORT: ${DB_PORT:-5432}
       REDIS_URL: redis://${REDIS_HOST:-10.0.1.46}:6379/0
+      BETTER_AUTH_VERIFY_URL: ${BETTER_AUTH_VERIFY_URL:-http://localhost:4000/api/auth/verify}
+      BETTER_AUTH_APP_ID: ${BETTER_AUTH_APP_ID:-sampada}
+      BETTER_AUTH_CACHE_TTL: ${BETTER_AUTH_CACHE_TTL:-300}
+      DATABASE_BACKUP_ENABLED: ${DATABASE_BACKUP_ENABLED:-false}
     volumes:
       - sampada-storage:/rails/storage
 
@@ -27,6 +31,10 @@ services:
       DB_HOST: ${DB_HOST:-10.0.1.46}
       DB_PORT: ${DB_PORT:-5432}
       REDIS_URL: redis://${REDIS_HOST:-10.0.1.46}:6379/0
+      BETTER_AUTH_VERIFY_URL: ${BETTER_AUTH_VERIFY_URL:-http://localhost:4000/api/auth/verify}
+      BETTER_AUTH_APP_ID: ${BETTER_AUTH_APP_ID:-sampada}
+      BETTER_AUTH_CACHE_TTL: ${BETTER_AUTH_CACHE_TTL:-300}
+      DATABASE_BACKUP_ENABLED: ${DATABASE_BACKUP_ENABLED:-false}
     volumes:
       - sampada-storage:/rails/storage
 

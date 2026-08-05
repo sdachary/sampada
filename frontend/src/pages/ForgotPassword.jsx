@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { api } from '../lib/api'
+import { auth } from '../lib/api'
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('')
@@ -10,7 +10,7 @@ export default function ForgotPassword() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-      await api.request('/api/v1/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) })
+      await auth.forgotPassword(email)
       setSent(true)
     } catch (err) {
       setError(err.message)
@@ -36,7 +36,7 @@ export default function ForgotPassword() {
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 24px' }}>
       <div style={{ width: '100%', maxWidth: 360 }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <Link to="/" style={{ fontFamily: 'var(--sans)', fontWeight: 700, fontSize: 20, letterSpacing: '-0.02em', color: 'var(--ink)' }}>Kubera</Link>
+          <Link to="/" style={{ fontFamily: 'var(--sans)', fontWeight: 700, fontSize: 20, letterSpacing: '-0.02em', color: 'var(--ink)' }}>Sampada</Link>
         </div>
         <div className="card" style={{ padding: 32 }}>
           <h1 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', marginBottom: 4 }}>Reset password</h1>

@@ -11,15 +11,15 @@ module Ai
       debts = @user.debts.active
       return "You don't have any debts tracked yet. Want to add one? Just tell me the name, amount, and interest rate!" if debts.empty?
 
-      total = debts.sum(&:amount)
+      total = debts.sum(&:remaining_amount)
       highest = debts.max_by(&:interest_rate)
-      lowest = debts.min_by(&:amount)
+      lowest = debts.min_by(&:remaining_amount)
 
       text = "You have #{debts.count} active #{'debt'.pluralize(debts.count)} totaling #{@formatter.format_amount(total)}.\n\n"
       text += "**Strategy**: Since your highest interest debt is #{highest.name} at #{highest.interest_rate}%, "
       text += "I recommend the **avalanche method** — pay minimum on everything, "
       text += "put extra toward #{highest.name} first. It saves the most in interest.\n\n"
-      text += "Alternatively, the **snowball method** (pay off #{lowest.name} first — #{@formatter.format_amount(lowest.amount)} — for quick wins) " if lowest != highest
+      text += "Alternatively, the **snowball method** (pay off #{lowest.name} first — #{@formatter.format_amount(lowest.remaining_amount)} — for quick wins) " if lowest != highest
       text += "\nWant me to create a detailed payoff plan?"
       text
     end

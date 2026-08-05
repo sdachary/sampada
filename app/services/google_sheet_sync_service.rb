@@ -48,11 +48,11 @@ class GoogleSheetSyncService
   def populate_summary
     total_assets = @user.net_worth_snapshots.last&.total_assets || 0
     total_liabilities = @user.net_worth_snapshots.last&.total_liabilities || 0
-    total_debts = @user.debts.sum(:amount)
+    total_debts = @user.debts.sum { |d| d.remaining_amount }
     total_invested = @user.portfolios.sum(:total_value)
 
     values = [
-      ['Kubera — Financial Summary', "Generated: #{Time.current.strftime('%B %d, %Y %I:%M %p %Z')}"],
+      ['Sampada — Financial Summary', "Generated: #{Time.current.strftime('%B %d, %Y %I:%M %p %Z')}"],
       [],
       ['Metric', 'Value'],
       ['Total Assets', total_assets],

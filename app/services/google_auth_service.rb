@@ -18,18 +18,23 @@ class GoogleAuthService
   private
 
   def authorize
-    return nil unless @user.refresh_token.present?
+    # Note: With Better-Auth, Google tokens are stored in Better-Auth's database
+    # This service may need updates to fetch tokens from Better-Auth instead
+    return nil
 
-    authorizer = Google::Auth::UserRefreshCredentials.new(
-      client_id: ENV.fetch('GOOGLE_CLIENT_ID'),
-      client_secret: ENV.fetch('GOOGLE_CLIENT_SECRET'),
-      scope: ['email', 'profile',
-              Google::Apis::SheetsV4::AUTH_SPREADSHEETS,
-              Google::Apis::DriveV3::AUTH_DRIVE_FILE],
-      additional_parameters: { access_type: 'offline' }
-    )
-    authorizer.refresh_token = @user.refresh_token
-    authorizer.fetch_access_token!
-    authorizer
+    # Old code - kept for reference
+    # return nil unless @user.refresh_token.present?
+    #
+    # authorizer = Google::Auth::UserRefreshCredentials.new(
+    #   client_id: ENV.fetch('GOOGLE_CLIENT_ID'),
+    #   client_secret: ENV.fetch('GOOGLE_CLIENT_SECRET'),
+    #   scope: ['email', 'profile',
+    #           Google::Apis::SheetsV4::AUTH_SPREADSHEETS,
+    #           Google::Apis::DriveV3::AUTH_DRIVE_FILE],
+    #   additional_parameters: { access_type: 'offline' }
+    # )
+    # authorizer.refresh_token = @user.refresh_token
+    # authorizer.fetch_access_token!
+    # authorizer
   end
 end

@@ -1,4 +1,4 @@
-class DpdpController < Api::BaseController
+class Api::DpdpController < Api::BaseController
   def consent
     record = current_user.consent_records.create!(
       feature: params[:feature],
@@ -7,10 +7,6 @@ class DpdpController < Api::BaseController
       user_agent: request.user_agent,
       granted_at: Time.current
     )
-
-    if params[:granted]
-      current_user.update!(consent_granted: true, consent_granted_at: Time.current)
-    end
 
     render json: { success: true, consent: record }
   end
@@ -75,9 +71,9 @@ class DpdpController < Api::BaseController
         p.as_json(include: :investments)
       },
       journeys: current_user.journeys.order(created_at: :desc),
-      net_worth_snapshots: current_user.net_worth_snapshots.order(snapshot_date: :desc).limit(100),
+      net_worth_snapshots: current_user.net_worth_snapshots.order(snapshot_date: :desc),
       recurring_expenses: current_user.recurring_expenses.order(created_at: :desc),
-      transactions: current_user.transactions.order(transaction_date: :desc).limit(500),
+      transactions: current_user.transactions.order(transaction_date: :desc),
       budgets: current_user.budgets.order(created_at: :desc),
       trips: current_user.trips.order(created_at: :desc),
       conversations: current_user.conversations.order(created_at: :desc).map { |c|

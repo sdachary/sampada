@@ -8,7 +8,7 @@ class ProcessDeletionJob
     request.update!(status: 'deleting')
     user = request.user
 
-    if request.export_data && user.refresh_token.present?
+    if request.export_data
       request.update!(status: 'exporting')
       result = GoogleSheetSyncService.new(user).sync!
       request.update!(status: 'exported')
@@ -17,13 +17,7 @@ class ProcessDeletionJob
     user.email = "deleted-#{user.id}@kubera.app"
     user.first_name = 'Deleted'
     user.last_name = 'User'
-    user.google_uid = nil
-    user.avatar_url = nil
-    user.refresh_token = nil
-    user.deleted_at = Time.current
     user.save!
-
-    user.sessions.update_all(revoked_at: Time.current)
 
     request.update!(status: 'deleted', deleted_at: Time.current)
     Rails.logger.info "[Deletion] User #{user.id} deleted (request: #{deletion_request_id})"

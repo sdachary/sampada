@@ -72,10 +72,9 @@ export default function Landing() {
         </p>
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
           <Link to="/register" className="btn btn-primary">Get started free</Link>
-          <a href="https://github.com/sdachary/sampada#install-in-one-line" target="_blank" rel="noreferrer" className="btn btn-ghost">Self-host it</a>
         </div>
         <p style={{ fontSize: 12, color: 'var(--ink-faint)', marginTop: 20, letterSpacing: '0.02em' }}>
-          Open source \u00b7 AGPL-3.0 \u00b7 No premium tier
+          Open source \u00b7 AGPL-3.0 \u00b7 Free forever
         </p>
       </section>
 
@@ -149,21 +148,13 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* 5. Self-host */}
+      {/* 5. Hosted SaaS */}
       <section style={{ padding: '20px 0 60px', textAlign: 'center' }} data-reveal>
         <p className="page-num" style={{ marginBottom: 12 }}>00<em>4</em> / 005</p>
-        <h2 style={{ fontSize: 22, fontWeight: 600, letterSpacing: '-0.025em', marginBottom: 10 }}>Your server. Your data.</h2>
+        <h2 style={{ fontSize: 22, fontWeight: 600, letterSpacing: '-0.025em', marginBottom: 10 }}>Hosted. Free. Forever.</h2>
         <p style={{ fontSize: 14, color: 'var(--ink-mute)', maxWidth: 420, margin: '0 auto 24px', lineHeight: 1.6 }}>
-          Sampada is standalone \u2014 no external services required. Run it on your own machine in one line.
+          No installation needed. Sign up at <a href="https://sampada.pages.dev" target="_blank" rel="noreferrer" style={{ color: 'var(--coral)' }}>sampada.pages.dev</a> and start in seconds.
         </p>
-        <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: 10, padding: '12px 20px',
-          background: 'var(--ink)', color: 'var(--paper)', borderRadius: 'var(--radius-sm)',
-          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 13, maxWidth: '100%', overflowX: 'auto',
-        }}>
-          <Terminal size={15} style={{ flexShrink: 0, opacity: 0.7 }} />
-          <code style={{ whiteSpace: 'nowrap' }}>curl -fsSL raw.githubusercontent.com/sdachary/sampada/main/installer/install.sh | bash</code>
-        </div>
         <p style={{ fontSize: 12.5, marginTop: 14 }}>
           <a href="https://github.com/sdachary/sampada" target="_blank" rel="noreferrer" style={{ color: 'var(--ink-mute)' }}>View source on GitHub \u2192</a>
         </p>

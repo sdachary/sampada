@@ -84,7 +84,7 @@
 | `config/routes.rb` | All routes (auth, DPDP, Trip, API v1, Sidekiq) |
 | `config/database.yml` | PostgreSQL connection (hosted on India VM) |
 | `config/environments/*.rb` | Per-environment settings |
-| `config/initializers/omniauth.rb` | Google OAuth provider setup |
+| `app/controllers/api/auth_controller.rb` | Better-Auth (email + Google/GitHub social) proxy + auth API |
 | `config/initializers/sidekiq.rb` | Sidekiq Redis connection |
 
 ---

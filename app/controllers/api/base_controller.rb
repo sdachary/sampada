@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Api::BaseController < ActionController::API
-  before_action :authenticate
+  include BetterAuthVerification
 
   rescue_from ActiveRecord::RecordNotFound, with: :render_not_found
   rescue_from ActiveRecord::RecordInvalid, with: :render_unprocessable_entity
@@ -30,27 +30,5 @@ class Api::BaseController < ActionController::API
 
   def render_unprocessable_entity(exception)
     render_error("Validation failed", status: :unprocessable_entity, errors: exception.record.errors.full_messages)
-  end
-
-  private
-
-  def current_user
-    @current_user ||= begin
-      token = request.headers['Authorization']&.delete_prefix('Bearer ')
-      return nil unless token
-      session = Session.active.includes(:user).find_by(token: token)
-      session&.user
-    end
-  end
-
-  def current_session
-    @current_session ||= begin
-      token = request.headers['Authorization']&.delete_prefix('Bearer ')
-      Session.active.find_by(token: token) if token
-    end
-  end
-
-  def authenticate
-    render_unauthorized unless current_user
   end
 end

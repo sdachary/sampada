@@ -27,7 +27,25 @@ class Api::PortfoliosController < Api::BaseController
 
   def rebalance
     portfolio = current_user.portfolios.find(params[:id])
-    render_success({ optimal_weights: {} })
+    investments = current_user.investments.where(portfolio_id: portfolio.id)
+    stocks = investments.select { |i| %w[stock etf].include?(i.investment_type.to_s) }
+
+    if stocks.empty?
+      return render_success({ message: "No stock or ETF investments to rebalance" })
+    end
+
+    assets = stocks.map do |inv|
+      {
+        symbol: inv.symbol,
+        expected_return: inv.expected_return || 0.10,
+        volatility: inv.volatility || 0.20
+      }
+    end
+
+    service = PortfolioService.new(assets, risk_tolerance: portfolio.risk_tolerance || 0.5)
+    result = service.optimize
+
+    render_success(result)
   end
 
   def research

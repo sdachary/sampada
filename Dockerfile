@@ -2,7 +2,7 @@ FROM ruby:3.3.8-slim-bookworm
 
 RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y \
-    build-essential libpq-dev libyaml-dev curl ca-certificates && \
+    build-essential libpq-dev libyaml-dev curl ca-certificates postgresql-client && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /rails

@@ -45,4 +45,10 @@ class BudgetCategory < TenantRecord
       .where("EXTRACT(YEAR FROM transaction_date) = ? AND EXTRACT(MONTH FROM transaction_date) = ?", year, month)
       .sum(:amount)
   end
+
+  def period_spending(user_id, start_date, end_date)
+    transactions.where(user_id: user_id)
+      .where(transaction_date: start_date..end_date)
+      .sum(:amount)
+  end
 end

@@ -10,14 +10,15 @@
 
 ### Zero is better than negative.
 
-**A self-hosted personal finance OS that takes you from debt → zero → wealth.**
+**A free-forever, hosted personal finance web app that takes you from debt → zero → wealth.**
 
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
 [![Ruby on Rails](https://img.shields.io/badge/Ruby%20on%20Rails-7.2-CC0000?logo=rubyonrails&logoColor=white)](https://rubyonrails.org/)
-[![Self-Hosted](https://img.shields.io/badge/Self--Hosted-your%20data%2C%20your%20server-2fa39a)](#architecture)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![Hosted](https://img.shields.io/badge/Hosted%20SaaS-free%20forever-2fa39a)](https://sampada.pages.dev)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-[Install](#install-in-one-line) · [Features](#what-is-sampada) · [Why Sampada](#why-sampada-vs-other-finance-apps) · [Architecture](#architecture) · [Contributing](#contributing)
+[Features](#what-is-sampada) · [Why Sampada](#why-sampada-vs-other-finance-apps) · [Architecture](#architecture) · [Contributing](#contributing)
 
 </div>
 
@@ -42,13 +43,15 @@ The app never blocks you from doing whatever you want with your money — but de
 - 📈 **Dividend SIP planner** — AI suggests stocks based on your income target and timeline
 - 🔄 **Portfolio rebalancing** — Modern Portfolio Theory, monthly check-ins, on/off-track status
 - 🔔 **Recurring expense reminders** — EMI/subscription calendar, never miss a due date
-- 🤖 **Free AI, by default** — works with free models via OpenRouter, or fully local via Ollama
+- 🤖 **Free AI, by default** — works with free models via OpenRouter, or fully local via Ollama (BYOK — bring your own key)
 - 🌍 **Multi-currency** — 32 currencies, auto exchange rates, international exchanges (NYSE, NASDAQ, LSE, TSE, ASX, and more)
 - 🇮🇳 **Built for Indian markets** — native NSE/BSE support, EMIs, SIPs, ₹ throughout
 - 💬 **Natural-language transactions** — *"I spent ₹500 on groceries"* auto-creates a categorized transaction
 - 🔍 **Anomaly detection** — flags unusual spending and budget breaches automatically
 - 📊 **Reporting & export** — CSV/JSON export, annual tax-ready reports, goal-progress charts
 - 👨‍👩‍👧‍👦 **Household sharing** — multi-user households with role-based access and a shared family dashboard
+- ✈️ **Trip expense splitting** — group travel with simplified debt settlement
+- 🛡️ **DPDP compliance** — granular consent, data export, erasure requests, grievance redressal
 
 <details>
 <summary><b>Release history (v0.1 → v2.3)</b></summary>
@@ -75,9 +78,8 @@ The app never blocks you from doing whatever you want with your money — but de
 ## Why Sampada? (vs. other finance apps)
 
 | Feature | **Sampada** | YNAB | Mint† | Empower | Rocket Money |
-|---|---|---|---|---|---|
-| Self-hosted | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Free (no subscription) | ✅ | ❌ ~$15/mo | Was free | Freemium | Freemium |
+|---|---|---|---|---|---|---|
+| **Free forever (hosted)** | ✅ | ❌ ~$15/mo | Was free | Freemium | Freemium |
 | **Debt-first philosophy** | ✅ Core | Partial | ❌ | ❌ | ❌ |
 | Multi-currency | ✅ 32 currencies | ❌ | ❌ | ❌ | ❌ |
 | International exchanges | ✅ NYSE/NASDAQ/LSE/TSE | ❌ | ❌ | ❌ | ❌ |
@@ -86,24 +88,25 @@ The app never blocks you from doing whatever you want with your money — but de
 | Anomaly detection | ✅ 3-sigma algorithm | ❌ | ❌ | ❌ | ❌ |
 | Cash flow forecasting | ✅ 12-month projection | ❌ | ❌ | ✅ | ❌ |
 | Household sharing | ✅ Multi-user | ❌ | ❌ | ❌ | ✅ |
-| Free AI options | ✅ OpenRouter/Ollama | ❌ | ❌ | ❌ | ❌ |
+| Free AI options (BYOK) | ✅ OpenRouter/Ollama | ❌ | ❌ | ❌ | ❌ |
 | Local AI (Ollama) | ✅ | ❌ | ❌ | ❌ | ❌ |
 | Open source (AGPL-3.0) | ✅ | ❌ | ❌ | ❌ | ❌ |
 | Portfolio rebalancing | ✅ | Limited | Basic | ✅ | ❌ |
 | SIP planning | ✅ | ❌ | ❌ | ❌ | ❌ |
 | Reporting & export | ✅ CSV/JSON/annual | ✅ | ❌ | ✅ | ✅ |
+| DPDP/GDPR compliance | ✅ Built-in | ❌ | ❌ | ❌ | ❌ |
 
 <sub>† Mint shut down March 2024</sub>
 
 **What makes Sampada different:**
 
 1. **Philosophy-first** — "debt first, then wealth" isn't a feature, it's the foundation
-2. **Your data stays yours** — self-hosted, no surveillance capitalism
-3. **Free AI from day one** — no $20/month tax just to use the AI features
+2. **Free forever** — hosted SaaS with no subscription, no data mining, no surveillance capitalism
+3. **Free AI from day one** — BYOK (bring your own key) means no AI cost burden on you or us
 4. **Multi-currency from day one** — 32 currencies, live exchange rates, global market support
 5. **Built for India** — NSE/BSE, EMIs, SIPs, ₹ currency, not bolted on as an afterthought
-6. **Community-driven** — features serve users, not shareholders
-7. **Standalone architecture** — no external dependencies; all data stays local
+6. **Privacy-first** — DPDP compliant, granular consent, full data portability, erasure on request
+7. **Community-driven** — features serve users, not shareholders
 
 ---
 
@@ -117,30 +120,28 @@ The app never blocks you from doing whatever you want with your money — but de
 
 ---
 
-## Install in One Line
+## Getting Started
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/sdachary/sampada/main/installer/install.sh | bash
-```
+### For Users
+Sign up at [https://sampada.pages.dev](https://sampada.pages.dev) — no installation needed.
 
-This clones the repo, installs dependencies, and starts the server on `http://localhost:3002`:
-
-- ✅ Clones the repository into `~/sampada`
-- ✅ Installs Ruby gems and Node packages
-- ✅ Runs `bin/setup` (database creation, migration, seeding)
-- ✅ Starts the Rails server on port 3002
-
-### Manual setup
-
-Prefer to do it yourself?
+### For Developers
 
 ```bash
 git clone https://github.com/sdachary/sampada.git
 cd sampada
 cp .env.example .env
-# Edit .env — set SECRET_KEY_BASE and POSTGRES_PASSWORD at minimum
+# Edit .env — set SECRET_KEY_BASE, POSTGRES_PASSWORD, BETTER_AUTH_VERIFY_URL at minimum
 docker compose up -d
 open http://localhost:3002
+```
+
+**Note:** The frontend is deployed separately on Cloudflare Pages. For local development, run the frontend separately:
+
+```bash
+cd frontend
+npm install
+npm run dev
 ```
 
 ---
@@ -157,25 +158,27 @@ Sampada works with any OpenAI-compatible endpoint, and the free options work gre
 | **OpenAI** | Paid | GPT-4o mini — good balance |
 | **Custom** | Varies | Any OpenAI-compatible endpoint |
 
-The installer walks you through choosing a provider — or skip it and configure later under **Settings → AI Assistant**.
+Configure under **Settings → AI Assistant** in the app.
 
 ---
 
 ## Architecture
 
-Sampada is a native **Rails 7.2** application, built to be self-hosted with no external dependencies.
+Sampada is a **Rails 7.2 API-only backend** + **React 19/Vite SPA frontend**, deployed as a hosted SaaS.
 
 | Layer | Stack |
 |---|---|
-| Frontend | Tailwind CSS + Hotwire (Turbo/Stimulus) |
-| Backend | Ruby on Rails, PostgreSQL, Redis |
-| Background jobs | Sidekiq, with cron schedules for market data, exchange rates, and maintenance |
-| AI | Modular `Ai::` namespace, pluggable providers (Ollama, OpenRouter, etc.), specialized service handlers |
-| API | Standardized JSON response layer (`Api::BaseController`) with global exception handling |
-| Multi-currency | Exchange rates cached from Yahoo Finance, refreshed every 6 hours |
-| Export | CSV and JSON export across all financial modules |
-| Households | Multi-user sharing with role-based access control |
-| Security | Local-only data storage — no external bank sync required |
+| **Frontend** | React 19, Vite, Tailwind CSS, React Router, Recharts (charts) |
+| **Backend** | Ruby on Rails 7.2 (API-only), PostgreSQL 16, Redis, Sidekiq |
+| **Background jobs** | Sidekiq + Sidekiq-Cron (market data, exchange rates, maintenance) |
+| **Auth** | Better-Auth (shared identity service, JWT verification) |
+| **AI** | Modular `Ai::` namespace, pluggable providers (Ollama, OpenRouter, etc.), BYOK |
+| **API** | Standardized JSON response layer (`Api::BaseController`) with global exception handling |
+| **Multi-currency** | Exchange rates cached from Yahoo Finance/Alpha Vantage, refreshed every 6 hours |
+| **Export** | CSV and JSON export across all financial modules |
+| **Households** | Multi-user sharing with role-based access control |
+| **DPDP Compliance** | Granular consent, full data export, erasure workflow, grievance redressal |
+| **Deployment** | Docker Compose on shared VM (oradb) alongside other AcharyaLab products |
 
 ---
 
@@ -195,13 +198,14 @@ Full plan: [`docs/roadmap-updated.md`](docs/roadmap-updated.md)
 - ✅ v2.2 — Reporting & export
 - ✅ v2.3 — Collaboration & sharing
 - ✅ Phase 5 — Optimization & refactoring
-- 🔜 v2.4 — Mobile companion (PWA, offline support, push notifications)
+- 🔜 **v2.4** — Better-Auth migration, correctness fixes, onboarding, Insurance tracker
+- 🔜 **v2.5** — PWA, offline support, push notifications
 
 ---
 
 ## Why Open Source?
 
-1. **Your data stays yours** — self-hosted, no subscription fees, no data mining
+1. **Your data stays yours** — open source, AGPL-3.0, you can self-host if you want
 2. **Audit your finances** — full transparency, inspect the code that handles your money
 3. **No vendor lock-in** — fork it, modify it, host it forever
 4. **Community-driven** — features serve users, not shareholders

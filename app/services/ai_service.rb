@@ -119,7 +119,7 @@ class AiService
     code = @formatter.currency_code
 
     context = []
-    context << "User's debts: #{debts.map { |d| "#{d.name}: #{symbol}#{d.amount.to_i} at #{d.interest_rate}% (#{d.currency_code})" }.join(', ')}" if debts.any?
+    context << "User's debts: #{debts.map { |d| "#{d.name}: #{symbol}#{d.remaining_amount.to_i} remaining at #{d.interest_rate}% (#{d.currency_code})" }.join(', ')}" if debts.any?
     context << "User's portfolios: #{portfolios.map(&:name).join(', ')} (#{code})" if portfolios.any?
     context << "Journey phase: #{journey.phase}, debt-free target: #{journey.zero_day_target}" if journey
     context << "User's base currency: #{code} (#{symbol})"

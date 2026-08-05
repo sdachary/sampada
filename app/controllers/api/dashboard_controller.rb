@@ -3,7 +3,7 @@
 class Api::DashboardController < Api::BaseController
   def show
     user = current_user
-    total_debt = user.debts.active.sum(:amount).to_f
+    total_debt = user.debts.active.sum { |d| d.remaining_amount }.to_f
     total_investments = user.portfolios.sum(&:total_value).to_f
     monthly_expenses = user.recurring_expenses.active.sum(&:monthly_amount)
     net_worth = total_investments - total_debt
@@ -34,7 +34,7 @@ class Api::DashboardController < Api::BaseController
     user = current_user
     journey = user.journeys.first
     monthly_sip = journey&.monthly_sip_goal&.to_f || 0
-    total_debt = user.debts.active.sum(:amount).to_f
+    total_debt = user.debts.active.sum { |d| d.remaining_amount }.to_f
     monthly_emi = user.debts.active.sum(:emi_amount).to_f
 
     projection = (1..60).map do |month|

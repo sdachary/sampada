@@ -29,7 +29,7 @@ class DebtPayoffService
       month_interest = 0
       month_principal = 0
 
-      debts.each do |debt|
+      debts.each_with_index do |debt, index|
         next if debt[:balance] <= 0
         interest = debt[:balance] * (debt[:interest_rate] / 100 / 12)
         debt[:balance] += interest
@@ -38,7 +38,7 @@ class DebtPayoffService
         monthly_min = [debt[:min_payment], debt[:balance]].min
         debt[:balance] -= monthly_min
         month_principal += monthly_min
-        payment += monthly_min if debt == debts.find { |d| d[:balance] > 0 }
+        payment += monthly_min if index == debts.find_index { |d| d[:balance] > 0 }
       end
 
       extra = payment

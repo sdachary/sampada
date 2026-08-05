@@ -126,7 +126,7 @@ export default function Layout() {
       {/* sidebar */}
       <aside className="sidebar">
         <div style={{ padding: '16px 14px', borderBottom: '1px solid var(--line)', marginBottom: 8 }}>
-          <Link to="/dashboard" style={{ fontFamily: 'var(--sans)', fontWeight: 700, fontSize: 16, letterSpacing: '-0.02em', color: 'var(--ink)' }}>Kubera</Link>
+          <Link to="/dashboard" style={{ fontFamily: 'var(--sans)', fontWeight: 700, fontSize: 16, letterSpacing: '-0.02em', color: 'var(--ink)' }}>Sampada</Link>
         </div>
         <nav style={{ padding: '0 8px', flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
           {groups.map((g) => (
