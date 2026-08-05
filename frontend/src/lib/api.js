@@ -34,7 +34,7 @@ export const auth = {
   // Better-Auth direct endpoints
   register: (data) => betterAuthRequest('/sign-up/email', {
     method: 'POST',
-    body: JSON.stringify({ email: data.email, password: data.password, name: `${data.first_name} ${data.last_name}`.trim() }),
+    body: JSON.stringify({ email: data.email, password: data.password, name: `${data.first_name} ${data.last_name}`.trim(), app: 'sampada' }),
   }),
 
   login: (data) => betterAuthRequest('/sign-in/email', {

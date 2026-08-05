@@ -133,12 +133,18 @@ export async function onRequest(context) {
 
       const modifiedHeaders = new Headers(request.headers)
       modifiedHeaders.delete('host')
-      const sessionToken = request.headers.get('cookie')
+      // Better-Auth cookie is a signed token: <session-token>.<signature> (URL-encoded).
+      // Rails verifies via /api/auth/verify which matches the short session token only.
+      const cookieToken = request.headers.get('cookie')
         ?.split(';')
         .map((c) => c.trim())
         .find((c) => c.startsWith('better-auth.session_token='))
         ?.split('=').slice(1).join('=')
-      if (sessionToken) modifiedHeaders.set('Authorization', `Bearer ${sessionToken}`)
+      if (cookieToken) {
+        const decoded = decodeURIComponent(cookieToken)
+        const sessionToken = decoded.split('.')[0]
+        if (sessionToken) modifiedHeaders.set('Authorization', `Bearer ${sessionToken}`)
+      }
 
       const response = await fetch(proxyUrl, {
         method: request.method,
