@@ -131,15 +131,6 @@ export default function Portfolios() {
                 )}
               </div>
             )}
-
-            {p.research_analyses?.length > 0 && (
-              <div style={{ marginTop: 8, borderTop: '1px solid var(--line-soft)', paddingTop: 6 }}>
-                <p style={{ fontSize: 10, color: 'var(--ink-faint)', marginBottom: 4 }}>Research</p>
-                {p.research_analyses.slice(0, 3).map(ra => (
-                  <span key={ra.id} className="tag" style={{ fontSize: 9, marginRight: 4 }}>{ra.ticker}: {ra.status}</span>
-                ))}
-              </div>
-            )}
           </div>
         )
       })}

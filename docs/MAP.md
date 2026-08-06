@@ -1,4 +1,4 @@
-# Kubera — File Map
+# Sampada — File Map
 
 > Auto-loaded by OpenCode at session start. Last updated: 2026-06-20
 
@@ -111,12 +111,6 @@
 | Trip expenses | `app/controllers/trip_expenses_controller.rb` |
 | Trip members | `app/controllers/trip_members_controller.rb` |
 | Trip settlements | `app/controllers/trip_settlements_controller.rb` |
-| Dexter wrapper | `lib/dexter/wrapper.rb` |
-| Dexter analysis | `lib/dexter/analysis.rb` |
-| Dexter service | `app/services/dexter_research_service.rb` |
-| Dexter Sidekiq job | `app/sidekiq/dexter_research_job.rb` |
-| Dexter weekly research | `app/sidekiq/weekly_research_job.rb` |
-| ResearchAnalysis model | `app/models/research_analysis.rb` |
 | Sheet backup job | `app/sidekiq/google_sheet_backup_job.rb` |
 | Weekly backup | `app/sidekiq/weekly_backup_job.rb` |
 | Deletion processing | `app/sidekiq/process_deletion_job.rb` |

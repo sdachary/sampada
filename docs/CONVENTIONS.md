@@ -1,4 +1,4 @@
-# Kubera — Coding Conventions
+# Sampada — Coding Conventions
 
 > Auto-loaded by OpenCode at session start. Last updated: 2026-06-20
 
@@ -20,7 +20,7 @@
 
 ## Imports
 
-Rails autoloading via `Zeitwerk`. Explicit `require` only for library code (e.g., `lib/dexter/`). Gem dependencies in `Gemfile` grouped by environment.
+Rails autoloading via `Zeitwerk`. Explicit `require` only for library code. Gem dependencies in `Gemfile` grouped by environment.
 
 ---
 
@@ -62,7 +62,7 @@ Standard Rails `rescue_from` in `ApplicationController`. JSON API errors return 
 | `REDIS_URL` | Yes | Redis/Sidekiq connection |
 | `SECRET_KEY_BASE` | Yes | Rails secret key base |
 | `GOOGLE_SHEETS_CREDENTIALS` | No | Weekly backup to Drive |
-| `DPO_EMAIL` | Yes | dpo@kubera.app |
+| `DPO_EMAIL` | Yes | dpo@sampada.app |
 
 ---
 

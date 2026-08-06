@@ -1,4 +1,4 @@
-# Kubera
+# Sampada
 
 > Auto-loaded by OpenCode at session start. Last updated: 2026-06-20
 
@@ -18,7 +18,7 @@
 
 ## Architecture
 
-Personal finance & expense management SaaS. Multi-tenant, email/password + Google OAuth + GitHub OAuth auth, DPDP-compliant India hosting. Uses Rails 7.2 API + views pattern with Sidekiq for async jobs (backups, research, deletion workflows). Includes Trip Expense Mode for group trip tracking, a Dexter gem wrapper for financial analysis, and extensive DPDP compliance infrastructure (consent_records, erasure with Sheet backup, DPO page). Fully Docker-deployable to India-based VMs — zero external SaaS dependencies post-migration.
+Personal finance & expense management SaaS. Multi-tenant, email/password + Google OAuth + GitHub OAuth auth, DPDP-compliant India hosting. Uses Rails 7.2 API + views pattern with Sidekiq for async jobs (backups, deletion workflows). Includes Trip Expense Mode for group trip tracking, and extensive DPDP compliance infrastructure (consent_records, erasure with Sheet backup, DPO page). Fully Docker-deployable to India-based VMs — zero external SaaS dependencies post-migration.
 
 ---
 
@@ -32,7 +32,7 @@ Personal finance & expense management SaaS. Multi-tenant, email/password + Googl
 | Consent | Opt-in per feature | DPDP Act §6 — explicit consent for each purpose |
 | DPDP | Full compliance (Phase 14-15) | Finance data is MEDIUM risk; complete consent/erasure/DPO |
 | Database | Self-hosted PG 16 | No Supabase/RDS; full control for DPDP |
-| Job queue | Sidekiq + Redis | Async backups, deletion processing, Dexter research |
+| Job queue | Sidekiq + Redis | Async backups, deletion processing |
 
 ---
 
@@ -81,6 +81,6 @@ Personal finance & expense management SaaS. Multi-tenant, email/password + Googl
 
 Significant decisions and changes from past sessions:
 
-- **2026-06-20 (Part 2)**: Phase 9 — Dexter gem wrapper decision finalized; Phases 15 (Docker/India deployment), 16 (Trip Mode) complete.
-- **2026-06-20**: Phases 14 (Auth overhaul — Google OAuth, SessionsController, DPDPController), 5 migrations, 4 Sidekiq jobs. Kubera committed.
+- **2026-06-20 (Part 2)**: Phases 15 (Docker/India deployment), 16 (Trip Mode) complete.
+- **2026-06-20**: Phases 14 (Auth overhaul — Google OAuth, SessionsController, DPDPController), 5 migrations, 4 Sidekiq jobs. Sampada committed.
 - **2026-06-12**: DPDP compliance overhaul — US Supabase/Render dropped for India hosting. Consent, erasure, DPO, Sheet backup added.

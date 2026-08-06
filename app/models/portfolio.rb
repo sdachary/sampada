@@ -2,7 +2,6 @@ class Portfolio < TenantRecord
   belongs_to :user
   has_many :investments, dependent: :destroy
   has_many :dividend_sips, dependent: :destroy
-  has_many :research_analyses, dependent: :destroy
 
   validates :name, presence: true
   validates :risk_tolerance, numericality: { greater_than: 0, less_than_or_equal_to: 1 }, allow_nil: true

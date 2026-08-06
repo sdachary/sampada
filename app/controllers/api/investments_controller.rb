@@ -9,10 +9,6 @@ class Api::InvestmentsController < Api::BaseController
   def create
     portfolio = current_user.portfolios.find(params[:portfolio_id])
     investment = portfolio.investments.create!(investment_params)
-    if %w[stock etf].include?(investment.investment_type.to_s)
-      DexterResearchJob.perform_async(params[:portfolio_id], investment.symbol,
-        investment.respond_to?(:exchange) ? (investment.exchange || "US") : "US")
-    end
     render_success(investment_json(investment), status: :created)
   end
 

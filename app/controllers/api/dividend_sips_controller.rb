@@ -38,7 +38,8 @@ class Api::DividendSipsController < Api::BaseController
     monthly = (params[:monthly_investment] || sip.amount).to_f
     years = (params[:years] || 10).to_i
     target = monthly * 12 * years * 0.04
-    render_success({ stocks: [], target_income: target.round(2) })
+    render_success({ stocks: [], target_income: target.round(2),
+                     disclaimer: DividendScreenerService::DISCLAIMER })
   end
 
   def destroy

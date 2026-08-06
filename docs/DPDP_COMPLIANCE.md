@@ -1,12 +1,12 @@
-# Kubera — DPDP Act 2023 Compliance Analysis
+# Sampada — DPDP Act 2023 Compliance Analysis
 
 > **Deadline**: May 14, 2027 (18 months from Rules notification). Build for sooner — MeitY proposed compressing to 12 months.
 > **Penalty**: Up to ₹250 crore per contravention.
-> **Kubera status**: Non-profit SaaS, India-only, Google OAuth, self-hosted PG in India.
+> **Sampada status**: Non-profit SaaS, India-only, Google OAuth, self-hosted PG in India.
 
 ## Compliance Summary
 
-| # | DPDP Requirement | Kubera Status | What's Needed | Priority | Effort |
+| # | DPDP Requirement | Sampada Status | What's Needed | Priority | Effort |
 |---|-----------------|---------------|---------------|----------|--------|
 | D1 | **Privacy notice** — standalone, plain language, at every collection point | ❌ Not done | Publish on `/privacy` and at signup. English + Hindi on demand. Describe categories, purposes, retention, rights, Board complaint channel | 🔴 Critical | 0.5 day |
 | D2 | **Granular consent** — free, specific, informed, unconditional, unambiguous (§6) | ⚠️ Decided (opt-in per feature) | Build `consent_records` table. Per-feature toggles (financial_tracking, trip_data, email_updates). No pre-checked boxes. Log grant/revoke with timestamps and consent version | 🔴 Critical | 1 day |
@@ -30,11 +30,11 @@
 | D20 | **Right to correction** — user can correct inaccurate data (§12) | ❌ Not done | In-app edit for profile fields. Formal correction request for historical transactions with audit trail | 🟡 High | 0.5 day |
 | D21 | **Right to erasure (right to be forgotten)** — full deletion (§13) | ⚠️ Decided | Google Sheet backup → hard delete workflow. Must propagate to all processors and backups | 🔴 Critical | 1 day |
 | D22 | **Grievance redressal** — mechanism to file complaints (§14) | ❌ Not done | Grievance form at `/grievance`. Acknowledge within 24h, resolve within 90 days. Publish annual grievance report | 🟡 High | 1 day |
-| D23 | **DPO / Contact person** — for privacy matters | ⚠️ Decided (`dpo@kubera.app`) | Publish DPO contact on website. Train on breach notification and rights handling | 🟡 High | 0.5 day |
+| D23 | **DPO / Contact person** — for privacy matters | ⚠️ Decided (`dpo@sampada.app`) | Publish DPO contact on website. Train on breach notification and rights handling | 🟡 High | 0.5 day |
 | D24 | **Consent Manager integration** — registered interface for consent (§6, Rules) | ❌ Not done | By Nov 2026: integrate with registered Consent Managers. Interoperable, data-blind consent platform | 🟡 Medium | Future |
 | D25 | **Cross-border transfer documentation** (§16) | ✅ Compliant | No personal data leaves India. Document this as policy | 🟢 Low | 0.5 day |
-| D26 | **Children's data** — parental consent for under-18 (§9) | ✅ N/A | Kubera is a personal finance OS — terms should prohibit under-18. Add age gate at signup | 🟢 Low | 0.5 day |
-| D27 | **Employee training** — annual DPDP awareness (§8(1)) | ❌ Not done | If Kubera has employees/contributors, annual training on data protection basics | 🟡 Medium | Ongoing |
+| D26 | **Children's data** — parental consent for under-18 (§9) | ✅ N/A | Sampada is a personal finance OS — terms should prohibit under-18. Add age gate at signup | 🟢 Low | 0.5 day |
+| D27 | **Employee training** — annual DPDP awareness (§8(1)) | ❌ Not done | If Sampada has employees/contributors, annual training on data protection basics | 🟡 Medium | Ongoing |
 | D28 | **Data inventory & flow mapping** — document all personal data, where it lives, how it flows | ❌ Not done | One-time exercise: map every table with PII, every third-party API that touches personal data, every backup location | 🟡 High | 1 day |
 | D29 | **Data Protection Board complaint channel** — inform users they can complain to DPB | ❌ Not done | Add to privacy notice: "You may file a complaint with the Data Protection Board of India at [URL/email]" | 🟡 High | 0.5 day |
 | D30 | **Annual DPDP audit** — self-assessment or third-party | ❌ Not done | Run compliance checklist annually. Document findings and remediation | 🟡 Medium | Ongoing |

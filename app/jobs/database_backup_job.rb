@@ -52,11 +52,11 @@ class DatabaseBackupJob
   end
 
   def db_user
-    ENV["POSTGRES_USER"] || "kubera"
+    ENV["POSTGRES_USER"] || "sampada"
   end
 
   def db_name
-    ENV["POSTGRES_DB"] || "kubera_production"
+    ENV["POSTGRES_DB"] || "sampada_production"
   end
 
   def db_password

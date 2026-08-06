@@ -9,11 +9,11 @@ default: &default
 
 development:
   <<: *default
-  database: <%= ENV.fetch("POSTGRES_DB") { "kubera_development" } %>
+  database: <%= ENV.fetch("POSTGRES_DB") { "sampada_development" } %>
 
 test:
-  url: <%= ENV["DATABASE_URL"] || "postgres://localhost:5432/kubera_test" %>
+  url: <%= ENV["DATABASE_URL"] || "postgres://localhost:5432/sampada_test" %>
 
 production:
   <<: *default
-  database: <%= ENV.fetch("POSTGRES_DB") { "kubera_production" } %>
+  database: <%= ENV.fetch("POSTGRES_DB") { "sampada_production" } %>

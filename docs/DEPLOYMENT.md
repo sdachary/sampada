@@ -1,6 +1,6 @@
-# Deploying Kubera
+# Deploying Sampada
 
-Kubera is a **local-first, open-source** Rails app. You deploy it yourself on your own infrastructure. This guide covers three options:
+Sampada is a **local-first, open-source** Rails app. You deploy it yourself on your own infrastructure. This guide covers three options:
 
 - **Local Docker** (quick start, development)
 - **Single VM** (Oracle Cloud Mumbai free tier / Hostinger VPS India ₹99/mo)
@@ -20,8 +20,8 @@ Kubera is a **local-first, open-source** Rails app. You deploy it yourself on yo
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/sdachary/kubera.git
-cd kubera
+git clone https://github.com/sdachary/sampada.git
+cd sampada
 
 # 2. Copy env config
 cp .env.example .env
@@ -59,8 +59,8 @@ docker compose up -d
 ### Step 2: Set up the app
 
 ```bash
-git clone https://github.com/sdachary/kubera.git
-cd kubera
+git clone https://github.com/sdachary/sampada.git
+cd sampada
 cp .env.example .env
 # Edit .env with your values
 docker compose up -d
@@ -69,10 +69,10 @@ docker compose up -d
 ### Step 3: Nginx + SSL (optional)
 
 ```nginx
-# /etc/nginx/sites-available/kubera
+# /etc/nginx/sites-available/sampada
 server {
     listen 80;
-    server_name kubera.yourdomain.com;
+    server_name sampada.yourdomain.com;
 
     location / {
         proxy_pass http://127.0.0.1:3000;
@@ -84,7 +84,7 @@ server {
 }
 ```
 
-Then get SSL: `sudo certbot --nginx -d kubera.yourdomain.com`
+Then get SSL: `sudo certbot --nginx -d sampada.yourdomain.com`
 
 Set `RAILS_FORCE_SSL=true` in `.env` after SSL is configured.
 
@@ -93,7 +93,7 @@ Set `RAILS_FORCE_SSL=true` in `.env` after SSL is configured.
 Free-tier VMs may idle-stop after inactivity. Set up a cron job or use [cron-job.org](https://cron-job.org) (free):
 
 ```
-URL: https://kubera.yourdomain.com/api/health
+URL: https://sampada.yourdomain.com/api/health
 Interval: every 10 minutes
 ```
 
@@ -107,9 +107,9 @@ Interval: every 10 minutes
 | `POSTGRES_PASSWORD` | ✅ | — | PostgreSQL password |
 | `GOOGLE_CLIENT_ID` | ✅ | — | Google OAuth client ID |
 | `GOOGLE_CLIENT_SECRET` | ✅ | — | Google OAuth client secret |
-| `APP_DOMAIN` | ✅ | — | Your app domain (e.g. `localhost:3000` or `kubera.app`) |
-| `POSTGRES_USER` | — | `kubera` | PostgreSQL user |
-| `POSTGRES_DB` | — | `kubera_production` | PostgreSQL database name |
+| `APP_DOMAIN` | ✅ | — | Your app domain (e.g. `localhost:3000` or `sampada.app`) |
+| `POSTGRES_USER` | — | `sampada` | PostgreSQL user |
+| `POSTGRES_DB` | — | `sampada_production` | PostgreSQL database name |
 | `DB_HOST` | — | `postgres` (Docker) / `localhost` | PostgreSQL host |
 | `DB_PORT` | — | `5432` | PostgreSQL port |
 | `PORT` | — | `3002` (host) / `3000` (Docker) | Puma listen port |
@@ -118,8 +118,8 @@ Interval: every 10 minutes
 | `WEB_CONCURRENCY` | — | `1` | Puma worker count |
 | `RAILS_FORCE_SSL` | — | `true` | Force HTTPS redirect |
 | `RAILS_ASSUME_SSL` | — | `true` | Assume SSL in proxy mode |
-| `SIDEKIQ_WEB_USERNAME` | — | `kubera` | Sidekiq dashboard username |
-| `SIDEKIQ_WEB_PASSWORD` | — | `kubera` | Sidekiq dashboard password |
+| `SIDEKIQ_WEB_USERNAME` | — | `sampada` | Sidekiq dashboard username |
+| `SIDEKIQ_WEB_PASSWORD` | — | `sampada` | Sidekiq dashboard password |
 | `ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY` | — | auto-generated | Rails encryption key |
 | `ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY` | — | auto-generated | Rails deterministic key |
 | `ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT` | — | auto-generated | Rails encryption salt |
@@ -156,6 +156,6 @@ Interval: every 10 minutes
 - [ ] SSL enabled (Let's Encrypt + Nginx)
 - [ ] Firewall: ports 22, 80, 443 only
 - [ ] fail2ban installed and configured
-- [ ] Daily PostgreSQL backup (add to crontab: `pg_dump ... > /backups/kubera_$(date +%F).sql`)
+- [ ] Daily PostgreSQL backup (add to crontab: `pg_dump ... > /backups/sampada_$(date +%F).sql`)
 - [ ] Health check monitoring (cron-job.org or similar)
 - [ ] `RAILS_FORCE_SSL=true` after SSL setup

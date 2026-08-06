@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to Kubera are documented in this file.
+All notable changes to Sampada are documented in this file.
 
 ## [2.3.0] - 2026-05-14
 

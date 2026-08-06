@@ -48,25 +48,6 @@ class Api::PortfoliosController < Api::BaseController
     render_success(result)
   end
 
-  def research
-    portfolio = current_user.portfolios.find(params[:id])
-    investments = current_user.investments.where(portfolio_id: params[:id])
-    stocks = investments.select { |i| %w[stock etf].include?(i.investment_type.to_s) }
-
-    if stocks.empty?
-      return render_success({ message: "No stock or ETF investments to research" })
-    end
-
-    stocks.each do |inv|
-      DexterResearchJob.perform_async(params[:id], inv.symbol, inv.respond_to?(:exchange) ? (inv.exchange || "US") : "US")
-    end
-
-    render_success({
-      message: "Research queued for #{stocks.size} investment(s)",
-      queued_count: stocks.size
-    })
-  end
-
   def prices
     portfolio = current_user.portfolios.find(params[:id])
     investments = current_user.investments.where(portfolio_id: params[:id])
@@ -102,10 +83,6 @@ class Api::PortfoliosController < Api::BaseController
       dividend_sips: p.dividend_sips.map { |ds|
         { id: ds.id, amount: ds.amount.to_f, frequency: ds.frequency, status: ds.status,
           target_income: ds.target_income.to_f, next_execution: ds.next_execution }
-      },
-      research_analyses: p.research_analyses.order(created_at: :desc).limit(5).map { |ra|
-        { id: ra.id, ticker: ra.ticker, company_name: ra.company_name, status: ra.status,
-          sector: ra.sector, created_at: ra.created_at }
       },
       created_at: p.created_at
     }

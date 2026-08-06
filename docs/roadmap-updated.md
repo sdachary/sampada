@@ -1,4 +1,4 @@
-# Kubera Roadmap
+# Sampada Roadmap
 
 **From debt → zero → wealth.** The roadmap follows the same philosophy: debt first, then wealth.
 
@@ -52,7 +52,7 @@
 ### Landing Page (May 2026)
 - Scroll-driven amber→sage color transition (OKLCH)
 - Liabilities-to-assets narrative
-- Curl command CTA (`curl -s https://api.kubera.com/v1/start`)
+- Curl command CTA (`curl -s https://api.sampada.com/v1/start`)
 - Responsive design, mobile hamburger, reduced-motion support
 
 ### v2.0 — Multi-Currency & International Markets

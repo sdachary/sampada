@@ -1,7 +1,7 @@
-# Security Policy — Kubera
+# Security Policy — Sampada
 
 ## Supported Versions
-Only the latest deployed version of Kubera receives security updates.
+Only the latest deployed version of Sampada receives security updates.
 
 ## Reporting a Vulnerability
 We take security seriously. If you discover a security vulnerability, please report it privately:

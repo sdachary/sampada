@@ -15,6 +15,6 @@ class NotificationMailer < ApplicationMailer
   def weekly_digest(user, stats)
     @user = user
     @stats = stats
-    mail(to: user.email, subject: "📊 Your Weekly Kubera Digest")
+    mail(to: user.email, subject: "📊 Your Weekly Sampada Digest")
   end
 end

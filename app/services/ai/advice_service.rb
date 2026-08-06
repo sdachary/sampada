@@ -74,7 +74,7 @@ module Ai
 
     def greeting
       name = [@user.first_name, @user.last_name].compact.first
-      greeting = name ? "Welcome back, #{name}!" : "Welcome to Kubera!"
+      greeting = name ? "Welcome back, #{name}!" : "Welcome to Sampada!"
       "#{greeting} I'm your financial freedom assistant.\n\n" \
       "Tell me about your finances and I'll help you plan your journey from debt to wealth. " \
       "Try saying: \"I have a credit card debt\" or \"Show me my overview\"."

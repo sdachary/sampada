@@ -23,21 +23,6 @@ class AiService
     AiResponse.new(text: text)
   end
 
-  def ask_with_actions(prompt)
-    result = ask(prompt)
-
-    case result.text
-    when /\[CREATE_TRANSACTION\]/
-      @parser.create_transaction(prompt)
-    when /\[CREATE_BUDGET\]/
-      @parser.create_budget(prompt)
-    when /\[CATEGORIZE\]/
-      @parser.categorize_recent_transactions
-    end
-
-    result
-  end
-
   private
 
   def rule_response(prompt)
@@ -128,7 +113,7 @@ class AiService
     provider_notice = @provider.cloud_provider? ? "\n\nPrivacy: This user chose cloud AI. Only share necessary financial data. Do not store or log their information beyond this conversation." : ""
 
     <<~PROMPT
-      You are Kubera, an AI financial freedom assistant. You help users manage their
+      You are Sampada, an AI financial freedom assistant. You help users manage their
       personal finances with a "debt-first" philosophy: negative (debt) → zero (free) →
       positive (wealthy).
 
@@ -138,12 +123,12 @@ class AiService
 
       Guidelines:
       - Explain concepts simply, like talking to a friend who isn't tech-savvy
-      - Never give specific stock picks — suggest strategies, not securities
+      - Never give specific stock picks — suggest strategies, not securities; point to the
+        in-app Dividend Screener for dividend-stock candidates and note its disclaimer
       - Support both Indian (NSE/BSE) and international markets (NYSE, NASDAQ, LSE)
       - Keep responses concise and actionable (2-4 paragraphs max)
       - Reference the user's saved financial data when relevant
       - Be encouraging — financial journeys are hard
-      - This is a single-user personal finance OS
       #{context_str}
       #{provider_notice}
     PROMPT

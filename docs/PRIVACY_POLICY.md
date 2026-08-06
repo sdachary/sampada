@@ -1,4 +1,4 @@
-# Privacy Policy — Kubera
+# Privacy Policy — Sampada
 
 **Last updated:** June 3, 2026
 
@@ -65,5 +65,5 @@ The Service is not intended for users under 18. We do not knowingly collect data
 We may update this policy. Material changes will be communicated via email or in-app notification.
 
 ## 10. Contact
-Kubera<br>
+Sampada<br>
 sdachary@gmail.com

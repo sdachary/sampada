@@ -7,6 +7,9 @@ class DividendScreenerService
     "CA" => %w[RY.TO TD.TO ENB.TO BNS.TO]
   }.freeze
   INDIAN_ETF_CANDIDATES = %w[NIFTYBEES.NS JUNIORBEES.NS]
+  DISCLAIMER = "Educational purposes only — not investment advice. Dividend yields and " \
+               "prices change; past performance does not guarantee future returns. " \
+               "Consult a SEBI-registered financial adviser before investing.".freeze
 
   def initialize(provider: nil)
     @provider = provider || Providers::YahooFinanceAdapter.new
@@ -39,7 +42,7 @@ class DividendScreenerService
       r[:projected_monthly_income] = ((r[:annual_dividend] / 12) * shares).round(2)
     end
 
-    { stocks: results, target_income: target_income.round(2), market: market }
+    { stocks: results, target_income: target_income.round(2), market: market, disclaimer: DISCLAIMER }
   end
 
   private

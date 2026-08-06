@@ -38,7 +38,6 @@ Rails.application.routes.draw do
     resources :portfolios, only: [:index, :show, :create, :update, :destroy] do
       member do
         post :rebalance
-        post :research
         get :prices
       end
     end

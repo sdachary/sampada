@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_20_000006) do
+ActiveRecord::Schema[7.2].define(version: 2026_08_06_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -41,6 +41,17 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_20_000006) do
     t.uuid "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "api_credentials", force: :cascade do |t|
+    t.uuid "user_id", null: false
+    t.string "provider", null: false
+    t.string "label"
+    t.text "encrypted_value", null: false
+    t.jsonb "metadata", default: {}
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "provider"], name: "index_api_credentials_on_user_id_and_provider", unique: true
   end
 
   create_table "budget_categories", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -160,6 +171,25 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_20_000006) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["from_currency", "to_currency"], name: "index_exchange_rates_on_from_currency_and_to_currency", unique: true
+  end
+
+  create_table "grievances", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "user_id", null: false
+    t.string "name", null: false
+    t.string "email", null: false
+    t.string "phone"
+    t.string "grievance_type", null: false
+    t.text "description", null: false
+    t.string "status", default: "received", null: false
+    t.string "reference_number"
+    t.datetime "acknowledged_at"
+    t.datetime "resolved_at"
+    t.text "resolution_notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["reference_number"], name: "index_grievances_on_reference_number", unique: true
+    t.index ["user_id", "status"], name: "index_grievances_on_user_id_and_status"
+    t.index ["user_id"], name: "index_grievances_on_user_id"
   end
 
   create_table "household_memberships", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -296,6 +326,17 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_20_000006) do
     t.index ["user_id"], name: "index_settings_on_user_id"
   end
 
+  create_table "tenants", force: :cascade do |t|
+    t.uuid "user_id", null: false
+    t.string "name"
+    t.text "db_url"
+    t.jsonb "encrypted_api_keys", default: {}
+    t.boolean "onboarding_complete", default: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_tenants_on_user_id", unique: true
+  end
+
   create_table "transactions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "user_id", null: false
     t.uuid "budget_category_id"
@@ -400,11 +441,13 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_20_000006) do
     t.jsonb "goals", default: {}
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "storage_backend", default: "local", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "api_credentials", "users"
   add_foreign_key "budget_categories", "users"
   add_foreign_key "budgets", "budget_categories"
   add_foreign_key "budgets", "households"
@@ -416,6 +459,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_20_000006) do
   add_foreign_key "debts", "households"
   add_foreign_key "debts", "users"
   add_foreign_key "dividend_sips", "portfolios"
+  add_foreign_key "grievances", "users"
   add_foreign_key "household_memberships", "households"
   add_foreign_key "household_memberships", "users"
   add_foreign_key "investments", "portfolios"
@@ -428,6 +472,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_20_000006) do
   add_foreign_key "recurring_expenses", "households"
   add_foreign_key "recurring_expenses", "users"
   add_foreign_key "settings", "users"
+  add_foreign_key "tenants", "users"
   add_foreign_key "transactions", "budget_categories"
   add_foreign_key "transactions", "households"
   add_foreign_key "transactions", "users"

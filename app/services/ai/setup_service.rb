@@ -24,7 +24,7 @@ module Ai
           text: "Ollama isn't installed on your system yet. To install it:\n\n" \
                 "1. Visit https://ollama.com and download the installer\n" \
                 "2. After installing, run: `ollama pull gemma:2b`\n" \
-                "3. Then tell me 'Ollama is ready' and I'll configure Kubera to use it!\n\n" \
+                "3. Then tell me 'Ollama is ready' and I'll configure Sampada to use it!\n\n" \
                 "Your system has #{sys[:ram_mb]}MB RAM — it can run smaller models well.",
           setup: { type: :awaiting_ollama_ready }
         )
@@ -45,7 +45,7 @@ module Ai
         save_setting("ai_model", "gemma:2b")
         save_setting("ai_uri", "http://localhost:11434/v1")
         return AiResponse.new(
-          text: "Perfect! I've configured Kubera to use Ollama locally with Gemma 2B. " \
+          text: "Perfect! I've configured Sampada to use Ollama locally with Gemma 2B. " \
                 "Your data stays on your machine — completely private.\n\n" \
                 "Now, what financial question can I help you with?",
           setup: { type: :complete, provider: "ollama" }

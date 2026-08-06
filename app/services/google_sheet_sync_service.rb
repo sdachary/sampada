@@ -31,14 +31,14 @@ class GoogleSheetSyncService
   private
 
   def find_or_create_spreadsheet
-    response = @drive.list_files(q: "name='Kubera — Financial Summary' and trashed=false", spaces: 'drive')
+    response = @drive.list_files(q: "name='Sampada — Financial Summary' and trashed=false", spaces: 'drive')
     if response.files.any?
       return response.files.first.id
     end
 
     spreadsheet = Google::Apis::SheetsV4::Spreadsheet.new(
       properties: Google::Apis::SheetsV4::SpreadsheetProperties.new(
-        title: 'Kubera — Financial Summary'
+        title: 'Sampada — Financial Summary'
       )
     )
     result = @sheets.create_spreadsheet(spreadsheet)
