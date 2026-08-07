@@ -2,39 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { api } from '../lib/api'
 import { Field } from '../components/ui'
-
-function LineChart({ baseline, accelerated }) {
-  if (!baseline?.schedule?.length || !accelerated?.schedule?.length) return null
-  const w = 600, h = 200, px = 40, py = 20, pw = w - px * 2, ph = h - py * 2
-  const maxV = Math.max(baseline.schedule[0]?.balance || 1, accelerated.schedule[0]?.balance || 1)
-  const x = i => px + (i / baseline.schedule.length) * pw
-  const y = v => py + ph - (v / maxV) * ph
-
-  function line(pts, color, dash) {
-    if (pts.length < 2) return null
-    const d = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${x(p.month - 1)},${y(p.balance)}`).join(' ')
-    return <path d={d} fill="none" stroke={color} strokeWidth={1.5} strokeDasharray={dash || ''} />
-  }
-
-  const xTicks = []
-  const step = Math.max(1, Math.floor(baseline.schedule.length / 6))
-  for (let i = 0; i < baseline.schedule.length; i += step) xTicks.push(i)
-
-  return (
-    <svg role="img" aria-label="Debt payoff comparison chart: baseline vs accelerated" viewBox={`0 0 ${w} ${h}`} style={{ width: '100%', maxHeight: h, display: 'block' }}>
-      <line x1={px} y1={py} x2={px} y2={py + ph} stroke="var(--border)" strokeWidth={1} />
-      <line x1={px} y1={py + ph} x2={px + pw} y2={py + ph} stroke="var(--border)" strokeWidth={1} />
-      {[0, 0.5].map(r => (
-        <line key={r} x1={px} y1={py + ph * (1 - r)} x2={px + pw} y2={py + ph * (1 - r)} stroke="var(--border)" strokeWidth={0.5} strokeDasharray="3 3" />
-      ))}
-      {xTicks.map(i => (
-        <text key={i} x={x(i)} y={py + ph + 12} textAnchor="middle" fill="var(--ink-faint)" fontSize={9}>{baseline.schedule[i].month}</text>
-      ))}
-      {line(baseline.schedule, 'var(--coral)')}
-      {line(accelerated.schedule, 'var(--emerald)')}
-    </svg>
-  )
-}
+import Chart from '../components/Chart'
 
 export default function PayoffSimulator() {
   const [searchParams] = useSearchParams()
@@ -166,7 +134,11 @@ export default function PayoffSimulator() {
                 </div>
                 <div className="card" style={{ padding: '16px 18px', background: 'var(--surface-2)', marginBottom: 12 }}>
                   <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 8 }}>Balance over time</p>
-                  <LineChart baseline={base} accelerated={res} />
+                  <Chart data={base.schedule.map((s, i) => ({ ...s, baseline: s.balance, accelerated: accelerated.schedule[i]?.balance ?? null }))}
+                    xKey="month" series={[
+                      { key: 'baseline', name: 'Current', color: 'var(--coral)' },
+                      { key: 'accelerated', name: 'Accelerated', color: 'var(--emerald)' },
+                    ]} height={200} />
                   <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginTop: 8 }}>
                     <span style={{ fontSize: 10, color: 'var(--coral)', display: 'flex', alignItems: 'center', gap: 4 }}>
                       <span style={{ display: 'inline-block', width: 12, height: 2, background: 'var(--coral)' }} /> Current
