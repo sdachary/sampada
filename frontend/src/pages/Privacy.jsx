@@ -1,15 +1,14 @@
 import { useState, useEffect } from 'react'
-import { api as apiClient } from '../lib/api'
 
 const DPDP = {
   async getConsent() {
     const token = localStorage.getItem('token')
-    const res = await fetch('/api/dpdp/consent', { headers: { Authorization: `Bearer ${token}` } })
+    const res = await fetch('/api/v1/dpdp/consent', { headers: { Authorization: `Bearer ${token}` } })
     return res.json()
   },
   async setConsent(feature, granted) {
     const token = localStorage.getItem('token')
-    const res = await fetch('/api/dpdp/consent', {
+    const res = await fetch('/api/v1/dpdp/consent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ feature, granted }),
@@ -18,7 +17,7 @@ const DPDP = {
   },
   async requestErasure(exportData) {
     const token = localStorage.getItem('token')
-    const res = await fetch('/api/dpdp/erasure', {
+    const res = await fetch('/api/v1/dpdp/erasure', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ export_data: exportData }),
@@ -34,7 +33,6 @@ export default function Privacy() {
 
   useEffect(() => {
     DPDP.getConsent().then(d => setConsent(d.consent || {})).catch(() => {})
-    apiClient.request('/api/v1/debt_payoffs').then(() => {}).catch(() => {})
   }, [])
 
   const toggleConsent = async (feature) => {
