@@ -26,6 +26,18 @@ class Api::DebtsController < Api::BaseController
     render_success({}, message: "Debt deleted")
   end
 
+  def simulate
+    debt = current_user.debts.find(params[:id])
+    service = DebtPayoffService.new(
+      [{ id: debt.id, balance: debt.remaining_amount, interest_rate: debt.interest_rate, min_payment: debt.emi_amount }],
+      extra_payment: (params[:extra_monthly_payment] || 0).to_f,
+      lump_sum_amount: (params[:lump_sum_amount] || 0).to_f,
+      annual_extra: (params[:annual_extra] || 0).to_f,
+      custom_extra_payments: params[:custom_extra_payments] || []
+    )
+    render_success(service.avalanche_plan)
+  end
+
   private
 
   def debt_params

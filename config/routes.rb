@@ -28,8 +28,7 @@ Rails.application.routes.draw do
 
   # API v1
   scope '/api/v1', module: 'api', as: 'api' do
-    resources :debts, only: [:index, :show, :create, :update, :destroy]
-    resources :debt_payoffs do
+    resources :debts, only: [:index, :show, :create, :update, :destroy] do
       member do
         post :simulate
       end

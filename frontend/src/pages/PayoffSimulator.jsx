@@ -27,10 +27,10 @@ export default function PayoffSimulator() {
         annual_extra: +annualExtra || 0,
       })
       const [base, res] = await Promise.all([
-        api.request(`/api/v1/debt_payoffs/${selectedId}/simulate`, {
+        api.request(`/api/v1/debts/${selectedId}/simulate`, {
           method: 'POST', body: '{}', headers: { 'Content-Type': 'application/json' },
         }),
-        api.request(`/api/v1/debt_payoffs/${selectedId}/simulate`, {
+        api.request(`/api/v1/debts/${selectedId}/simulate`, {
           method: 'POST', body, headers: { 'Content-Type': 'application/json' },
         }),
       ])
@@ -41,7 +41,7 @@ export default function PayoffSimulator() {
   }, [selectedId, extraPayment, lumpSum, annualExtra])
 
   useEffect(() => {
-    api.request('/api/v1/debt_payoffs').then(d => {
+    api.request('/api/v1/debts').then(d => {
       setDebts(Array.isArray(d) ? d : [])
     }).catch(() => {}).finally(() => setLoading(false))
   }, [])
