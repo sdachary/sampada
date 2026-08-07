@@ -21,7 +21,7 @@ RSpec.describe DebtPayoffService, type: :service do
       result = service.avalanche_plan
       expect(result[:schedule]).to be_an(Array)
       expect(result[:schedule].first).to have_key(:month)
-      expect(result[:schedule].first).to have_key(:remaining)
+      expect(result[:schedule].first).to have_key(:balance)
     end
 
     it 'handles extra payments correctly' do

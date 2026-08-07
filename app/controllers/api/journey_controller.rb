@@ -60,6 +60,14 @@ class Api::JourneyController < Api::BaseController
     })
   end
 
+  def net_worth
+    snapshot = NetWorthSnapshot.current(current_user)
+    render_success({
+      net_worth: snapshot.net_worth.to_f,
+      trajectory: []
+    })
+  end
+
   private
 
   def build_milestones(journey, debts, payoff_plan, snapshot)
@@ -113,13 +121,5 @@ class Api::JourneyController < Api::BaseController
     end
 
     milestones
-  end
-
-  def net_worth
-    snapshot = NetWorthSnapshot.current(current_user)
-    render_success({
-      net_worth: snapshot.net_worth.to_f,
-      trajectory: []
-    })
   end
 end

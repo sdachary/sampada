@@ -11,6 +11,7 @@ class Api::TripsController < Api::BaseController
       expenses: trip.trip_expenses.includes(:trip_member, :trip_category).order(expense_date: :desc).map { |e| expense_json(e) },
       settlements: trip.trip_settlements.includes(:from_member, :to_member).order(created_at: :desc).map { |s| settlement_json(s) },
       balances: trip.balances.transform_keys { |k| k.to_s },
+      suggested_settlements: trip.suggested_settlements,
       budget_vs_actual: trip.budget_vs_actual,
       total_spent: trip.total_spent,
     ))

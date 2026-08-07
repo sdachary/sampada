@@ -27,7 +27,7 @@ class Api::PortfoliosController < Api::BaseController
 
   def rebalance
     portfolio = current_user.portfolios.find(params[:id])
-    investments = current_user.investments.where(portfolio_id: portfolio.id)
+    investments = portfolio.investments
     stocks = investments.select { |i| %w[stock etf].include?(i.investment_type.to_s) }
 
     if stocks.empty?
@@ -50,7 +50,7 @@ class Api::PortfoliosController < Api::BaseController
 
   def prices
     portfolio = current_user.portfolios.find(params[:id])
-    investments = current_user.investments.where(portfolio_id: params[:id])
+    investments = portfolio.investments
     adapter = Providers::AlphaVantageAdapter.new
     prices = investments.map do |inv|
       quote = adapter.fetch_quote(inv.yahoo_symbol)

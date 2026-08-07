@@ -79,6 +79,8 @@ RSpec.describe 'Portfolio API', type: :request do
   describe 'POST /api/v1/portfolios/:id/rebalance' do
     it 'returns rebalance result' do
       portfolio = create(:portfolio, user: user, risk_tolerance: 0.5)
+      create(:investment, portfolio: portfolio)
+      create(:investment, portfolio: portfolio, symbol: 'AXISBANK.NS', name: 'Axis Bank')
       post "/api/v1/portfolios/#{portfolio.id}/rebalance"
       expect(response).to have_http_status(:success)
       json = JSON.parse(response.body)

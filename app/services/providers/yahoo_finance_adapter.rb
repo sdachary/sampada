@@ -24,8 +24,10 @@ class Providers::YahooFinanceAdapter
   }.freeze
 
   def fetch_quote(symbol)
-    response = HTTParty.get("#{BASE_URL}/#{symbol}", timeout: TIMEOUT,
-      headers: { "User-Agent" => "Mozilla/5.0" })
+    response = Faraday.get("#{BASE_URL}/#{symbol}") do |req|
+      req.headers["User-Agent"] = "Mozilla/5.0"
+      req.options.timeout = TIMEOUT
+    end
     return nil unless response.success?
     parsed = JSON.parse(response.body)
     result = parsed.dig("chart", "result", 0)
@@ -47,14 +49,16 @@ class Providers::YahooFinanceAdapter
       exchange: meta["exchangeName"],
       exchange_timezone: meta["exchangeTimezoneName"]
     }
-  rescue HTTParty::Error, Net::OpenTimeout => e
+  rescue Faraday::Error, Net::OpenTimeout => e
     Rails.logger.warn "[YahooFinance] Failed to fetch #{symbol}: #{e.message}"
     nil
   end
 
   def search(query)
-    response = HTTParty.get("#{SEARCH_URL}?q=#{CGI.escape(query)}", timeout: TIMEOUT,
-      headers: { "User-Agent" => "Mozilla/5.0" })
+    response = Faraday.get("#{SEARCH_URL}?q=#{CGI.escape(query)}") do |req|
+      req.headers["User-Agent"] = "Mozilla/5.0"
+      req.options.timeout = TIMEOUT
+    end
     return [] unless response.success?
     parsed = JSON.parse(response.body)
     (parsed["quotes"] || []).select { |q| q["typeDisp"] == "Equity" }.map do |q|
@@ -68,13 +72,16 @@ class Providers::YahooFinanceAdapter
         currency: country_currency(country)
       }
     end
-  rescue HTTParty::Error
+  rescue Faraday::Error
     []
   end
 
   def fetch_dividend(symbol)
     url = "https://query1.finance.yahoo.com/v8/finance/chart/#{symbol}?range=1y&interval=1mo"
-    response = HTTParty.get(url, timeout: TIMEOUT, headers: { "User-Agent" => "Mozilla/5.0" })
+    response = Faraday.get(url) do |req|
+      req.headers["User-Agent"] = "Mozilla/5.0"
+      req.options.timeout = TIMEOUT
+    end
     return nil unless response.success?
     parsed = JSON.parse(response.body)
     result = parsed.dig("chart", "result", 0)
@@ -89,7 +96,7 @@ class Providers::YahooFinanceAdapter
     yield_pct = price > 0 ? ((annual_dividend / price) * 100).round(2) : 0
 
     { annual_dividend: annual_dividend.round(4), yield: yield_pct, occurrences: events.size }
-  rescue HTTParty::Error
+  rescue Faraday::Error
     nil
   end
 

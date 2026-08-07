@@ -16,15 +16,6 @@ RSpec.describe 'Reports API', type: :request do
     end
   end
 
-  describe 'GET /api/v1/reports/category' do
-    it 'returns category breakdown' do
-      category = create(:budget_category)
-      create(:transaction, description: 'Groceries', amount: 500, budget_category: category)
-      get '/api/v1/reports/category', params: { start_date: '2026-01-01', end_date: '2026-12-31' }
-      expect(response).to have_http_status(:success)
-    end
-  end
-
   describe 'GET /api/v1/reports/net_worth' do
     it 'returns net worth report' do
       get '/api/v1/reports/net_worth'

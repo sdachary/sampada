@@ -28,8 +28,12 @@ FactoryBot.define do
   end
 
   factory :investment do
+    association :portfolio
     symbol { "ITC.NS" }
     name { "ITC Limited" }
+    investment_type { "stock" }
+    shares { 10 }
+    buy_price { 100.0 }
     dividend_yield { 3.8 }
     currency_code { "INR" }
   end
@@ -84,7 +88,6 @@ FactoryBot.define do
 
   factory :user do
     email { generate(:user_email) }
-    password { "password123" }
     currency { "INR" }
     onboarded { false }
   end
@@ -131,5 +134,50 @@ FactoryBot.define do
     role { "member" }
     invite_status { "accepted" }
     joined_at { Time.current }
+  end
+
+  factory :trip do
+    association :user
+    name { "Goa Trip" }
+    destination { "Goa, India" }
+    start_date { Date.today }
+    end_date { Date.today + 7.days }
+    currency { "INR" }
+    group_type { "friends" }
+    status { "active" }
+    total_budget { 50000.0 }
+  end
+
+  factory :trip_member do
+    association :trip
+    sequence(:name) { |n| "Member #{n}" }
+    sequence(:email) { |n| "member#{n}@example.com" }
+    role { "member" }
+  end
+
+  factory :trip_category do
+    association :trip
+    sequence(:name) { |n| "Category #{n}" }
+    budget { 10000.0 }
+    color { "#3B82F6" }
+  end
+
+  factory :trip_expense do
+    association :trip
+    association :trip_member
+    association :trip_category
+    amount { 1000.0 }
+    description { "Dinner" }
+    expense_date { Date.today }
+    split_type { "equal" }
+    split_details { {} }
+  end
+
+  factory :trip_settlement do
+    association :trip
+    association :from_member, factory: :trip_member
+    association :to_member, factory: :trip_member
+    amount { 500.0 }
+    settled_at { Time.current }
   end
 end

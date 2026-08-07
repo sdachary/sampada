@@ -56,6 +56,7 @@ function TripDetail({ tripId, onBack }) {
   if (!trip) return <div className="empty-state"><p>Trip not found</p></div>
 
   const myId = trip.members[0]?.id // current user is first member
+  const toRupees = (cents) => (cents / 100)
   const owes = Object.entries(trip.balances || {}).filter(([_, v]) => v < 0)
   const owed = Object.entries(trip.balances || {}).filter(([_, v]) => v > 0)
 
@@ -80,7 +81,7 @@ function TripDetail({ tripId, onBack }) {
         <p style={{ fontSize: 11, color: 'var(--ink-faint)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>Members</p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
           {trip.members?.map(m => (
-            <span key={m.id} className="tag" style={{ padding: '4px 12px', fontSize: 12.5 }}>{m.name} {trip.balances?.[m.id] > 0 ? <span style={{ color: '#2d7d6a' }}>(+₹{trip.balances[m.id].toFixed(0)})</span> : trip.balances?.[m.id] < 0 ? <span style={{ color: 'var(--coral)' }}>(-₹{Math.abs(trip.balances[m.id]).toFixed(0)})</span> : ''}</span>
+            <span key={m.id} className="tag" style={{ padding: '4px 12px', fontSize: 12.5 }}>{m.name} {trip.balances?.[m.id] > 0 ? <span style={{ color: '#2d7d6a' }}>(+₹{toRupees(trip.balances[m.id]).toFixed(0)})</span> : trip.balances?.[m.id] < 0 ? <span style={{ color: 'var(--coral)' }}>(-₹{Math.abs(toRupees(trip.balances[m.id])).toFixed(0)})</span> : ''}</span>
           ))}
         </div>
         <div style={{ display: 'flex', gap: 6 }}>
@@ -104,7 +105,27 @@ function TripDetail({ tripId, onBack }) {
             return (
               <div key={id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', fontSize: 13 }}>
                 <span>{trip.members?.find(m => m.id === from[0])?.name} owes <strong>{trip.members?.find(m => m.id === id)?.name}</strong></span>
-                <span className="fin" style={{ fontFamily: 'var(--sans)', fontWeight: 600 }}>₹{Math.abs(from[1]).toFixed(0)}</span>
+                <span className="fin" style={{ fontFamily: 'var(--sans)', fontWeight: 600 }}>₹{Math.abs(toRupees(from[1])).toFixed(0)}</span>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* suggested settlements (simplify debts) */}
+      {(trip.suggested_settlements?.length || 0) > 0 && (
+        <div className="card" style={{ padding: 16, marginBottom: 12 }}>
+          <p style={{ fontSize: 11, color: 'var(--ink-faint)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>Suggested settlements · fewest transfers</p>
+          {trip.suggested_settlements.map((s, i) => {
+            const fromName = trip.members?.find(m => m.id === s.from)?.name || '?'
+            const toName = trip.members?.find(m => m.id === s.to)?.name || '?'
+            return (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', fontSize: 13 }}>
+                <span><strong>{fromName}</strong> pays <strong>{toName}</strong></span>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <span className="fin" style={{ fontFamily: 'var(--sans)', fontWeight: 600 }}>₹{toRupees(s.amount_cents).toFixed(0)}</span>
+                  <button onClick={() => settle(s.from, s.to, toRupees(s.amount_cents))} className="btn btn-ghost" style={{ fontSize: 11, padding: '3px 10px' }}>Settle</button>
+                </div>
               </div>
             )
           })}

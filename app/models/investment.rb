@@ -21,6 +21,14 @@ class Investment < TenantRecord
     suffix.present? ? "#{symbol}#{suffix}" : symbol
   end
 
+  def expected_return
+    (dividend_yield || 0) / 100.0
+  end
+
+  def volatility
+    0.20
+  end
+
   def current_value
     (shares || 0) * (current_price || 0)
   end
