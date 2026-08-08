@@ -1,0 +1,11 @@
+{
+  "interest_rate": { "label": "Interest rate", "plain": "The extra amount the lender charges, as a percentage of what you borrowed", "example": "12% means ₹12 extra per ₹100 each year" },
+  "emi": { "label": "EMI", "plain": "Equal Monthly Instalment — the fixed amount you pay every month", "example": "₹5,000 monthly" },
+  "net_worth": { "label": "Net worth", "plain": "Everything you own minus everything you owe", "example": "Investments ₹3,00,000 − Debts ₹1,00,000 = ₹2,00,000" },
+  "sip": { "label": "SIP", "plain": "Systematic Investment Plan — investing a fixed amount regularly", "example": "₹2,000 every month" },
+  "portfolio": { "label": "Portfolio", "plain": "The collection of investments you hold", "example": "stocks, mutual funds, bonds" },
+  "premium": { "label": "Premium", "plain": "The amount you pay for your insurance policy", "example": "₹15,000 once a year" },
+  "coverage": { "label": "Coverage", "plain": "The maximum amount the insurer will pay out", "example": "₹5,00,000" },
+  "liability": { "label": "Liability", "plain": "Money you owe to someone else", "example": "home loan, credit card balance" },
+  "asset": { "label": "Asset", "plain": "Something you own that has value", "example": "investments, savings" }
+}

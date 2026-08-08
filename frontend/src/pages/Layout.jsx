@@ -103,6 +103,14 @@ export default function Layout() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
   const [cmdOpen, setCmdOpen] = useState(false)
+  const [bannerDismissed, setBannerDismissed] = useState(() => sessionStorage.getItem('onboarding-dismissed') === '1')
+
+  const showBanner = !user?.onboarded && !bannerDismissed
+
+  const dismissBanner = () => {
+    sessionStorage.setItem('onboarding-dismissed', '1')
+    setBannerDismissed(true)
+  }
 
   useEffect(() => {
     function handler(e) {
@@ -282,6 +290,26 @@ export default function Layout() {
               })}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* onboarding nudge */}
+      {showBanner && (
+        <div style={{
+          position: 'fixed', bottom: 16, left: '50%', transform: 'translateX(-50%)', zIndex: 900,
+          display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px',
+          background: 'var(--ink)', color: 'var(--paper)', borderRadius: 12,
+          boxShadow: '0 10px 30px rgba(21,20,15,0.25)', maxWidth: 'calc(100vw - 32px)',
+        }}>
+          <span style={{ fontSize: 13, fontWeight: 500 }}>Set up Sampada to see your full money picture.</span>
+          <Link to="/dashboard/onboarding"
+            style={{ padding: '6px 14px', borderRadius: 999, background: 'var(--coral)', color: '#fff', fontSize: 13, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+            Finish setting up
+          </Link>
+          <button onClick={dismissBanner} aria-label="Dismiss"
+            style={{ background: 'none', border: 'none', color: 'var(--ink-faint)', cursor: 'pointer', padding: 4, display: 'flex' }}>
+            <X size={14} />
+          </button>
         </div>
       )}
 

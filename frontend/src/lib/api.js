@@ -28,6 +28,8 @@ export const api = {
   request: (path, opts) => request(path, opts),
   dashboard: () => request('/api/v1/dashboard'),
   dashboardProjection: () => request('/api/v1/dashboard/projection'),
+  onboardingSnapshot: () => request('/api/v1/onboarding/snapshot'),
+  onboardingComplete: () => request('/api/v1/onboarding/complete', { method: 'POST' }),
 }
 
 export const auth = {

@@ -50,6 +50,10 @@ export function AuthProvider({ children }) {
     setUser(null)
   }
 
+  const setOnboarded = (value) => {
+    setUser(u => (u ? { ...u, onboarded: value } : u))
+  }
+
   const forgotPassword = async (email) => {
     return auth.forgotPassword(email)
   }
@@ -59,7 +63,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, forgotPassword, resetPassword, checkAuth }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, forgotPassword, resetPassword, checkAuth, setOnboarded }}>
       {children}
     </AuthContext.Provider>
   )

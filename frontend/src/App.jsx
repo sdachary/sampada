@@ -24,6 +24,7 @@ import Reports from './pages/Reports'
 import Exports from './pages/Exports'
 import Settings from './pages/Settings'
 import Privacy from './pages/Privacy'
+import Onboarding from './pages/Onboarding'
 import Layout from './pages/Layout'
 
 function ProtectedRoute({ children }) {
@@ -42,6 +43,7 @@ export default function App() {
       <Route path="/reset-password/:token" element={<ResetPassword />} />
       <Route path="/dashboard" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
         <Route index element={<Dashboard />} />
+        <Route path="onboarding" element={<Onboarding />} />
         <Route path="debts" element={<Debts />} />
         <Route path="debts/:id" element={<DebtDetail />} />
         <Route path="payoff-plans" element={<PayoffPlans />} />

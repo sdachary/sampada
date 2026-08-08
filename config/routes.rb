@@ -35,6 +35,8 @@ Rails.application.routes.draw do
     end
     resources :payoff_plans
     resources :insurance_policies, only: [:index, :show, :create, :update, :destroy]
+    get 'onboarding/snapshot', to: 'onboarding#snapshot'
+    post 'onboarding/complete', to: 'onboarding#complete'
     resources :portfolios, only: [:index, :show, :create, :update, :destroy] do
       member do
         post :rebalance
