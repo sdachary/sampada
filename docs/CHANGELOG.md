@@ -2,6 +2,24 @@
 
 All notable changes to Sampada are documented in this file.
 
+## [2.4.0] - 2026-08-08
+
+### Added
+- Insurance tracker: `InsurancePolicy` model, CRUD API, onboarding checklist target
+- Onboarding tour: 3-number snapshot (money in/out/owed), skippable checklist, plain-language glossary, amount echo in words
+- Persistent "Finish setting up" banner for non-onboarded users
+- `Debt#suggested_settlements` + trip settlement math in cents (greedy minimal transfers)
+- Recharts shared chart component (Dashboard, PayoffSimulator)
+
+### Changed
+- `Api::DebtPayoffsController` consolidated into `Api::DebtsController` (simulate action + flat params)
+- Privacy page DPDP calls now use `/api/v1/*` paths (were 404ing)
+- Google Sheets sync target confirmed as "Sampada — Financial Summary"
+- Removed dead Hotwire/importmap config
+
+### Fixed
+- Trip settlement math correctness + full RSpec suite backfill (292 → 311 examples, 0 failures)
+
 ## [2.3.0] - 2026-05-14
 
 ### Added

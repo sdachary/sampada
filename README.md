@@ -51,6 +51,8 @@ The app never blocks you from doing whatever you want with your money — but de
 - 📊 **Reporting & export** — CSV/JSON export, annual tax-ready reports, goal-progress charts
 - 👨‍👩‍👧‍👦 **Household sharing** — multi-user households with role-based access and a shared family dashboard
 - ✈️ **Trip expense splitting** — group travel with simplified debt settlement
+- 🛡️ **Insurance tracker** — health/term-life/vehicle policies with premium and renewal tracking
+- 🎓 **Onboarding tour** — 3-number money snapshot, skippable checklist, plain-language glossary
 - 🛡️ **DPDP compliance** — granular consent, data export, erasure requests, grievance redressal
 
 <details>
@@ -69,6 +71,7 @@ The app never blocks you from doing whatever you want with your money — but de
 | v2.1 | Advanced AI — NL budgets, auto-categorization, cash flow forecasting, anomaly detection |
 | v2.2 | Reporting & Export — CSV/JSON, annual reports, goal charts |
 | v2.3 | Collaboration & Sharing — households, member roles, family dashboard |
+| v2.4 | Onboarding tour, Insurance tracker, trip settlement math, Recharts, spec suite 311 green |
 | Phase 5 | Optimization — modular AI namespace, standardized API responses, 100% schema sync |
 
 </details>
@@ -197,10 +200,9 @@ Full plan: [`docs/roadmap-updated.md`](docs/roadmap-updated.md)
 - ✅ v2.1 — Advanced AI features
 - ✅ v2.2 — Reporting & export
 - ✅ v2.3 — Collaboration & sharing
+- ✅ v2.4 — Onboarding tour, Insurance tracker, correctness fixes
 - ✅ Phase 5 — Optimization & refactoring
-- 🔜 **v2.4** — Better-Auth migration, correctness fixes, onboarding, Insurance tracker
 - 🔜 **v2.5** — PWA, offline support, push notifications
-
 ---
 
 ## Why Open Source?

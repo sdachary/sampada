@@ -45,12 +45,13 @@ sampada/
 └── spec/                 # RSpec tests (v2.0-v2.3: 17 new spec files)
 ```
 
-## Models (20 total)
+## Models (21 total)
 
 ### Core Financial
 - `User` — settings, preferences, currency, household memberships
 - `Debt` — loans, credit cards, EMIs (v2.0: currency_code)
 - `DebtPayoff` — avalanche/snowball strategies
+- `InsurancePolicy` — health/term-life/vehicle policies (premium, coverage, renewal)
 - `Portfolio` — investment portfolios (v2.0: currency_code)
 - `Investment` — individual securities (v2.0: currency_code, exchange, yahoo_symbol)
 - `DividendSip` — recurring investment plans
@@ -157,6 +158,13 @@ User → Rails Controller → Service Object → Model → PostgreSQL
 - `POST /api/households/:id/invite` — Invite user
 - `DELETE /api/households/:id/leave` — Leave household
 - `GET /api/households/:id/dashboard` — Family dashboard
+
+### v2.4 — Onboarding & Insurance (all under `/api/v1/`)
+- `GET/POST/PUT/DELETE /api/v1/insurance_policies` — Insurance policy CRUD
+- `GET /api/v1/onboarding/snapshot` — money in/out, total owed, checklist state
+- `POST /api/v1/onboarding/complete` — set `User#onboarded`
+- `POST /api/v1/debts/:id/simulate` — debt payoff simulation (moved from DebtPayoffsController)
+- `GET /api/v1/trips/:id` — includes `suggested_settlements` in cents
 
 ## Configuration
 
