@@ -21,6 +21,7 @@ services:
   sidekiq:
     image: sampada:latest
     restart: unless-stopped
+    network_mode: host
     depends_on:
       - app
     command: ["bundle", "exec", "sidekiq"]

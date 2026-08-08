@@ -8,7 +8,6 @@ gem "puma", ">= 5.0"
 gem "rack-cors"
 gem "bootsnap", require: false
 gem "dotenv-rails"
-gem "money-rails"
 gem "sidekiq"
 gem "sidekiq-cron"
 gem "ruby-openai"
@@ -19,9 +18,10 @@ gem "sentry-rails"
 gem "faraday"
 gem "faraday-retry"
 
-# DPDP — Google Sheets sync
-gem "google-apis-sheets_v4", "~> 0.36"
-gem "googleauth", "~> 1.11"
+# DPDP — Google Sheets sync. require: false → lazy-loaded inside the
+# services, so they don't sit in every Puma/Sidekiq process baseline.
+gem "google-apis-sheets_v4", "~> 0.36", require: false
+gem "googleauth", "~> 1.11", require: false
 
 group :development, :test do
   gem "rspec-rails"

@@ -4,12 +4,16 @@ class GoogleAuthService
   end
 
   def sheets_service
+    require "google/apis/sheets_v4"
+    require "googleauth"
     Google::Apis::SheetsV4::SheetsService.new.tap do |service|
       service.authorization = authorize
     end
   end
 
   def drive_service
+    # Note: google-apis-drive_v3 is not bundled — this method is pre-existing
+    # dead code (Google auth is broken post Better-Auth: authorize returns nil).
     Google::Apis::DriveV3::DriveService.new.tap do |service|
       service.authorization = authorize
     end

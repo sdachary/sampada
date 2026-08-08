@@ -31,6 +31,8 @@ class GoogleSheetSyncService
   private
 
   def find_or_create_spreadsheet
+    require "google/apis/sheets_v4"
+    require "googleauth"
     response = @drive.list_files(q: "name='Sampada — Financial Summary' and trashed=false", spaces: 'drive')
     if response.files.any?
       return response.files.first.id
