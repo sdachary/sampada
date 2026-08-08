@@ -27,6 +27,15 @@ FactoryBot.define do
     currency_code { "INR" }
   end
 
+  factory :insurance_policy do
+    association :user
+    policy_type { "health" }
+    provider_name { "LIC Health" }
+    premium_amount { 15000.0 }
+    premium_frequency { "yearly" }
+    coverage_amount { 500000.0 }
+  end
+
   factory :investment do
     association :portfolio
     symbol { "ITC.NS" }

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_08_06_000000) do
+ActiveRecord::Schema[7.2].define(version: 2026_08_07_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -210,6 +210,21 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_06_000000) do
     t.text "description"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "insurance_policies", force: :cascade do |t|
+    t.uuid "user_id", null: false
+    t.string "policy_type", default: "other", null: false
+    t.string "provider_name"
+    t.decimal "premium_amount", precision: 12, scale: 2, default: "0.0"
+    t.string "premium_frequency", default: "yearly"
+    t.decimal "coverage_amount", precision: 14, scale: 2
+    t.date "renewal_date"
+    t.string "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "policy_type"], name: "index_insurance_policies_on_user_id_and_policy_type"
+    t.index ["user_id"], name: "index_insurance_policies_on_user_id"
   end
 
   create_table "investments", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -463,6 +478,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_06_000000) do
   add_foreign_key "grievances", "users"
   add_foreign_key "household_memberships", "households"
   add_foreign_key "household_memberships", "users"
+  add_foreign_key "insurance_policies", "users"
   add_foreign_key "investments", "portfolios"
   add_foreign_key "journeys", "users"
   add_foreign_key "messages", "conversations"

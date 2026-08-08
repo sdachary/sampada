@@ -6,6 +6,7 @@ class User < ApplicationRecord
   has_many :deletion_requests, dependent: :destroy
   has_many :debts, dependent: :destroy
   has_many :debt_payoffs, dependent: :destroy
+  has_many :insurance_policies, dependent: :destroy
   has_many :portfolios, dependent: :destroy
   has_many :journeys, dependent: :destroy
   has_many :net_worth_snapshots, dependent: :destroy
