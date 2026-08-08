@@ -173,3 +173,11 @@ Key environment variables (see `.env.example`):
 - `EXCHANGE_RATE_PROVIDER`: Exchange rate backend (default: `yahoo_finance`)
 - `OPENAI_*`: AI assistant configuration
 - `SMTP_*`: Email delivery settings
+
+## Deployment (oradb)
+
+- `docker-compose.yml` runs `app` + `sidekiq`, **both `network_mode: host`**. Sidekiq MUST be host-networked too — otherwise it can't reach PG/Redis at `127.0.0.1` (as `.env` sets) and crash-loops forever (silently killed weekly backups/snapshots for 5+ weeks).
+- `.env` needs `REDIS_HOST=127.0.0.1` — oradb's Redis binds localhost only.
+- Dockerfile uses **jemalloc** (`LD_PRELOAD` + `MALLOC_CONF` background_thread/metadata_thp) for all Ruby processes. Google gems are `require: false` — loaded only inside `GoogleSheetSyncService`.
+- Memory baseline: app ~23 MiB, sidekiq ~78 MiB (1 GB VM, both host-networked).
+- Deploy: `git push && ssh oradb "cd /opt/sampada && git pull && docker compose build app && docker compose up -d"`.
