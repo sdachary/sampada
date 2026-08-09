@@ -12,6 +12,9 @@ class NetWorthSnapshot < TenantRecord
   end
 
   def self.create_snapshot(user)
+    existing = where(user: user, snapshot_date: Date.today).first
+    return existing if existing
+
     currency = user.currency
     exchange_service = ExchangeRateService.new
     active_debts = Debt.where(user: user, status: "active")

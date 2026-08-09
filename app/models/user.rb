@@ -27,6 +27,10 @@ class User < ApplicationRecord
 
   scope :active, -> { where(onboarded: true) }
 
+  def active?
+    onboarded?
+  end
+
   def should_create_net_worth_snapshot?
     # Only create for active users who have debts or investments
     active? && (debts.active.exists? || portfolios.exists?)

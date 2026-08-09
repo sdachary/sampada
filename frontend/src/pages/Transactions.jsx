@@ -1,11 +1,39 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
+import TransactionFormModal from '../components/TransactionFormModal'
 
 export default function Transactions() {
   const [txns, setTxns] = useState([])
   const [totals, setTotals] = useState([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('')
+  const [modal, setModal] = useState(null)
+  const [importing, setImporting] = useState(false)
+  const [importResult, setImportResult] = useState(null)
+
+  const handleImport = async (e) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    setImporting(true)
+    setImportResult(null)
+    try {
+      const text = await file.text()
+      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/v1/transactions/bulk_create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transactions_csv: text }),
+      })
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || res.statusText)
+      const data = await res.json()
+      setImportResult(data)
+      load(filter || '')
+    } catch (err) {
+      setImportResult({ error: err.message })
+    } finally {
+      setImporting(false)
+    }
+  }
 
   const load = (type) => {
     setLoading(true)
@@ -18,6 +46,12 @@ export default function Transactions() {
       .catch(() => {}).finally(() => setLoading(false))
   }
   useEffect(() => load(''), [])
+
+  const openModal = (t) => setModal(t || 'new')
+  const closeModal = (saved) => {
+    if (saved) load(filter || '')
+    setModal(null)
+  }
 
   if (loading) return (
     <div>
@@ -48,21 +82,38 @@ export default function Transactions() {
         ))}
       </div>
 
-      <div style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap', alignItems: 'center' }}>
         {['', 'expense', 'income'].map(f => (
           <button key={f} onClick={() => load(f)}
             style={{ padding: '5px 14px', borderRadius: 20, border: '1px solid var(--line)', background: filter === f ? 'var(--coral)' : 'transparent', color: filter === f ? '#fff' : 'var(--ink-soft)', fontSize: 12, cursor: 'pointer' }}>
             {f || 'All'}
           </button>
         ))}
-        {txns.length > 0 && <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--ink-faint)', alignSelf: 'center' }}>{txns.length} txns</span>}
+        <button onClick={() => openModal(null)} className="btn btn-primary" style={{ fontSize: 12.5, padding: '5px 14px', marginLeft: 'auto' }}>+ Add</button>
+        <label className="btn btn-ghost" style={{ fontSize: 12.5, padding: '5px 14px', cursor: 'pointer' }}>
+          {importing ? 'Importing…' : '↥ Import CSV'}
+          <input type="file" accept=".csv,text/csv" hidden onChange={handleImport} disabled={importing} />
+        </label>
+        {txns.length > 0 && <span style={{ fontSize: 11, color: 'var(--ink-faint)', alignSelf: 'center' }}>{txns.length} txns</span>}
       </div>
+
+      {importResult && (
+        <div className="card" style={{ padding: '10px 16px', marginBottom: 12, fontSize: 12.5, borderLeft: `3px solid ${importResult.error ? 'var(--coral)' : 'var(--emerald)'}` }}>
+          {importResult.error
+            ? <span style={{ color: 'var(--coral)' }}>Import failed: {importResult.error}</span>
+            : <span style={{ color: 'var(--ink-soft)' }}>
+                Imported <b>{importResult.imported}</b> transaction{importResult.imported === 1 ? '' : 's'}
+                {importResult.errors?.length > 0 && ` · ${importResult.errors.length} skipped`}
+              </span>}
+        </div>
+      )}
 
       {txns.length === 0 ? (
         <div className="empty-state">
           <span className="emoji">↗</span>
           <p>No transactions yet</p>
           <p style={{ fontSize: 12, color: 'var(--ink-faint)' }}>Start tracking your spending to see patterns emerge.</p>
+          <button onClick={() => openModal(null)} className="btn btn-primary" style={{ marginTop: 12 }}>+ Add Transaction</button>
         </div>
       ) : (
         <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
@@ -96,8 +147,21 @@ export default function Transactions() {
               {t.transaction_type === 'expense' ? '-' : '+'}₹{(+t.amount).toLocaleString('en-IN')}
             </p>
           </div>
+          <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+            <button onClick={() => openModal(t)} style={{ fontSize: 11.5, padding: '3px 10px', background: 'none', border: '1px solid var(--line)', borderRadius: 999, color: 'var(--ink-soft)', cursor: 'pointer' }}>Edit</button>
+            <button onClick={() => { if (confirm(`Delete "${t.description}"?`)) { api.request(`/api/v1/transactions/${t.id}`, { method: 'DELETE' }).then(() => load(filter || '')) } }}
+              style={{ fontSize: 11.5, padding: '3px 10px', background: 'none', border: '1px solid var(--line)', borderRadius: 999, color: 'var(--ink-faint)', cursor: 'pointer' }}>Delete</button>
+          </div>
         </div>
       ))}
+
+      {modal && (
+        <TransactionFormModal
+          transaction={modal === 'new' ? null : modal}
+          onClose={() => closeModal(false)}
+          onSave={() => closeModal(true)}
+        />
+      )}
     </div>
   )
 }

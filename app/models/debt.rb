@@ -15,6 +15,10 @@ class Debt < TenantRecord
 
   scope :active, -> { where(status: "active") }
 
+  def active?
+    status == "active"
+  end
+
   after_create :schedule_reminders
 
   def months_remaining

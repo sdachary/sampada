@@ -45,7 +45,7 @@ class Api::InvestmentsController < Api::BaseController
     gain_loss_pct = cost_basis > 0 ? ((gain_loss / cost_basis) * 100).round(2) : 0
     cc = i.currency_code.presence || "INR"
 
-    { id: i.id, symbol: i.symbol, name: i.name, shares: shares,
+    { id: i.id, portfolio_id: i.portfolio_id, symbol: i.symbol, name: i.name, shares: shares,
       buy_price: buy_price, current_price: current_price,
       current_value: current_value, gain_loss: gain_loss,
       gain_loss_pct: gain_loss_pct, dividend_yield: i.dividend_yield&.to_f,

@@ -19,6 +19,18 @@ RSpec.describe User, type: :model do
     end
   end
 
+  describe '#active?' do
+    it 'is true when onboarded' do
+      user = build(:user, onboarded: true)
+      expect(user.active?).to be(true)
+    end
+
+    it 'is false when not onboarded' do
+      user = build(:user, onboarded: false)
+      expect(user.active?).to be(false)
+    end
+  end
+
   describe 'associations' do
     it { is_expected.to have_many(:conversations).dependent(:destroy) }
     it { is_expected.to have_many(:debts).dependent(:destroy) }

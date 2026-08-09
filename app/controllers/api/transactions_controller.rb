@@ -38,6 +38,39 @@ class Api::TransactionsController < Api::BaseController
     head :no_content
   end
 
+  def bulk_create
+    csv_text = params[:transactions_csv] || params[:csv]
+    raise ActionController::ParameterMissing, "csv" if csv_text.blank?
+
+    category_map = current_user.budget_categories.index_by { |c| c.name.downcase }
+    created = []
+    errors = []
+
+    CSV.parse(csv_text, headers: true).each_with_index do |row, i|
+      type = (row["type"] || "expense").downcase
+      type = "income" unless %w[income expense].include?(type)
+      cat = category_map[(row["category"] || "").downcase]
+      begin
+        txn = current_user.transactions.create!(
+          transaction_date: Date.parse(row["date"]),
+          description: row["description"].presence || "Imported #{i + 1}",
+          amount: BigDecimal(row["amount"]),
+          transaction_type: type,
+          budget_category: cat,
+          currency_code: row["currency"].presence || "INR",
+          merchant: row["merchant"].presence,
+          notes: row["notes"].presence,
+          recurring: %w[true yes 1].include?(row["recurring"].to_s.downcase)
+        )
+        created << txn
+      rescue => e
+        errors << { row: i + 2, error: e.message }
+      end
+    end
+
+    render_success({ imported: created.size, errors: errors })
+  end
+
   def monthly_totals
     months = (params[:months] || 6).to_i
     start_date = (months - 1).months.ago.beginning_of_month

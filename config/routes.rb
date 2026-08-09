@@ -72,7 +72,10 @@ Rails.application.routes.draw do
       collection { post :seed }
     end
     resources :transactions, only: [:index, :show, :create, :update, :destroy] do
-      collection { get :monthly_totals }
+      collection do
+        get :monthly_totals
+        post :bulk_create
+      end
     end
     resources :budgets, only: [:index, :show, :create, :update, :destroy] do
       collection { get :overview }

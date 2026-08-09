@@ -1,6 +1,18 @@
 require 'rails_helper'
 
 RSpec.describe Debt, type: :model do
+  describe "#active?" do
+    it "is true when status is active" do
+      debt = build(:debt, status: "active")
+      expect(debt.active?).to be(true)
+    end
+
+    it "is false when status is not active" do
+      debt = build(:debt, status: "paid_off")
+      expect(debt.active?).to be(false)
+    end
+  end
+
   describe "#months_remaining" do
     it "calculates correct months remaining" do
       debt = build(:debt, amount: 10000, emi_amount: 500, interest_rate: 10)

@@ -1,15 +1,18 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
+import PortfolioFormModal from '../components/PortfolioFormModal'
 
 export default function Portfolios() {
   const [portfolios, setPortfolios] = useState([])
   const [prices, setPrices] = useState({})
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [modal, setModal] = useState(null)
 
-  useEffect(() => {
+  const fetch = () => {
     api.request('/api/v1/portfolios').then(d => setPortfolios(Array.isArray(d) ? d : [])).catch(() => {}).finally(() => setLoading(false))
-  }, [])
+  }
+  useEffect(() => { fetch() }, [])
 
   const totalValue = portfolios.reduce((s, p) => s + (+p.total_value || 0), 0)
   const totalCost = portfolios.reduce((s, p) => s + (p.investments || []).reduce((ss, i) => ss + (+i.cost_basis || 0), 0), 0)
@@ -37,8 +40,13 @@ export default function Portfolios() {
   return (
     <div>
       <p className="page-num" style={{ marginBottom: 4 }}>00<em>9</em> / 016</p>
-      <h1 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', marginBottom: 4 }}>Portfolios</h1>
-      <p style={{ fontSize: 13.5, color: 'var(--ink-mute)', marginBottom: 16 }}>All your investments, one view.</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <div>
+          <h1 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em' }}>Portfolios</h1>
+          <p style={{ fontSize: 13.5, color: 'var(--ink-mute)' }}>All your investments, one view.</p>
+        </div>
+        <button onClick={() => setModal('new')} className="btn btn-primary" style={{ fontSize: 12.5, padding: '7px 16px' }}>+ Add</button>
+      </div>
 
       {portfolios.length > 0 && (
         <div className="card" style={{ padding: '14px 18px', marginBottom: 16 }}>
@@ -57,6 +65,7 @@ export default function Portfolios() {
           <span className="emoji">◐</span>
           <p>No portfolios yet</p>
           <p style={{ fontSize: 12, color: 'var(--ink-faint)' }}>Track your mutual funds, stocks, and other investments here.</p>
+          <button onClick={() => setModal('new')} className="btn btn-primary" style={{ marginTop: 12 }}>+ Add Portfolio</button>
         </div>
       ) : portfolios.map(p => {
         const sectors = p.allocation_summary?.sectors || {}
@@ -76,9 +85,16 @@ export default function Portfolios() {
                   {p.risk_tolerance != null && <span> · risk {p.risk_tolerance}/10</span>}
                 </p>
               </div>
-              <p className="fin" style={{ fontFamily: 'var(--sans)', fontSize: 18, fontWeight: 600, color: 'var(--emerald)' }}>
-                ₹{(+p.total_value || 0).toLocaleString('en-IN')}
-              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+                <p className="fin" style={{ fontFamily: 'var(--sans)', fontSize: 18, fontWeight: 600, color: 'var(--emerald)' }}>
+                  ₹{(+p.total_value || 0).toLocaleString('en-IN')}
+                </p>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button onClick={() => setModal(p)} style={{ fontSize: 10.5, padding: '2px 8px', background: 'none', border: '1px solid var(--line)', borderRadius: 999, color: 'var(--ink-soft)', cursor: 'pointer' }}>Edit</button>
+                  <button onClick={() => { if (confirm(`Delete "${p.name}"?`)) { api.request(`/api/v1/portfolios/${p.id}`, { method: 'DELETE' }).then(fetch).catch(e => alert(e.message)) } }}
+                    style={{ fontSize: 10.5, padding: '2px 8px', background: 'none', border: '1px solid var(--line)', borderRadius: 999, color: 'var(--ink-faint)', cursor: 'pointer' }}>Delete</button>
+                </div>
+              </div>
             </div>
 
             {sectorNames.length > 0 && (
@@ -134,6 +150,14 @@ export default function Portfolios() {
           </div>
         )
       })}
+
+      {modal && (
+        <PortfolioFormModal
+          portfolio={modal === 'new' ? null : modal}
+          onClose={() => setModal(null)}
+          onSave={() => { setModal(null); fetch() }}
+        />
+      )}
     </div>
   )
 }

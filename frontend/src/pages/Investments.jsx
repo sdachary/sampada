@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
+import InvestmentFormModal from '../components/InvestmentFormModal'
 
 export default function Investments() {
   const [investments, setInvestments] = useState([])
   const [loading, setLoading] = useState(true)
+  const [modal, setModal] = useState(null)
 
-  useEffect(() => {
+  const fetch = () => {
     api.request('/api/v1/investments').then(d => setInvestments(Array.isArray(d) ? d : [])).catch(() => {}).finally(() => setLoading(false))
-  }, [])
+  }
+  useEffect(() => { fetch() }, [])
 
   if (loading) return (
     <div>
@@ -21,8 +24,13 @@ export default function Investments() {
   return (
     <div>
       <p className="page-num" style={{ marginBottom: 4 }}>00<em>10</em> / 016</p>
-      <h1 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', marginBottom: 4 }}>Investments</h1>
-      <p style={{ fontSize: 13.5, color: 'var(--ink-mute)', marginBottom: 16 }}>Individual holdings across portfolios.</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <div>
+          <h1 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em' }}>Investments</h1>
+          <p style={{ fontSize: 13.5, color: 'var(--ink-mute)' }}>Individual holdings across portfolios.</p>
+        </div>
+        <button onClick={() => setModal('new')} className="btn btn-primary" style={{ fontSize: 12.5, padding: '7px 16px' }}>+ Add</button>
+      </div>
 
       {investments.length > 0 && (
         <div className="card" style={{ padding: '14px 18px', marginBottom: 16 }}>
@@ -40,6 +48,8 @@ export default function Investments() {
         <div className="empty-state">
           <span className="emoji">◑</span>
           <p>No investments recorded</p>
+          <p style={{ fontSize: 12, color: 'var(--ink-faint)' }}>Add a share purchase or holding to start tracking.</p>
+          <button onClick={() => setModal('new')} className="btn btn-primary" style={{ marginTop: 12 }}>+ Add Investment</button>
         </div>
       ) : investments.map(i => {
         const gain = +i.gain_loss || 0
@@ -65,10 +75,23 @@ export default function Investments() {
               {i.sector && <span className="tag" style={{ fontSize: 10 }}>{i.sector}</span>}
               {i.investment_type && <span className="tag" style={{ fontSize: 10 }}>{i.investment_type}</span>}
               {i.dividend_yield != null && +i.dividend_yield > 0 && <span className="tag" style={{ fontSize: 10, background: 'var(--emerald)', color: '#fff' }}>{i.dividend_yield}% div</span>}
+              <span style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
+                <button onClick={() => setModal(i)} style={{ fontSize: 11, padding: '2px 8px', background: 'none', border: '1px solid var(--line)', borderRadius: 999, color: 'var(--ink-soft)', cursor: 'pointer' }}>Edit</button>
+                <button onClick={() => { if (confirm(`Delete "${i.symbol}"?`)) { api.request(`/api/v1/investments/${i.id}`, { method: 'DELETE' }).then(fetch).catch(e => alert(e.message)) } }}
+                  style={{ fontSize: 11, padding: '2px 8px', background: 'none', border: '1px solid var(--line)', borderRadius: 999, color: 'var(--ink-faint)', cursor: 'pointer' }}>Delete</button>
+              </span>
             </div>
           </div>
         )
       })}
+
+      {modal && (
+        <InvestmentFormModal
+          investment={modal === 'new' ? null : modal}
+          onClose={() => setModal(null)}
+          onSave={() => { setModal(null); fetch() }}
+        />
+      )}
     </div>
   )
 }
