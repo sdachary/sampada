@@ -13,8 +13,6 @@ gem "sidekiq-cron"
 gem "ruby-openai"
 gem "rack-attack"
 gem "redis", "~> 5.0"
-gem "sentry-ruby"
-gem "sentry-rails"
 gem "faraday"
 gem "faraday-retry"
 
