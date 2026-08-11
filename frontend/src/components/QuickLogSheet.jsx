@@ -41,6 +41,7 @@ export default function QuickLogSheet({ open, onClose, onSaved, online }) {
           description,
           amount: Number(amount),
           transaction_type: transactionType,
+          transaction_date: new Date().toISOString().slice(0, 10),
           budget_category_id: categoryId || null,
           recurring: false,
         }),
