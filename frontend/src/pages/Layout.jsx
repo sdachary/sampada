@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react'
 import { Outlet, useNavigate, useLocation, Link } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
 import useTheme from '../lib/useTheme'
+import useOnline from '../lib/useOnline'
 import CommandPalette from '../components/CommandPalette'
 import {
   LayoutDashboard, ArrowRightLeft, Wallet, RefreshCw,
   CircleDollarSign, Target, Calculator, Briefcase, TrendingUp,
   Clock, Map, Plane, Users, MessageSquare, BarChart3,
-  Download, Settings, Shield, LogOut, ChevronUp, X, Sun, Moon,
+  Download, Settings, Shield, LogOut, ChevronUp, X, Sun, Moon, WifiOff,
 } from 'lucide-react'
 
 const iconMap = {
@@ -98,6 +99,7 @@ function NavLink({ item, current, depth, onNav }) {
 export default function Layout() {
   const { user, logout } = useAuth()
   const { theme, toggle: toggleTheme } = useTheme()
+  const { isOnline } = useOnline()
   const navigate = useNavigate()
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
@@ -314,7 +316,18 @@ export default function Layout() {
       )}
 
       {/* main */}
-      <main className="main-area"><Outlet /></main>
+      <main className="main-area">
+        {!isOnline && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, padding: '9px 14px',
+            borderRadius: 10, background: 'var(--ink)', color: 'var(--paper)', fontSize: 12.5,
+          }}>
+            <WifiOff size={14} aria-hidden="true" />
+            <span>Offline — viewing cached data, edits disabled</span>
+          </div>
+        )}
+        <Outlet />
+      </main>
 
       <CommandPalette open={cmdOpen} onClose={() => setCmdOpen(false)} />
     </div>

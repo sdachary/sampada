@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
 import TransactionFormModal from '../components/TransactionFormModal'
+import useOnline from '../lib/useOnline'
 
 export default function Transactions() {
+  const { isOnline } = useOnline()
   const [txns, setTxns] = useState([])
   const [totals, setTotals] = useState([])
   const [loading, setLoading] = useState(true)
@@ -89,7 +91,8 @@ export default function Transactions() {
             {f || 'All'}
           </button>
         ))}
-        <button onClick={() => openModal(null)} className="btn btn-primary" style={{ fontSize: 12.5, padding: '5px 14px', marginLeft: 'auto' }}>+ Add</button>
+        <button onClick={() => openModal(null)} disabled={!isOnline} className="btn btn-primary"
+          style={{ fontSize: 12.5, padding: '5px 14px', marginLeft: 'auto', opacity: isOnline ? 1 : 0.5, cursor: isOnline ? 'pointer' : 'not-allowed' }}>+ Add</button>
         <label className="btn btn-ghost" style={{ fontSize: 12.5, padding: '5px 14px', cursor: 'pointer' }}>
           {importing ? 'Importing…' : '↥ Import CSV'}
           <input type="file" accept=".csv,text/csv" hidden onChange={handleImport} disabled={importing} />
@@ -113,7 +116,8 @@ export default function Transactions() {
           <span className="emoji">↗</span>
           <p>No transactions yet</p>
           <p style={{ fontSize: 12, color: 'var(--ink-faint)' }}>Start tracking your spending to see patterns emerge.</p>
-          <button onClick={() => openModal(null)} className="btn btn-primary" style={{ marginTop: 12 }}>+ Add Transaction</button>
+          <button onClick={() => openModal(null)} disabled={!isOnline} className="btn btn-primary"
+            style={{ marginTop: 12, opacity: isOnline ? 1 : 0.5, cursor: isOnline ? 'pointer' : 'not-allowed' }}>+ Add Transaction</button>
         </div>
       ) : (
         <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
@@ -148,9 +152,10 @@ export default function Transactions() {
             </p>
           </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-            <button onClick={() => openModal(t)} style={{ fontSize: 11.5, padding: '3px 10px', background: 'none', border: '1px solid var(--line)', borderRadius: 999, color: 'var(--ink-soft)', cursor: 'pointer' }}>Edit</button>
-            <button onClick={() => { if (confirm(`Delete "${t.description}"?`)) { api.request(`/api/v1/transactions/${t.id}`, { method: 'DELETE' }).then(() => load(filter || '')) } }}
-              style={{ fontSize: 11.5, padding: '3px 10px', background: 'none', border: '1px solid var(--line)', borderRadius: 999, color: 'var(--ink-faint)', cursor: 'pointer' }}>Delete</button>
+            <button onClick={() => openModal(t)} disabled={!isOnline}
+              style={{ fontSize: 11.5, padding: '3px 10px', background: 'none', border: '1px solid var(--line)', borderRadius: 999, color: 'var(--ink-soft)', cursor: isOnline ? 'pointer' : 'not-allowed', opacity: isOnline ? 1 : 0.4 }}>Edit</button>
+            <button onClick={() => { if (confirm(`Delete "${t.description}"?`)) { api.request(`/api/v1/transactions/${t.id}`, { method: 'DELETE' }).then(() => load(filter || '')) } }} disabled={!isOnline}
+              style={{ fontSize: 11.5, padding: '3px 10px', background: 'none', border: '1px solid var(--line)', borderRadius: 999, color: 'var(--ink-faint)', cursor: isOnline ? 'pointer' : 'not-allowed', opacity: isOnline ? 1 : 0.4 }}>Delete</button>
           </div>
         </div>
       ))}
