@@ -2,6 +2,15 @@
 
 All notable changes to Sampada are documented in this file.
 
+## [2.5.0] - 2026-08-11
+
+### Added
+- Quick-log expense entry (Paca #240): floating action button on Dashboard + lightweight bottom-sheet (`QuickLogSheet`) — description, amount, expense/income toggle, optional category. Posts to `POST /api/v1/transactions`, refreshes dashboard on save.
+- Offline read-only indicator (Paca #238, partial): `useOnline` hook + persistent banner in Layout ("Offline — viewing cached data, edits disabled"); write actions (add/edit/delete, FAB, quick-log submit) disabled while offline. Write-queue/replay intentionally deferred.
+
+### Fixed
+- Quick-log now sends `transaction_date` (backend validates presence, DB column has no default) — without it every quick-log submit 422'd.
+
 ## [2.4.0] - 2026-08-08
 
 ### Added
