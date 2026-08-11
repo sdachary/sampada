@@ -74,7 +74,7 @@ export default function Landing() {
           <Link to="/register" className="btn btn-primary">Get started free</Link>
         </div>
         <p style={{ fontSize: 12, color: 'var(--ink-faint)', marginTop: 20, letterSpacing: '0.02em' }}>
-          Open source \u00b7 AGPL-3.0 \u00b7 Free forever
+          Open source \u00b7 Apache 2.0 \u00b7 Free forever
         </p>
       </section>
 
