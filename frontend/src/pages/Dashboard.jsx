@@ -1,24 +1,52 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { StatCard } from '../components/ui'
 import Chart from '../components/Chart'
+import QuickLogSheet from '../components/QuickLogSheet'
+import useOnline from '../lib/useOnline'
+import { Plus } from 'lucide-react'
 
 export default function Dashboard() {
   const { user } = useAuth()
+  const { isOnline } = useOnline()
   const [data, setData] = useState(null)
   const [projection, setProjection] = useState(null)
   const [loading, setLoading] = useState(true)
   const [hideAmt, setHideAmt] = useState(true)
+  const [quickOpen, setQuickOpen] = useState(false)
+  const [toast, setToast] = useState(null)
 
-  useEffect(() => {
-    Promise.all([
+  const load = useCallback(() => {
+    return Promise.all([
       api.dashboard(),
       api.request('/api/v1/dashboard/projection'),
     ]).then(([d, p]) => { setData(d); setProjection(p) })
       .catch(() => {}).finally(() => setLoading(false))
   }, [])
+
+  useEffect(() => { load() }, [load])
+
+  // When we come back online, refresh the dashboard if it was stale offline.
+  const wasOffline = useRef(!isOnline)
+  useEffect(() => {
+    if (isOnline && wasOffline.current) load()
+    wasOffline.current = !isOnline
+  }, [isOnline, load])
+
+  // Auto-dismiss the success toast after a moment.
+  useEffect(() => {
+    if (!toast) return
+    const t = setTimeout(() => setToast(null), 2500)
+    return () => clearTimeout(t)
+  }, [toast])
+
+  const handleQuickSaved = () => {
+    setQuickOpen(false)
+    setToast('Transaction logged ✓')
+    load()
+  }
 
   if (loading) return (
     <div>
@@ -144,6 +172,35 @@ export default function Dashboard() {
         {data?.sip_count > 0 && <span>{data.sip_count} active SIP{data.sip_count > 1 ? 's' : ''}</span>}
         {data?.currency_symbol && <span>Base: {data.currency_symbol}</span>}
       </div>
+
+      {/* success toast */}
+      {toast && (
+        <div style={{
+          position: 'fixed', bottom: 'calc(96px + env(safe-area-inset-bottom))', left: '50%', transform: 'translateX(-50%)', zIndex: 150,
+          background: 'var(--emerald)', color: '#fff', padding: '10px 18px', borderRadius: 999, fontSize: 13, fontWeight: 500,
+          boxShadow: '0 8px 24px rgba(21,20,15,0.2)',
+        }}>
+          {toast}
+        </div>
+      )}
+
+      {/* floating quick-log action */}
+      <button onClick={() => setQuickOpen(true)} aria-label="Quick log transaction" title="Quick log"
+        style={{
+          position: 'fixed', right: 20, bottom: 'calc(84px + env(safe-area-inset-bottom))', zIndex: 120,
+          width: 56, height: 56, borderRadius: '50%', border: 'none', cursor: 'pointer',
+          background: 'var(--coral)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 8px 24px rgba(237,111,92,0.4)', opacity: isOnline ? 1 : 0.5,
+        }}>
+        <Plus size={26} strokeWidth={2.5} />
+      </button>
+
+      <QuickLogSheet
+        open={quickOpen}
+        onClose={() => setQuickOpen(false)}
+        onSaved={handleQuickSaved}
+        online={isOnline}
+      />
     </div>
   )
 }
