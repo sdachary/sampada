@@ -5,7 +5,7 @@
 
 **A free-forever, hosted personal finance web app that takes you from debt → zero → wealth.**
 
-[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
 [![Ruby on Rails](https://img.shields.io/badge/Ruby%20on%20Rails-7.2-CC0000?logo=rubyonrails&logoColor=white)](https://rubyonrails.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![Hosted](https://img.shields.io/badge/Hosted%20SaaS-free%20forever-2fa39a)](https://sampada.pages.dev)
@@ -86,7 +86,7 @@ The app never blocks you from doing whatever you want with your money — but de
 | Household sharing | ✅ Multi-user | ❌ | ❌ | ❌ | ✅ |
 | Free AI options (BYOK) | ✅ OpenRouter/Ollama | ❌ | ❌ | ❌ | ❌ |
 | Local AI (Ollama) | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Open source (AGPL-3.0) | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Open source (Apache 2.0) | ✅ | ❌ | ❌ | ❌ | ❌ |
 | Portfolio rebalancing | ✅ | Limited | Basic | ✅ | ❌ |
 | SIP planning | ✅ | ❌ | ❌ | ❌ | ❌ |
 | Reporting & export | ✅ CSV/JSON/annual | ✅ | ❌ | ✅ | ✅ |
@@ -200,11 +200,11 @@ Full plan: [`docs/roadmap-updated.md`](docs/roadmap-updated.md)
 
 ## Why Open Source?
 
-1. **Your data stays yours** — open source, AGPL-3.0, you can self-host if you want
+1. **Your data stays yours** — open source, Apache 2.0, you can self-host if you want
 2. **Audit your finances** — full transparency, inspect the code that handles your money
 3. **No vendor lock-in** — fork it, modify it, host it forever
 4. **Community-driven** — features serve users, not shareholders
-5. **AGPL-3.0 licensed** — any hosted version must share improvements back
+5. **Apache 2.0 licensed** — permissive open-source license, free to use and modify
 6. **Free AI options** — unlike commercial apps, no forced subscription for AI features
 7. **Contribute back** — add exchange support, improve debt algorithms, share with everyone
 
@@ -220,7 +220,7 @@ The short version: contributions should serve the philosophy — debt first, the
 
 ## License
 
-[AGPL-3.0](LICENSE) — fork freely, contribute back when you can.
+This project is licensed under the Apache License 2.0 — see the [LICENSE](LICENSE) file for details.
 
 ---
 

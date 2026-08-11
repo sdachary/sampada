@@ -1,3 +1,5 @@
+// Copyright 2026 S Deepak Achary
+// Licensed under the Apache License, Version 2.0
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 
