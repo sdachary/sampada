@@ -34,11 +34,20 @@ module Ai
     end
 
     def configured?
-      provider_setting.present?
+      provider_setting.present? && api_token.present? && ai_uri.present? && ai_model.present?
     end
 
     def cloud_provider?
-      provider_setting == "openrouter"
+      provider_setting.present?
+    end
+
+    def self.presets
+      {
+        "openai"     => { uri: "https://api.openai.com/v1",        model: "gpt-4o-mini" },
+        "gemini"     => { uri: "https://generativelanguage.googleapis.com/v1beta/openai/", model: "gemini-1.5-flash" },
+        "grok"       => { uri: "https://api.x.ai/v1",              model: "grok-beta" },
+        "openrouter" => { uri: "https://openrouter.ai/api/v1",     model: "openai/gpt-4o-mini" }
+      }
     end
 
     private
@@ -48,8 +57,8 @@ module Ai
     end
 
     def api_token
-      if cloud_provider?
-        ENV["OPENAI_ACCESS_TOKEN"].presence || Setting.get("ai_api_key", user: @user)
+      if provider_setting.present?
+        Setting.get("ai_api_key", user: @user).presence || ENV["OPENAI_ACCESS_TOKEN"]
       else
         "ollama"
       end

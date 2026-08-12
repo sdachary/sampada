@@ -7,6 +7,8 @@ export default function Conversations() {
   const [selected, setSelected] = useState(null)
   const [messages, setMessages] = useState([])
   const [newTitle, setNewTitle] = useState('')
+  const [draft, setDraft] = useState('')
+  const [sending, setSending] = useState(false)
 
   useEffect(() => {
     api.request('/conversations').then(d => setConvs(Array.isArray(d) ? d : [])).catch(() => {}).finally(() => setLoading(false))
@@ -17,6 +19,29 @@ export default function Conversations() {
     if (!c) return
     setSelected(c)
     api.request(`/conversations/${id}`).then(d => setMessages(d?.messages || [])).catch(() => {})
+  }
+
+  const sendMessage = async (e) => {
+    e.preventDefault()
+    if (!draft.trim() || sending) return
+    setSending(true)
+    try {
+      await api.request(`/conversations/${selected.id}/messages`, {
+        method: 'POST',
+        body: JSON.stringify({ role: 'user', content: draft.trim() }),
+        headers: { 'Content-Type': 'application/json' },
+      })
+      setDraft('')
+      const poll = async () => {
+        const msgs = await api.request(`/conversations/${selected.id}/messages`).catch(() => null)
+        if (!msgs) return
+        setMessages(msgs)
+        const replyPending = msgs.some(m => m?.metadata?.pending)
+        if (replyPending) setTimeout(poll, 1200)
+      }
+      poll()
+    } catch {}
+    setSending(false)
   }
 
   const createConv = async () => {
@@ -43,14 +68,24 @@ export default function Conversations() {
       </div>
       {selected.summary && <p style={{ fontSize: 12, color: 'var(--ink-mute)', marginBottom: 16 }}>{selected.summary}</p>}
       {messages.length === 0 ? (
-        <div className="empty-state"><span className="emoji">◉</span><p>No messages</p></div>
-      ) : messages.map(m => (
+        <div className="empty-state"><span className="emoji">◉</span><p>No messages — ask a question below</p></div>
+      ) : messages.map(m => m.metadata?.pending ? (
+        <div key="pending" className="card" style={{ padding: '12px 16px', marginBottom: 6, borderLeft: '3px solid var(--emerald)' }}>
+          <p style={{ fontSize: 11, color: 'var(--ink-mute)', marginBottom: 4, textTransform: 'capitalize' }}>assistant</p>
+          <p style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--ink-mute)' }}>…</p>
+        </div>
+      ) : (
         <div key={m.id} className="card" style={{ padding: '12px 16px', marginBottom: 6, borderLeft: `3px solid ${m.role === 'user' ? 'var(--coral)' : 'var(--emerald)'}` }}>
           <p style={{ fontSize: 11, color: 'var(--ink-mute)', marginBottom: 4, textTransform: 'capitalize' }}>{m.role}</p>
-          <p style={{ fontSize: 13, lineHeight: 1.5 }}>{m.content}</p>
-          <p style={{ fontSize: 10, color: 'var(--ink-faint)', marginTop: 4 }}>{new Date(m.created_at).toLocaleString()}</p>
+          <p style={{ fontSize: 13, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{m.content}</p>
+          <p style={{ fontSize: 10, color: 'var(--ink-faint)', marginTop: 4 }}>{m.created_at ? new Date(m.created_at).toLocaleString() : ''}</p>
         </div>
       ))}
+      <form onSubmit={sendMessage} style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+        <input value={draft} onChange={e => setDraft(e.target.value)} placeholder="Ask Sampada about your finances…"
+          className="input" style={{ flex: 1, padding: '9px 12px', fontSize: 13 }} />
+        <button type="submit" disabled={!draft.trim() || sending} className="btn btn-primary" style={{ fontSize: 12.5, padding: '7px 16px' }}>Send</button>
+      </form>
     </div>
   )
 

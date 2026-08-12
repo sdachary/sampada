@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
+import { api } from '../lib/api'
 
 export default function Register() {
   const { user, register } = useAuth()
@@ -9,17 +10,39 @@ export default function Register() {
   const [showPw, setShowPw] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const [error, setError] = useState('')
+  const [registered, setRegistered] = useState(false)
+  const [ai, setAi] = useState({ provider: '', api_key: '' })
+  const [aiSaving, setAiSaving] = useState(false)
+  const [aiMsg, setAiMsg] = useState('')
 
-  if (user) return <Navigate to="/dashboard" replace />
+  if (user && !registered) return <Navigate to="/dashboard" replace />
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (form.password !== form.password_confirmation) return setError('Passwords do not match')
     try {
       await register(form)
-      navigate('/dashboard')
+      setRegistered(true)
     } catch (err) {
       setError(err.message)
+    }
+  }
+
+  const skipAi = () => navigate('/dashboard')
+
+  const saveAi = async (e) => {
+    e.preventDefault()
+    if (!ai.provider || !ai.api_key) return
+    setAiSaving(true)
+    try {
+      await api.request('/api/v1/ai_settings', {
+        method: 'PUT',
+        body: JSON.stringify({ provider: ai.provider, api_key: ai.api_key }),
+      })
+      navigate('/dashboard')
+    } catch (err) {
+      setAiMsg(err.message)
+      setAiSaving(false)
     }
   }
 
@@ -58,6 +81,32 @@ export default function Register() {
             <button type="submit" className="btn btn-primary" style={{ justifyContent: 'center', marginTop: 6 }}>Create account</button>
           </form>
         </div>
+
+        {registered && (
+          <div className="card" style={{ padding: 24, marginTop: 16, borderLeft: '3px solid var(--emerald)' }}>
+            <h2 style={{ fontSize: 15, fontWeight: 600, letterSpacing: '-0.01em', marginBottom: 4 }}>Optional: enable AI assistant</h2>
+            <p style={{ fontSize: 12.5, color: 'var(--ink-mute)', marginBottom: 14 }}>
+              Add a Gemini, Grok, or OpenAI-compatible API key to chat with your finances. Skip to start with it disabled.
+            </p>
+            {aiMsg && <p style={{ fontSize: 12, color: 'var(--coral)', marginBottom: 10 }}>{aiMsg}</p>}
+            <form onSubmit={saveAi} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <select className="input" value={ai.provider} onChange={e => setAi(a => ({ ...a, provider: e.target.value }))}>
+                <option value="">Select provider…</option>
+                <option value="openai">OpenAI</option>
+                <option value="gemini">Google Gemini</option>
+                <option value="grok">xAI Grok</option>
+                <option value="openrouter">OpenRouter</option>
+              </select>
+              <input type="password" className="input" placeholder="API key" value={ai.api_key} onChange={e => setAi(a => ({ ...a, api_key: e.target.value }))} />
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button type="submit" disabled={!ai.provider || !ai.api_key || aiSaving} className="btn btn-primary" style={{ flex: 1, justifyContent: 'center', fontSize: 13, padding: '9px 0' }}>
+                  {aiSaving ? 'Saving…' : 'Enable & continue'}
+                </button>
+                <button type="button" onClick={skipAi} className="btn" style={{ background: 'transparent', border: '1px solid var(--line)', fontSize: 13, padding: '9px 18px' }}>Skip</button>
+              </div>
+            </form>
+          </div>
+        )}
         <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--ink-mute)', marginTop: 20 }}>
           Already have one? <Link to="/login" style={{ color: 'var(--coral)' }}>Sign in</Link>
         </p>

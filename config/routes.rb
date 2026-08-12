@@ -53,6 +53,7 @@ Rails.application.routes.draw do
       get :progress
       get :net_worth
     end
+    resource :ai_settings, only: [:show, :update, :destroy], controller: 'ai_settings'
     resources :net_worth_snapshots, only: [:index, :show]
     resources :recurring_expenses, only: [:index, :show, :create, :update, :destroy] do
       collection do

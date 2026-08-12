@@ -28,8 +28,44 @@ export default function Settings() {
   const [credentials, setCredentials] = useState([])
   const [showAdd, setShowAdd] = useState(false)
   const [newCred, setNewCred] = useState({ provider: '', label: '', encrypted_value: '' })
+  const [aiProvider, setAiProvider] = useState('')
+  const [aiConfigured, setAiConfigured] = useState(false)
+  const [aiForm, setAiForm] = useState({ provider: '', api_key: '' })
+  const [aiError, setAiError] = useState('')
 
   useEffect(() => { fetchCredentials() }, [])
+
+  useEffect(() => {
+    api.request('/api/v1/ai_settings').then(d => {
+      setAiProvider(d.provider || '')
+      setAiConfigured(!!d.configured)
+    }).catch(() => {})
+  }, [])
+
+  const saveAi = async () => {
+    setAiError('')
+    try {
+      await api.request('/api/v1/ai_settings', {
+        method: 'PUT',
+        body: JSON.stringify({ provider: aiForm.provider, api_key: aiForm.api_key }),
+      })
+      setAiProvider(aiForm.provider)
+      setAiConfigured(true)
+      setAiForm({ provider: '', api_key: '' })
+      setMsg('AI assistant enabled')
+    } catch (e) { setAiError(e.message) }
+    setTimeout(() => setMsg(''), 3000)
+  }
+
+  const disableAi = async () => {
+    try {
+      await api.request('/api/v1/ai_settings', { method: 'DELETE' })
+      setAiConfigured(false)
+      setAiProvider('')
+      setMsg('AI assistant disabled')
+    } catch { setMsg('Failed to disable AI') }
+    setTimeout(() => setMsg(''), 3000)
+  }
 
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }))
 
@@ -147,6 +183,47 @@ export default function Settings() {
             </div>
           </div>
         )}
+      </div>
+
+      <div className="card" style={{ padding: '18px 20px', marginBottom: 12 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <p style={{ fontSize: 12, fontWeight: 600, letterSpacing: '-0.01em' }}>
+            AI Assistant <span style={{ fontWeight: 400, color: 'var(--ink-mute)' }}>(powered by your key)</span>
+          </p>
+          <span style={{ fontSize: 10.5, fontWeight: 600, padding: '3px 8px', borderRadius: 999, background: aiConfigured ? '#e5f2ee' : '#f3e8e3', color: aiConfigured ? '#2d7d6a' : '#a25d43', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+            {aiConfigured ? 'On' : 'Off'}
+          </span>
+        </div>
+        <p style={{ fontSize: 12.5, color: 'var(--ink-mute)', marginBottom: 12 }}>
+          {aiConfigured
+            ? `Using ${aiProvider === 'gemini' ? 'Google Gemini' : aiProvider === 'grok' ? 'xAI Grok' : aiProvider === 'openrouter' ? 'OpenRouter' : 'OpenAI'} — chat in Conversations.`
+            : 'Chat is disabled by default. Connect a Gemini, Grok, or any OpenAI-compatible key to enable AI answers.'}
+        </p>
+
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: aiConfigured ? 10 : 0 }}>
+          {!aiConfigured && (
+            <>
+              <select className="input" value={aiForm.provider} onChange={e => setAiForm(f => ({ ...f, provider: e.target.value }))} style={{ flex: 1, minWidth: 160 }}>
+                <option value="">Select provider…</option>
+                <option value="openai">OpenAI</option>
+                <option value="gemini">Google Gemini</option>
+                <option value="grok">xAI Grok</option>
+                <option value="openrouter">OpenRouter</option>
+              </select>
+              <input type="password" className="input" placeholder="API key" value={aiForm.api_key}
+                onChange={e => setAiForm(f => ({ ...f, api_key: e.target.value }))} style={{ flex: 2, minWidth: 220 }} />
+              <button onClick={saveAi} disabled={!aiForm.provider || !aiForm.api_key} className="btn btn-primary" style={{ fontSize: 12.5, padding: '8px 18px' }}>
+                Enable
+              </button>
+            </>
+          )}
+          {aiConfigured && (
+            <button onClick={disableAi} className="btn" style={{ fontSize: 12, padding: '6px 14px', background: 'transparent', border: '1px solid var(--line)', color: 'var(--coral)' }}>
+              Disable
+            </button>
+          )}
+        </div>
+        {aiError && <p style={{ fontSize: 12, color: 'var(--coral)', marginBottom: 8 }}>{aiError}</p>}
       </div>
 
       <div className="card" style={{ padding: '18px 20px', marginBottom: 12 }}>
