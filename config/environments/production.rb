@@ -90,8 +90,6 @@ Rails.application.configure do
 #     openssl_verify_mode: ENV["SMTP_TLS_SKIP_VERIFY"] == "true" ? OpenSSL::SSL::VERIFY_NONE : OpenSSL::SSL::VERIFY_PEER,
 #     ca_file:             ENV["SSL_CA_FILE"]
 #   }
-
-  # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
   # config.action_mailer.raise_delivery_errors = false
 
