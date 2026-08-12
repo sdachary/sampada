@@ -50,16 +50,10 @@ class Api::PortfoliosController < Api::BaseController
 
   def prices
     portfolio = current_user.portfolios.find(params[:id])
-    investments = portfolio.investments
-    adapter = Providers::AlphaVantageAdapter.new
-    prices = investments.map do |inv|
-      quote = adapter.fetch_quote(inv.yahoo_symbol)
-      next unless quote
-      gain = quote[:price] && inv.buy_price ? (quote[:price] - inv.buy_price) * (inv.shares || 0) : nil
-      { id: inv.id, symbol: inv.symbol, name: inv.name, price: quote[:price],
-        change: quote[:change], change_pct: quote[:change_pct],
-        buy_price: inv.buy_price, shares: inv.shares, gain: gain&.round(2) }
-    end.compact
+    # Never block the request on external quote calls (AlphaVantage 5s timeout/symbol).
+    # Kick a background refresh and return whatever is cached (or empty if first run).
+    PriceRefreshJob.perform_async(portfolio.id)
+    prices = Rails.cache.read("#{PriceRefreshJob::QUOTE_CACHE_PREFIX}#{portfolio.id}") || []
     render_success({ portfolio_id: portfolio.id, prices: prices, updated_at: Time.current })
   end
 
