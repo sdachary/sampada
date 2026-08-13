@@ -1,6 +1,6 @@
-inherit_gem:
-  rubocop-rails: config/rubocop.yml
-  rubocop-rspec: config/default.yml
+plugins:
+  - rubocop-rails
+  - rubocop-rspec
 
 AllCops:
   NewCops: enable
