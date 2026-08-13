@@ -1,4 +1,4 @@
-class MessagesController < Api::BaseController
+class Api::MessagesController < Api::BaseController
   before_action :set_conversation
 
   def index

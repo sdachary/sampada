@@ -11,14 +11,14 @@ export default function Conversations() {
   const [sending, setSending] = useState(false)
 
   useEffect(() => {
-    api.request('/conversations').then(d => setConvs(Array.isArray(d) ? d : [])).catch(() => {}).finally(() => setLoading(false))
+    api.request('/api/v1/conversations').then(d => setConvs(Array.isArray(d) ? d : [])).catch(() => {}).finally(() => setLoading(false))
   }, [])
 
   const openConv = async (id) => {
     const c = convs.find(x => x.id === id)
     if (!c) return
     setSelected(c)
-    api.request(`/conversations/${id}`).then(d => setMessages(d?.messages || [])).catch(() => {})
+    api.request(`/api/v1/conversations/${id}`).then(d => setMessages(d?.messages || [])).catch(() => {})
   }
 
   const sendMessage = async (e) => {
@@ -26,14 +26,14 @@ export default function Conversations() {
     if (!draft.trim() || sending) return
     setSending(true)
     try {
-      await api.request(`/conversations/${selected.id}/messages`, {
+      await api.request(`/api/v1/conversations/${selected.id}/messages`, {
         method: 'POST',
         body: JSON.stringify({ role: 'user', content: draft.trim() }),
         headers: { 'Content-Type': 'application/json' },
       })
       setDraft('')
       const poll = async () => {
-        const msgs = await api.request(`/conversations/${selected.id}/messages`).catch(() => null)
+        const msgs = await api.request(`/api/v1/conversations/${selected.id}/messages`).catch(() => null)
         if (!msgs) return
         setMessages(msgs)
         const replyPending = msgs.some(m => m?.metadata?.pending)
@@ -47,7 +47,7 @@ export default function Conversations() {
   const createConv = async () => {
     if (!newTitle.trim()) return
     try {
-      const res = await api.request('/conversations', {
+      const res = await api.request('/api/v1/conversations', {
         method: 'POST',
         body: JSON.stringify({ title: newTitle }),
         headers: { 'Content-Type': 'application/json' },

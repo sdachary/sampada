@@ -1,4 +1,4 @@
-class ConversationsController < Api::BaseController
+class Api::ConversationsController < Api::BaseController
   def index
     conversations = current_user.conversations.order(created_at: :desc)
     render_success(conversations.map { |c| conversation_json(c) })

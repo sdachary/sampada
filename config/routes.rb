@@ -21,13 +21,11 @@ Rails.application.routes.draw do
     post 'dpdp/grievance', to: 'dpdp#grievance'
   end
 
-  # Conversations
-  resources :conversations, only: [:index, :show, :create, :destroy] do
-    resources :messages, only: [:index, :create]
-  end
-
   # API v1
   scope '/api/v1', module: 'api', as: 'api' do
+    resources :conversations, only: [:index, :show, :create, :destroy] do
+      resources :messages, only: [:index, :create]
+    end
     resources :debts, only: [:index, :show, :create, :update, :destroy] do
       member do
         post :simulate
