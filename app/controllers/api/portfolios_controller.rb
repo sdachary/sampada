@@ -50,7 +50,7 @@ class Api::PortfoliosController < Api::BaseController
 
   def prices
     portfolio = current_user.portfolios.find(params[:id])
-    # Never block the request on external quote calls (AlphaVantage 5s timeout/symbol).
+    # Never block the request on external quote calls (5s timeout/symbol).
     # Kick a background refresh and return whatever is cached (or empty if first run).
     PriceRefreshJob.perform_async(portfolio.id)
     prices = Rails.cache.read("#{PriceRefreshJob::QUOTE_CACHE_PREFIX}#{portfolio.id}") || []

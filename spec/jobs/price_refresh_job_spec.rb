@@ -8,18 +8,17 @@ RSpec.describe PriceRefreshJob, type: :job do
 
   before do
     investment
-    allow(ENV).to receive(:fetch).with("ALPHA_VANTAGE_API_KEY", "demo").and_return("test-key")
   end
 
   context "when the portfolio exists" do
     it "caches quotes from the adapter" do
-      quote = { symbol: "AAPL", price: 120.0, change: 1.0, change_pct: 0.8, high: 121.0, low: 119.0, volume: 1000, latest_trading_day: "2026-08-11" }
-      adapter = instance_double(Providers::AlphaVantageAdapter, fetch_quote: quote)
-      allow(Providers::AlphaVantageAdapter).to receive(:new).and_return(adapter)
+      quote = { symbol: "AAPL", price: 120.0, previous_close: 119.0, currency: "USD", volume: 1000 }
+      adapter = instance_double(Providers::YahooFinanceAdapter, fetch_quote: quote)
+      allow(Providers::YahooFinanceAdapter).to receive(:new).and_return(adapter)
 
       expect(Rails.cache).to receive(:write).with(
         "#{PriceRefreshJob::QUOTE_CACHE_PREFIX}#{portfolio.id}",
-        array_including(hash_including(symbol: "AAPL", price: 120.0, gain: 200.0)),
+        array_including(hash_including(symbol: "AAPL", price: 120.0, change: 1.0, change_pct: 0.84, gain: 200.0)),
         expires_in: PriceRefreshJob::QUOTE_CACHE_TTL
       )
 
@@ -29,7 +28,7 @@ RSpec.describe PriceRefreshJob, type: :job do
 
   context "when the portfolio does not exist" do
     it "does nothing" do
-      expect(Providers::AlphaVantageAdapter).not_to receive(:new)
+      expect(Providers::YahooFinanceAdapter).not_to receive(:new)
       subject.perform(999_999)
     end
   end
