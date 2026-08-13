@@ -30,8 +30,10 @@ class Api::ReportsController < Api::BaseController
   end
 
   def net_worth
-    assets = current_user.portfolios.sum(&:total_value).to_f
-    liabilities = current_user.debts.active.sum { |d| d.remaining_amount }.to_f
+    assets = Investment.joins(:portfolio)
+                       .where(portfolios: { user_id: current_user.id })
+                       .sum("COALESCE(shares, 0) * COALESCE(current_price, 0)").to_f
+    liabilities = current_user.debts.active.sum("amount - paid_amount").to_f
     render_success({ net_worth: assets - liabilities, assets: assets, liabilities: liabilities })
   end
 end

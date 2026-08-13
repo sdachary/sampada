@@ -3,9 +3,19 @@
 class Api::DashboardController < Api::BaseController
   def show
     user = current_user
-    total_debt = user.debts.active.sum { |d| d.remaining_amount }.to_f
-    total_investments = user.portfolios.sum(&:total_value).to_f
-    monthly_expenses = user.recurring_expenses.active.sum(&:monthly_amount)
+    total_debt = user.debts.active.sum("amount - paid_amount").to_f
+    total_investments = Investment.joins(:portfolio)
+                                    .where(portfolios: { user_id: user.id })
+                                    .sum("COALESCE(shares, 0) * COALESCE(current_price, 0)").to_f
+    monthly_expenses_expr = <<~SQL.squish
+      CASE frequency
+        WHEN 'weekly' THEN amount * 4.33
+        WHEN 'monthly' THEN amount
+        WHEN 'quarterly' THEN amount / 3.0
+        WHEN 'yearly' THEN amount / 12.0
+        ELSE amount END
+    SQL
+    monthly_expenses = user.recurring_expenses.active.sum(monthly_expenses_expr).to_f
     net_worth = total_investments - total_debt
     journey = user.journeys.first
 
@@ -34,7 +44,7 @@ class Api::DashboardController < Api::BaseController
     user = current_user
     journey = user.journeys.first
     monthly_sip = journey&.monthly_sip_goal&.to_f || 0
-    total_debt = user.debts.active.sum { |d| d.remaining_amount }.to_f
+    total_debt = user.debts.active.sum("amount - paid_amount").to_f
     monthly_emi = user.debts.active.sum(:emi_amount).to_f
 
     projection = (1..60).map do |month|
