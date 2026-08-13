@@ -4,11 +4,12 @@ class Providers::AlphaVantageAdapter
   TIMEOUT = 5
 
   def fetch_quote(symbol)
-    response = HTTParty.get(BASE_URL, query: {
-      function: "GLOBAL_QUOTE", symbol: symbol, apikey: API_KEY
-    }, timeout: TIMEOUT)
+    response = Faraday.get(BASE_URL) do |req|
+      req.params = { function: "GLOBAL_QUOTE", symbol: symbol, apikey: API_KEY }
+      req.options.timeout = TIMEOUT
+    end
     return nil unless response.success?
-    data = response.parsed_response["Global Quote"] || {}
+    data = JSON.parse(response.body)["Global Quote"] || {}
     return nil if data.empty?
     {
       symbol: data["01. symbol"],
@@ -20,7 +21,7 @@ class Providers::AlphaVantageAdapter
       volume: data["06. volume"]&.to_i,
       latest_trading_day: data["07. latest trading day"]
     }
-  rescue HTTParty::Error, Net::OpenTimeout => e
+  rescue Faraday::Error, Net::OpenTimeout => e
     Rails.logger.warn "[AlphaVantage] Failed to fetch #{symbol}: #{e.message}"
     nil
   end
