@@ -7,7 +7,7 @@ module Ai
     end
 
     def currency_code
-      @user.currency.presence || "INR"
+      @user.currency.presence || 'INR'
     end
 
     def currency_symbol
@@ -28,7 +28,7 @@ module Ai
       "#{front},#{last3}"
     end
 
-    alias_method :sym, :currency_symbol
-    alias_method :format_rupee, :format_value
+    alias sym currency_symbol
+    alias format_rupee format_value
   end
 end

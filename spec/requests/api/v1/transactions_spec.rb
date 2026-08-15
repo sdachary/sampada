@@ -12,17 +12,17 @@ RSpec.describe 'Transactions API', type: :request do
     it 'returns empty array when no transactions exist' do
       get '/api/v1/transactions'
       expect(response).to have_http_status(:success)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json['transactions']).to eq([])
     end
 
     it 'returns a list of transactions when they exist' do
       create(:transaction, user: user, description: 'Grocery Shopping', amount: 50.0)
       create(:transaction, user: user, description: 'Salary', amount: 5000.0, transaction_type: 'income')
-      
+
       get '/api/v1/transactions'
       expect(response).to have_http_status(:success)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json['transactions'].length).to eq(2)
       expect(json['pagination']['total']).to eq(2)
     end
@@ -34,22 +34,22 @@ RSpec.describe 'Transactions API', type: :request do
         description: 'New Transaction',
         amount: 100.0,
         transaction_type: 'expense',
-        transaction_date: Date.today,
+        transaction_date: Time.zone.today,
         currency_code: 'INR'
       }
-      
-      expect {
+
+      expect do
         post '/api/v1/transactions', params: params
-      }.to change(Transaction, :count).by(1)
-      
+      end.to change(Transaction, :count).by(1)
+
       expect(response).to have_http_status(:created)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json['description']).to eq('New Transaction')
     end
 
     it 'returns unprocessable_entity when parameters are invalid' do
       params = { description: '', amount: 0 }
-      
+
       post '/api/v1/transactions', params: params
       expect(response).to have_http_status(:unprocessable_entity)
     end
@@ -59,9 +59,9 @@ RSpec.describe 'Transactions API', type: :request do
     it 'updates an existing transaction' do
       transaction = create(:transaction, user: user, description: 'Old Description')
       update_params = { description: 'Updated Description' }
-      
+
       put "/api/v1/transactions/#{transaction.id}", params: update_params
-      
+
       expect(response).to have_http_status(:success)
       expect(transaction.reload.description).to eq('Updated Description')
     end
@@ -70,11 +70,11 @@ RSpec.describe 'Transactions API', type: :request do
   describe 'DELETE /api/v1/transactions/:id' do
     it 'deletes the specified transaction' do
       transaction = create(:transaction, user: user)
-      
-      expect {
+
+      expect do
         delete "/api/v1/transactions/#{transaction.id}"
-      }.to change(Transaction, :count).by(-1)
-      
+      end.to change(Transaction, :count).by(-1)
+
       expect(response).to have_http_status(:no_content)
     end
   end

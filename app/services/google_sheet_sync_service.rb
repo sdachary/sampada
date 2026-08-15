@@ -23,7 +23,7 @@ class GoogleSheetSyncService
     populate_net_worth
     populate_budgets
     { success: true, spreadsheet_id: @spreadsheet_id }
-  rescue => e
+  rescue StandardError => e
     Rails.logger.error "[SheetSync] Failed for user #{@user.id}: #{e.message}"
     { success: false, error: e.message }
   end
@@ -31,12 +31,10 @@ class GoogleSheetSyncService
   private
 
   def find_or_create_spreadsheet
-    require "google/apis/sheets_v4"
-    require "googleauth"
+    require 'google/apis/sheets_v4'
+    require 'googleauth'
     response = @drive.list_files(q: "name='Sampada — Financial Summary' and trashed=false", spaces: 'drive')
-    if response.files.any?
-      return response.files.first.id
-    end
+    return response.files.first.id if response.files.any?
 
     spreadsheet = Google::Apis::SheetsV4::Spreadsheet.new(
       properties: Google::Apis::SheetsV4::SpreadsheetProperties.new(
@@ -50,7 +48,7 @@ class GoogleSheetSyncService
   def populate_summary
     total_assets = @user.net_worth_snapshots.last&.total_assets || 0
     total_liabilities = @user.net_worth_snapshots.last&.total_liabilities || 0
-    total_debts = @user.debts.sum { |d| d.remaining_amount }
+    total_debts = @user.debts.sum(&:remaining_amount)
     total_invested = @user.portfolios.sum(:total_value)
 
     values = [
@@ -71,7 +69,7 @@ class GoogleSheetSyncService
     rows = @user.transactions.order(transaction_date: :desc).limit(1000).map do |t|
       [t.transaction_date, t.description, t.amount, t.transaction_type, t.currency_code]
     end
-    write_range(TAB_NAMES[:transactions], [['Date', 'Description', 'Amount', 'Type', 'Currency']] + rows)
+    write_range(TAB_NAMES[:transactions], [%w[Date Description Amount Type Currency]] + rows)
   end
 
   def populate_debts
@@ -117,6 +115,6 @@ class GoogleSheetSyncService
     range = "'#{tab_name}'!A1"
     value_range = Google::Apis::SheetsV4::ValueRange.new(values: values)
     @sheets.update_spreadsheet_value(@spreadsheet_id, range, value_range,
-      value_input_option: 'USER_ENTERED')
+                                     value_input_option: 'USER_ENTERED')
   end
 end

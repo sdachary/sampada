@@ -1,9 +1,10 @@
 class SecurityHealthCheckJob
   include Sidekiq::Job
+
   sidekiq_options queue: :maintenance, retry: 2
 
-  def perform(*args)
-    stale_investments = Investment.where("updated_at < ?", 7.days.ago)
+  def perform(*_args)
+    stale_investments = Investment.where(updated_at: ...7.days.ago)
     Rails.logger.info "[SecurityHealthCheck] #{stale_investments.count} investments stale (not updated in 7 days)"
 
     stale_investments.find_each do |inv|
@@ -11,9 +12,9 @@ class SecurityHealthCheckJob
     end
 
     missing_prices = Investment.where(current_price: nil).where.not(symbol: nil)
-    if missing_prices.any?
-      Rails.logger.warn "[SecurityHealthCheck] #{missing_prices.count} investments missing prices"
-      ImportMarketDataJob.perform_async
-    end
+    return unless missing_prices.any?
+
+    Rails.logger.warn "[SecurityHealthCheck] #{missing_prices.count} investments missing prices"
+    ImportMarketDataJob.perform_async
   end
 end

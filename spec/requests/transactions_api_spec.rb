@@ -11,7 +11,7 @@ RSpec.describe 'Transactions API', type: :request do
     it 'returns empty array when no transactions' do
       get '/api/v1/transactions'
       expect(response).to have_http_status(:success)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json['transactions']).to eq([])
     end
 
@@ -19,7 +19,7 @@ RSpec.describe 'Transactions API', type: :request do
       create(:transaction, user: user, description: 'Groceries', amount: 500)
       get '/api/v1/transactions'
       expect(response).to have_http_status(:success)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json['transactions'].length).to eq(1)
     end
   end
@@ -29,17 +29,18 @@ RSpec.describe 'Transactions API', type: :request do
       transaction = create(:transaction, user: user, description: 'Rent')
       get "/api/v1/transactions/#{transaction.id}"
       expect(response).to have_http_status(:success)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json['description']).to eq('Rent')
     end
   end
 
   describe 'POST /api/v1/transactions' do
     it 'creates transaction with valid params' do
-      params = { transaction: { description: 'Salary', amount: 50000, transaction_type: 'income', transaction_date: Date.today } }
+      params = { transaction: { description: 'Salary', amount: 50_000, transaction_type: 'income',
+                                transaction_date: Time.zone.today } }
       post '/api/v1/transactions', params: params
       expect(response).to have_http_status(:created)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json['description']).to eq('Salary')
     end
 
@@ -56,7 +57,7 @@ RSpec.describe 'Transactions API', type: :request do
       params = { transaction: { description: 'Updated' } }
       put "/api/v1/transactions/#{transaction.id}", params: params
       expect(response).to have_http_status(:success)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json['description']).to eq('Updated')
     end
   end

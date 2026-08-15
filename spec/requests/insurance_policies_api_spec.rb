@@ -11,7 +11,7 @@ RSpec.describe 'Insurance Policies API', type: :request do
     it 'returns empty array when no policies' do
       get '/api/v1/insurance_policies'
       expect(response).to have_http_status(:success)
-      expect(JSON.parse(response.body)).to eq([])
+      expect(response.parsed_body).to eq([])
     end
 
     it 'returns all policies' do
@@ -19,7 +19,7 @@ RSpec.describe 'Insurance Policies API', type: :request do
       create(:insurance_policy, user: user, provider_name: 'Star Term Life')
       get '/api/v1/insurance_policies'
       expect(response).to have_http_status(:success)
-      expect(JSON.parse(response.body).length).to eq(2)
+      expect(response.parsed_body.length).to eq(2)
     end
   end
 
@@ -28,7 +28,7 @@ RSpec.describe 'Insurance Policies API', type: :request do
       policy = create(:insurance_policy, user: user, provider_name: 'LIC Health')
       get "/api/v1/insurance_policies/#{policy.id}"
       expect(response).to have_http_status(:success)
-      expect(JSON.parse(response.body)['provider_name']).to eq('LIC Health')
+      expect(response.parsed_body['provider_name']).to eq('LIC Health')
     end
 
     it 'returns not found for invalid id' do
@@ -42,15 +42,15 @@ RSpec.describe 'Insurance Policies API', type: :request do
       params = {
         policy_type: 'health',
         provider_name: 'HDFC Ergo',
-        premium_amount: 15000,
+        premium_amount: 15_000,
         premium_frequency: 'yearly',
-        coverage_amount: 500000
+        coverage_amount: 500_000
       }
       post '/api/v1/insurance_policies', params: params
       expect(response).to have_http_status(:created)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json['provider_name']).to eq('HDFC Ergo')
-      expect(json['premium_amount']).to eq(15000.0)
+      expect(json['premium_amount']).to eq(15_000.0)
     end
 
     it 'returns errors with invalid params' do
@@ -64,7 +64,7 @@ RSpec.describe 'Insurance Policies API', type: :request do
       policy = create(:insurance_policy, user: user, provider_name: 'Old Name')
       put "/api/v1/insurance_policies/#{policy.id}", params: { provider_name: 'Updated Name' }
       expect(response).to have_http_status(:success)
-      expect(JSON.parse(response.body)['provider_name']).to eq('Updated Name')
+      expect(response.parsed_body['provider_name']).to eq('Updated Name')
     end
 
     it 'returns errors with invalid params' do

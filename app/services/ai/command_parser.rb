@@ -21,13 +21,11 @@ module Ai
         :forecast
       elsif export_request?(down)
         :export
-      else
-        nil
       end
     end
 
     def create_transaction(prompt)
-      amounts = prompt.scan(/[\d,.]+/).map { |a| a.gsub(/[,\s]/, "").to_f }.reject(&:zero?)
+      amounts = prompt.scan(/[\d,.]+/).map { |a| a.gsub(/[,\s]/, '').to_f }.reject(&:zero?)
       return "I couldn't find an amount in your message. Try: \"I spent ₹500 on groceries\"" if amounts.empty?
 
       amount = amounts.first
@@ -35,23 +33,23 @@ module Ai
       description = extract_description(prompt)
       category = extract_category(prompt)
 
-      transaction = @user.transactions.create!(
+      @user.transactions.create!(
         description: description,
         amount: amount,
         transaction_type: type,
-        transaction_date: Date.today,
+        transaction_date: Time.zone.today,
         currency_code: @user.currency,
         budget_category: category
       )
 
-      cat_name = category&.name || "Uncategorized"
+      cat_name = category&.name || 'Uncategorized'
       "✅ Recorded: #{type == 'expense' ? 'Spent' : 'Received'} #{@formatter.format_amount(amount)} on #{description} (#{cat_name})"
     rescue ActiveRecord::RecordInvalid => e
       "Sorry, I couldn't save that transaction: #{e.message}"
     end
 
     def create_budget(prompt)
-      amounts = prompt.scan(/[\d,.]+/).map { |a| a.gsub(/[,\s]/, "").to_f }.reject(&:zero?)
+      amounts = prompt.scan(/[\d,.]+/).map { |a| a.gsub(/[,\s]/, '').to_f }.reject(&:zero?)
       return "I couldn't find a budget amount. Try: \"Set a ₹10,000 budget for Food\"" if amounts.empty?
 
       amount = amounts.first
@@ -61,11 +59,11 @@ module Ai
         c.color = BudgetCategory.category_colors[rand(BudgetCategory.category_colors.length)]
       end
 
-      budget = @user.budgets.create!(
+      @user.budgets.create!(
         budget_category: category,
         monthly_limit: amount,
         currency_code: @user.currency,
-        period: "monthly"
+        period: 'monthly'
       )
 
       "✅ Budget set: #{@formatter.format_amount(amount)}/month for #{category.name}"
@@ -75,7 +73,7 @@ module Ai
 
     def categorize_recent_transactions
       uncategorized = @user.transactions.uncategorized.recent.limit(20)
-      return "No uncategorized transactions found!" if uncategorized.empty?
+      return 'No uncategorized transactions found!' if uncategorized.empty?
 
       categorized = 0
       uncategorized.each do |t|
@@ -93,51 +91,51 @@ module Ai
 
     def transaction_request?(down, prompt)
       amounts = prompt.scan(/[\d,.]+/)
-      (down.include?("spent") || down.include?("paid") || down.include?("earned") ||
-       down.include?("received") || down.include?("bought") || down.include?("purchased")) &&
-       amounts.any? { |a| a.gsub(/[,.]/, "").to_i > 0 }
+      (down.include?('spent') || down.include?('paid') || down.include?('earned') ||
+       down.include?('received') || down.include?('bought') || down.include?('purchased')) &&
+        amounts.any? { |a| a.gsub(/[,.]/, '').to_i.positive? }
     end
 
     def budget_request?(down)
-      down.include?("set a budget") || down.include?("create a budget") ||
-      down.include?("budget for") || (down.include?("limit") && down.include?("category"))
+      down.include?('set a budget') || down.include?('create a budget') ||
+        down.include?('budget for') || (down.include?('limit') && down.include?('category'))
     end
 
     def categorize_request?(down)
-      (down.include?("categorize") || down.include?("sort") || down.include?("organize")) &&
-      (down.include?("transaction") || down.include?("expense") || down.include?("spending"))
+      (down.include?('categorize') || down.include?('sort') || down.include?('organize')) &&
+        (down.include?('transaction') || down.include?('expense') || down.include?('spending'))
     end
 
     def anomaly_request?(down)
-      down.include?("anomaly") || down.include?("unusual") || down.include?("abnormal") ||
-      down.include?("suspicious") || down.include?("detect") || down.include?("irregular")
+      down.include?('anomaly') || down.include?('unusual') || down.include?('abnormal') ||
+        down.include?('suspicious') || down.include?('detect') || down.include?('irregular')
     end
 
     def forecast_request?(down)
-      down.include?("forecast") || down.include?("projection") || down.include?("predict") ||
-      down.include?("future") || (down.include?("cash flow") && down.include?("look"))
+      down.include?('forecast') || down.include?('projection') || down.include?('predict') ||
+        down.include?('future') || (down.include?('cash flow') && down.include?('look'))
     end
 
     def export_request?(down)
-      down.include?("export") || down.include?("download") ||
-      (down.include?("generate") && (down.include?("report") || down.include?("csv")))
+      down.include?('export') || down.include?('download') ||
+        (down.include?('generate') && (down.include?('report') || down.include?('csv')))
     end
 
     def expense_income_type(prompt)
       down = prompt.to_s.downcase
-      if down.include?("earned") || down.include?("received") || down.include?("salary") ||
-         down.include?("income") || down.include?("deposited") || down.include?("paid me")
-        "income"
+      if down.include?('earned') || down.include?('received') || down.include?('salary') ||
+         down.include?('income') || down.include?('deposited') || down.include?('paid me')
+        'income'
       else
-        "expense"
+        'expense'
       end
     end
 
     def extract_description(prompt)
       prompt = prompt.to_s
-      prompt = prompt.gsub(/\b(spent|paid|earned|received|bought|purchased|for|on)\b/i, "")
-      prompt = prompt.gsub(/[\d,. ₹$€£¥]+/, "").strip
-      prompt.presence || "General expense"
+      prompt = prompt.gsub(/\b(spent|paid|earned|received|bought|purchased|for|on)\b/i, '')
+      prompt = prompt.gsub(/[\d,. ₹$€£¥]+/, '').strip
+      prompt.presence || 'General expense'
     end
 
     def extract_category(prompt)
@@ -153,25 +151,25 @@ module Ai
       BudgetCategory::DEFAULT_CATEGORIES.each do |name|
         return name if down.include?(name.downcase)
       end
-      "Other"
+      'Other'
     end
 
     def suggest_category(transaction)
       desc = transaction.description.to_s.downcase
       keywords = {
-        "Food" => %w[food restaurant grocery cafe lunch dinner snack zomato swiggy],
-        "Transport" => %w[uber ola petrol fuel taxi bus train metro parking],
-        "Utilities" => %w[electricity water gas bill broadband phone mobile],
-        "Rent" => %w[rent lease apartment housing],
-        "Entertainment" => %w[movie netflix spotify amazon prime game music],
-        "Healthcare" => %w[hospital doctor medicine pharmacy clinic health],
-        "Shopping" => %w[amazon flipkart cloth shoe apparel purchase],
-        "Education" => %w[course book udemy coursera tuition fee class],
-        "Insurance" => %w[insurance premium policy],
-        "Savings" => %w[savings deposit fd fixed recurring rd],
-        "Salary" => %w[salary payroll wage income],
-        "Freelance" => %w[freelance contract project payment upwork fiverr],
-        "Business" => %w[business revenue invoice vendor supplier]
+        'Food' => %w[food restaurant grocery cafe lunch dinner snack zomato swiggy],
+        'Transport' => %w[uber ola petrol fuel taxi bus train metro parking],
+        'Utilities' => %w[electricity water gas bill broadband phone mobile],
+        'Rent' => %w[rent lease apartment housing],
+        'Entertainment' => %w[movie netflix spotify amazon prime game music],
+        'Healthcare' => %w[hospital doctor medicine pharmacy clinic health],
+        'Shopping' => %w[amazon flipkart cloth shoe apparel purchase],
+        'Education' => %w[course book udemy coursera tuition fee class],
+        'Insurance' => %w[insurance premium policy],
+        'Savings' => %w[savings deposit fd fixed recurring rd],
+        'Salary' => %w[salary payroll wage income],
+        'Freelance' => %w[freelance contract project payment upwork fiverr],
+        'Business' => %w[business revenue invoice vendor supplier]
       }
 
       keywords.each do |category, words|

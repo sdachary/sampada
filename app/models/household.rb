@@ -10,14 +10,14 @@ class Household < TenantRecord
   validates :name, presence: true
 
   def owner
-    household_memberships.find_by(role: "owner")&.user
+    household_memberships.find_by(role: 'owner')&.user
   end
 
   def member?(user)
     household_memberships.exists?(user: user)
   end
 
-  def add_member(user, role: "member")
+  def add_member(user, role: 'member')
     household_memberships.create!(user: user, role: role, joined_at: Time.current)
   end
 end

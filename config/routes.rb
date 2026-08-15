@@ -1,9 +1,9 @@
-require "sidekiq/web"
+require 'sidekiq/web'
 
 Rails.application.routes.draw do
-  mount Sidekiq::Web => "/sidekiq"
+  mount Sidekiq::Web => '/sidekiq'
 
-  get "up" => "health#show", as: :rails_health_check
+  get 'up' => 'health#show', as: :rails_health_check
 
   # API Auth
   scope '/api/v1', module: 'api' do
@@ -23,26 +23,26 @@ Rails.application.routes.draw do
 
   # API v1
   scope '/api/v1', module: 'api', as: 'api' do
-    resources :conversations, only: [:index, :show, :create, :destroy] do
-      resources :messages, only: [:index, :create]
+    resources :conversations, only: %i[index show create destroy] do
+      resources :messages, only: %i[index create]
     end
-    resources :debts, only: [:index, :show, :create, :update, :destroy] do
+    resources :debts, only: %i[index show create update destroy] do
       member do
         post :simulate
       end
     end
     resources :payoff_plans
-    resources :insurance_policies, only: [:index, :show, :create, :update, :destroy]
+    resources :insurance_policies, only: %i[index show create update destroy]
     get 'onboarding/snapshot', to: 'onboarding#snapshot'
     post 'onboarding/complete', to: 'onboarding#complete'
-    resources :portfolios, only: [:index, :show, :create, :update, :destroy] do
+    resources :portfolios, only: %i[index show create update destroy] do
       member do
         post :rebalance
         get :prices
       end
     end
-    resources :investments, only: [:index, :create, :update, :destroy]
-    resources :dividend_sips, only: [:index, :show, :create, :update, :destroy] do
+    resources :investments, only: %i[index create update destroy]
+    resources :dividend_sips, only: %i[index show create update destroy] do
       member do
         get :suggest
       end
@@ -51,9 +51,9 @@ Rails.application.routes.draw do
       get :progress
       get :net_worth
     end
-    resource :ai_settings, only: [:show, :update, :destroy], controller: 'ai_settings'
-    resources :net_worth_snapshots, only: [:index, :show]
-    resources :recurring_expenses, only: [:index, :show, :create, :update, :destroy] do
+    resource :ai_settings, only: %i[show update destroy], controller: 'ai_settings'
+    resources :net_worth_snapshots, only: %i[index show]
+    resources :recurring_expenses, only: %i[index show create update destroy] do
       collection do
         get :calendar
       end
@@ -61,22 +61,22 @@ Rails.application.routes.draw do
         get :calendar
       end
     end
-    resources :notifications, only: [:index, :update] do
+    resources :notifications, only: %i[index update] do
       collection { post :mark_all_read }
     end
-    get "dashboard", to: "dashboard#show"
-    get "dashboard/projection", to: "dashboard#projection"
+    get 'dashboard', to: 'dashboard#show'
+    get 'dashboard/projection', to: 'dashboard#projection'
 
-    resources :budget_categories, only: [:index, :create, :update, :destroy] do
+    resources :budget_categories, only: %i[index create update destroy] do
       collection { post :seed }
     end
-    resources :transactions, only: [:index, :show, :create, :update, :destroy] do
+    resources :transactions, only: %i[index show create update destroy] do
       collection do
         get :monthly_totals
         post :bulk_create
       end
     end
-    resources :budgets, only: [:index, :show, :create, :update, :destroy] do
+    resources :budgets, only: %i[index show create update destroy] do
       collection { get :overview }
     end
 
@@ -97,7 +97,7 @@ Rails.application.routes.draw do
       get :net_worth
     end
 
-    resources :households, only: [:index, :show, :create, :update, :destroy] do
+    resources :households, only: %i[index show create update destroy] do
       member do
         get :members
         post :invite
@@ -106,12 +106,12 @@ Rails.application.routes.draw do
       end
     end
 
-    resources :trips, only: [:index, :show, :create, :update, :destroy] do
-      resources :trip_members, only: [:index, :create, :destroy], controller: 'trip_members'
-      resources :trip_expenses, only: [:index, :create, :destroy], controller: 'trip_expenses'
-      resources :trip_settlements, only: [:index, :create], controller: 'trip_settlements'
+    resources :trips, only: %i[index show create update destroy] do
+      resources :trip_members, only: %i[index create destroy], controller: 'trip_members'
+      resources :trip_expenses, only: %i[index create destroy], controller: 'trip_expenses'
+      resources :trip_settlements, only: %i[index create], controller: 'trip_settlements'
     end
 
-    resources :api_credentials, only: [:index, :create, :update, :destroy]
+    resources :api_credentials, only: %i[index create update destroy]
   end
 end

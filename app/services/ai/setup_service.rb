@@ -9,8 +9,8 @@ module Ai
     def setup_conversation?(prompt)
       down = prompt.to_s.downcase
       !configured? && (
-        down.include?("setup") || down.include?("configure") ||
-        down.include?("enable ai") || down.include?("turn on ai") ||
+        down.include?('setup') || down.include?('configure') ||
+        down.include?('enable ai') || down.include?('turn on ai') ||
         down.match?(/\b(ollama|openrouter|api.key|api_key)\b/)
       )
     end
@@ -19,7 +19,7 @@ module Ai
       down = prompt.to_s.downcase
       sys = SystemDetector.summary
 
-      if down.include?("ollama") && !sys[:ollama_installed]
+      if down.include?('ollama') && !sys[:ollama_installed]
         return AiResponse.new(
           text: "Ollama isn't installed on your system yet. To install it:\n\n" \
                 "1. Visit https://ollama.com and download the installer\n" \
@@ -30,7 +30,7 @@ module Ai
         )
       end
 
-      if down.include?("ollama") && sys[:ollama_installed] && !sys[:ollama_running]
+      if down.include?('ollama') && sys[:ollama_installed] && !sys[:ollama_running]
         return AiResponse.new(
           text: "Ollama is installed but not running. Can you start it?\n\n" \
                 "Open a terminal and run: `ollama serve`\n" \
@@ -40,31 +40,31 @@ module Ai
         )
       end
 
-      if down.include?("ollama") && sys[:ollama_running]
-        save_setting("ai_provider", "ollama")
-        save_setting("ai_model", "gemma:2b")
-        save_setting("ai_uri", "http://localhost:11434/v1")
+      if down.include?('ollama') && sys[:ollama_running]
+        save_setting('ai_provider', 'ollama')
+        save_setting('ai_model', 'gemma:2b')
+        save_setting('ai_uri', 'http://localhost:11434/v1')
         return AiResponse.new(
           text: "Perfect! I've configured Sampada to use Ollama locally with Gemma 2B. " \
                 "Your data stays on your machine — completely private.\n\n" \
-                "Now, what financial question can I help you with?",
-          setup: { type: :complete, provider: "ollama" }
+                'Now, what financial question can I help you with?',
+          setup: { type: :complete, provider: 'ollama' }
         )
       end
 
-      if down.include?("openrouter") || down.include?("api key") || down.include?("api_key")
-        if down.include?("sk-or-")
-          save_setting("ai_provider", "openrouter")
-          save_setting("ai_api_key", extract_key(prompt))
-          save_setting("ai_model", "google/gemini-2.0-flash-lite-001")
-          save_setting("ai_uri", "https://openrouter.ai/api/v1")
+      if down.include?('openrouter') || down.include?('api key') || down.include?('api_key')
+        if down.include?('sk-or-')
+          save_setting('ai_provider', 'openrouter')
+          save_setting('ai_api_key', extract_key(prompt))
+          save_setting('ai_model', 'google/gemini-2.0-flash-lite-001')
+          save_setting('ai_uri', 'https://openrouter.ai/api/v1')
           return AiResponse.new(
             text: "Got your OpenRouter key! I've saved it securely. You're all set up.\n\n" \
-                  "🔒 **Privacy note**: When using cloud AI, your financial summaries " \
-                  "(debt amounts, portfolio values) are sent to help me answer accurately. " \
+                  '🔒 **Privacy note**: When using cloud AI, your financial summaries ' \
+                  '(debt amounts, portfolio values) are sent to help me answer accurately. ' \
                   "No personal info (names, emails) is shared.\n\n" \
-                  "What would you like to work on?",
-            setup: { type: :complete, provider: "openrouter" }
+                  'What would you like to work on?',
+            setup: { type: :complete, provider: 'openrouter' }
           )
         end
 
@@ -73,13 +73,13 @@ module Ai
                 "1. Go to https://openrouter.ai/keys\n" \
                 "2. Sign up (free) and create a key\n" \
                 "3. Paste the key here (it starts with 'sk-or-') and I'll save it\n\n" \
-                "The free tier includes models like Gemini Flash — perfect for personal finance.",
-          setup: { type: :awaiting_api_key, provider: "openrouter" }
+                'The free tier includes models like Gemini Flash — perfect for personal finance.',
+          setup: { type: :awaiting_api_key, provider: 'openrouter' }
         )
       end
 
-      if down.include?("no") || down.include?("skip") || down.include?("not now")
-        save_setting("ai_provider", "disabled")
+      if down.include?('no') || down.include?('skip') || down.include?('not now')
+        save_setting('ai_provider', 'disabled')
         return AiResponse.new(
           text: "No problem! I'll use my built-in financial knowledge to help you. " \
                 "You can always enable AI later by saying 'setup AI'.",
@@ -112,7 +112,7 @@ module Ai
     private
 
     def configured?
-      Setting.get("ai_provider", user: @user).present?
+      Setting.get('ai_provider', user: @user).present?
     end
 
     def save_setting(key, value)

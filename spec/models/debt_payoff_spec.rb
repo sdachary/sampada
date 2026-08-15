@@ -1,8 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe DebtPayoff, type: :model do
-  it { should have_many(:debts) }
-  it { should validate_presence_of(:strategy) }
+  it { is_expected.to have_many(:debts) }
+  it { is_expected.to validate_presence_of(:strategy) }
 
   describe 'validations' do
     it 'is valid with valid attributes' do

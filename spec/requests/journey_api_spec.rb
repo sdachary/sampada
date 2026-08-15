@@ -11,7 +11,7 @@ RSpec.describe 'Journey API', type: :request do
     it 'returns journey data' do
       get '/api/v1/journey'
       expect(response).to have_http_status(:success)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json).to have_key('debt')
       expect(json).to have_key('sip')
       expect(json).to have_key('net_worth')
@@ -19,16 +19,16 @@ RSpec.describe 'Journey API', type: :request do
     end
 
     it 'returns debt progress' do
-      create(:debt, user: user, amount: 50000, emi_amount: 1000)
+      create(:debt, user: user, amount: 50_000, emi_amount: 1000)
       get '/api/v1/journey'
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json['debt']).to have_key('total_debt')
       expect(json['debt']).to have_key('total_emi')
     end
 
     it 'returns net worth trajectory' do
       get '/api/v1/journey'
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json['net_worth']).to have_key('net_worth')
       expect(json['net_worth']).to have_key('assets')
       expect(json['net_worth']).to have_key('liabilities')
@@ -39,7 +39,7 @@ RSpec.describe 'Journey API', type: :request do
     it 'returns progress data' do
       get '/api/v1/journey/progress'
       expect(response).to have_http_status(:success)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json).to have_key('debt_progress')
       expect(json).to have_key('sip_progress')
       expect(json).to have_key('net_worth_trajectory')
@@ -51,14 +51,14 @@ RSpec.describe 'Journey API', type: :request do
     it 'returns net worth trajectory' do
       get '/api/v1/journey/net_worth'
       expect(response).to have_http_status(:success)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json).to have_key('net_worth')
       expect(json).to have_key('trajectory')
     end
 
     it 'returns trajectory as array' do
       get '/api/v1/journey/net_worth'
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json['trajectory']).to be_an(Array)
     end
   end

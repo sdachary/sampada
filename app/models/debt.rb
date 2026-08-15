@@ -13,27 +13,30 @@ class Debt < TenantRecord
   }, allow_nil: true
   validates :currency_code, inclusion: { in: Currency::CURRENCY_SYMBOLS.keys }, allow_nil: true
 
-  scope :active, -> { where(status: "active") }
+  scope :active, -> { where(status: 'active') }
 
   def active?
-    status == "active"
+    status == 'active'
   end
 
   after_create :schedule_reminders
 
   def months_remaining
     return 0 if emi_amount.nil? || emi_amount <= 0 || amount <= 0
+
     remaining = amount - paid_amount
     (remaining / emi_amount).ceil
   end
 
   def debt_free_date
     return nil if months_remaining <= 0
-    (started_at || Date.today) + months_remaining.months
+
+    (started_at || Time.zone.today) + months_remaining.months
   end
 
   def progress_percentage
     return 0.0 if amount <= 0
+
     [(paid_amount / amount * 100).round(1), 100.0].min
   end
 
@@ -45,6 +48,7 @@ class Debt < TenantRecord
 
   def schedule_reminders
     return unless emi_amount&.positive?
-    ExpenseReminderJob.set(wait: 1.day).perform_later("debt", id)
+
+    ExpenseReminderJob.set(wait: 1.day).perform_later('debt', id)
   end
 end

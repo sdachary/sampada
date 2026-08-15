@@ -25,7 +25,7 @@ class NotificationMailer < ApplicationMailer
     @stats = stats
     mail(
       to: user.email,
-      subject: "Your Weekly Sampada Digest",
+      subject: 'Your Weekly Sampada Digest',
       body: "Hi #{user.email},\n\nHere's your weekly Sampada digest:\n\n#{stats}\n\nThanks,\nSampada Team"
     )
   end

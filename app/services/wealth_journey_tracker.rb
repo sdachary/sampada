@@ -6,7 +6,7 @@ class WealthJourneyTracker
   end
 
   def debt_progress
-    debts = Debt.where(user: @user, status: "active")
+    debts = Debt.where(user: @user, status: 'active')
     total_debt = debts.sum { |d| convert(d.remaining_amount, d.currency_code) }
     total_emi = debts.sum { |d| convert(d.emi_amount.to_f, d.currency_code) }
     payoff = payoff_projection(debts)
@@ -19,7 +19,7 @@ class WealthJourneyTracker
       estimated_debt_free_date: payoff ? payoff[:debt_free_date] : nil,
       progress_percentage: debts.any? ? debts.sum(&:progress_percentage) / debts.count : 100.0,
       base_currency: @base_currency,
-      debts: debts.map { |d|
+      debts: debts.map do |d|
         {
           id: d.id, name: d.name, amount: d.amount, remaining: d.remaining_amount,
           interest_rate: d.interest_rate, emi_amount: d.emi_amount,
@@ -27,12 +27,12 @@ class WealthJourneyTracker
           months_remaining: d.months_remaining, debt_free_date: d.debt_free_date,
           currency_code: d.currency_code
         }
-      }
+      end
     }
   end
 
   def sip_progress
-    sips = DividendSip.where(status: "active")
+    sips = DividendSip.where(status: 'active')
     total_monthly = sips.sum { |s| convert(s.monthly_contribution, s.currency_code) }
     projected_annual = total_monthly * 12 * 0.08
     target_income = convert(sips.first&.target_income.to_f, sips.first&.currency_code || @base_currency)
@@ -45,35 +45,35 @@ class WealthJourneyTracker
       goal: target_income,
       current: total_monthly,
       projected_income: projected_annual / 12,
-      progress: target_income > 0 ? [(projected_annual / 12 / target_income * 100).round(1), 100.0].min : 0,
+      progress: target_income.positive? ? [(projected_annual / 12 / target_income * 100).round(1), 100.0].min : 0,
       base_currency: @base_currency,
-      sips: sips.map { |s|
+      sips: sips.map do |s|
         {
           id: s.id, amount: s.amount, frequency: s.frequency,
           target_income: s.target_income, status: s.status,
           monthly_contribution: s.monthly_contribution,
           currency_code: s.currency_code
         }
-      }
+      end
     }
   end
 
   def net_worth_trajectory(months: 12)
     current = NetWorthSnapshot.current(@user)
-    debts = Debt.where(user: @user, status: "active")
+    debts = Debt.where(user: @user, status: 'active')
     total_emi = debts.sum { |d| convert(d.emi_amount.to_f, d.currency_code) }
     payoff = payoff_projection(debts)
     max_months = payoff ? payoff[:months] : 0
 
     trajectory = (0..months).map do |m|
-      month_date = Date.today + m.months
+      month_date = Time.zone.today + m.months
       debt_reduction = total_emi * [m, max_months].min
-      asset_growth = current.total_assets * 1.005 ** m
+      asset_growth = current.total_assets * (1.005**m)
       liability = [current.total_liabilities - debt_reduction, 0].max
 
       {
-        month: month_date.strftime("%Y-%m"),
-        label: month_date.strftime("%b %Y"),
+        month: month_date.strftime('%Y-%m'),
+        label: month_date.strftime('%b %Y'),
         net_worth: (asset_growth - liability).round(2),
         assets: asset_growth.round(2),
         liabilities: liability.round(2)
@@ -97,13 +97,15 @@ class WealthJourneyTracker
   def wealth_growth_projection
     current = NetWorthSnapshot.current(@user)
     yearly_rate = 0.10
-    monthly_contribution = DividendSip.where(status: "active").sum { |s| convert(s.monthly_contribution, s.currency_code) }
+    monthly_contribution = DividendSip.where(status: 'active').sum do |s|
+      convert(s.monthly_contribution, s.currency_code)
+    end
 
     (1..30).map do |year|
-      year_date = Date.today + year.years
+      year_date = Time.zone.today + year.years
       current_net = current.net_worth.to_f
-      projected = current_net * (1 + yearly_rate) ** year
-      projected += monthly_contribution * 12 * year * (1 + yearly_rate / 2) ** year
+      projected = current_net * ((1 + yearly_rate)**year)
+      projected += monthly_contribution * 12 * year * ((1 + (yearly_rate / 2))**year)
 
       {
         year: year_date.year,
@@ -115,12 +117,12 @@ class WealthJourneyTracker
   end
 
   def zero_day_milestone
-    debts = Debt.where(user: @user, status: "active")
-    return { reached: true, estimated_date: Date.today, message: "You are debt-free!" } if debts.empty?
+    debts = Debt.where(user: @user, status: 'active')
+    return { reached: true, estimated_date: Time.zone.today, message: 'You are debt-free!' } if debts.empty?
 
     payoff = payoff_projection(debts)
     max_months = payoff ? payoff[:months] : debts.map(&:months_remaining).max || 0
-    est_date = Date.today + max_months.months
+    est_date = Time.zone.today + max_months.months
 
     {
       reached: false,
@@ -128,7 +130,7 @@ class WealthJourneyTracker
       months_remaining: max_months,
       total_debt: debts.sum { |d| convert(d.remaining_amount, d.currency_code) },
       base_currency: @base_currency,
-      message: max_months > 0 ? "Debt-free by #{est_date.strftime('%b %Y')}" : "No active debts"
+      message: max_months.positive? ? "Debt-free by #{est_date.strftime('%b %Y')}" : 'No active debts'
     }
   end
 
@@ -167,19 +169,20 @@ class WealthJourneyTracker
     return nil if debts.empty?
 
     debt_attrs = debts.map do |d|
-      { id: d.id, balance: d.remaining_amount.to_f, interest_rate: d.interest_rate.to_f, min_payment: d.emi_amount.to_f }
+      { id: d.id, balance: d.remaining_amount.to_f, interest_rate: d.interest_rate.to_f,
+        min_payment: d.emi_amount.to_f }
     end
 
     service = DebtPayoffService.new(debt_attrs)
     result = service.avalanche_plan
-    return nil if result.nil? || result[:months] == 0
+    return nil if result.nil? || result[:months].zero?
 
     {
       months: result[:months],
       total_interest: result[:total_interest],
-      debt_free_date: Date.today + result[:months].months
+      debt_free_date: Time.zone.today + result[:months].months
     }
-  rescue => e
+  rescue StandardError => e
     Rails.logger.warn "[WealthJourneyTracker] Payoff projection failed: #{e.message}"
     nil
   end
@@ -189,9 +192,19 @@ class WealthJourneyTracker
   end
 
   def calculate_wealth_score(debt, sip, net)
-    debt_score = debt[:total_debt] > 0 ? [(1 - debt[:total_debt] / [net[:current_net_worth], 1].max) * 40, 0].max : 40
-    sip_score = sip[:target_monthly_income] > 0 ? [(sip[:projected_monthly_income] / sip[:target_monthly_income]) * 30, 30].min : 0
-    net_score = net[:current_net_worth] > 0 ? [[net[:current_net_worth] / 1_000_000 * 30, 30].min, 0].max : 0
+    debt_score = if debt[:total_debt].positive?
+                   [(1 - (debt[:total_debt] / [net[:current_net_worth], 1].max)) * 40,
+                    0].max
+                 else
+                   40
+                 end
+    sip_score = if sip[:target_monthly_income].positive?
+                  [(sip[:projected_monthly_income] / sip[:target_monthly_income]) * 30,
+                   30].min
+                else
+                  0
+                end
+    net_score = net[:current_net_worth].positive? ? (net[:current_net_worth] / 1_000_000 * 30).clamp(0, 30) : 0
 
     (debt_score + sip_score + net_score).round
   end

@@ -1,19 +1,19 @@
-require "rails_helper"
+require 'rails_helper'
 
 RSpec.describe Household, type: :model do
-  describe "validations" do
-    it { should validate_presence_of(:name) }
+  describe 'validations' do
+    it { is_expected.to validate_presence_of(:name) }
   end
 
-  describe "associations" do
-    it { should have_many(:household_memberships).dependent(:destroy) }
-    it { should have_many(:members).through(:household_memberships) }
-    it { should have_many(:debts) }
-    it { should have_many(:portfolios) }
+  describe 'associations' do
+    it { is_expected.to have_many(:household_memberships).dependent(:destroy) }
+    it { is_expected.to have_many(:members).through(:household_memberships) }
+    it { is_expected.to have_many(:debts) }
+    it { is_expected.to have_many(:portfolios) }
   end
 
-  describe "#add_member" do
-    it "adds a user to the household" do
+  describe '#add_member' do
+    it 'adds a user to the household' do
       household = create(:household)
       user = create(:user)
       expect { household.add_member(user) }
@@ -21,8 +21,8 @@ RSpec.describe Household, type: :model do
     end
   end
 
-  describe "#member?" do
-    it "returns true for members" do
+  describe '#member?' do
+    it 'returns true for members' do
       household = create(:household)
       user = create(:user)
       household.add_member(user)

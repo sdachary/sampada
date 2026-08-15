@@ -12,12 +12,12 @@ class NetWorthSnapshot < TenantRecord
   end
 
   def self.create_snapshot(user)
-    existing = where(user: user, snapshot_date: Date.today).first
+    existing = where(user: user, snapshot_date: Time.zone.today).first
     return existing if existing
 
     currency = user.currency
     exchange_service = ExchangeRateService.new
-    active_debts = Debt.where(user: user, status: "active")
+    active_debts = Debt.where(user: user, status: 'active')
     portfolio_value = Portfolio.where(user: user)
 
     total_liabilities = active_debts.sum do |d|
@@ -34,7 +34,7 @@ class NetWorthSnapshot < TenantRecord
 
     create!(
       user: user,
-      snapshot_date: Date.today,
+      snapshot_date: Time.zone.today,
       total_assets: total_assets,
       total_liabilities: total_liabilities,
       net_worth: net_worth,

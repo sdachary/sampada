@@ -2,7 +2,7 @@
 # are invoked here are part of Puma's configuration DSL. For more information
 # about methods provided by the DSL, see https://puma.io/puma/Puma/DSL.html.
 
-rails_env = ENV.fetch("RAILS_ENV", "development")
+rails_env = ENV.fetch('RAILS_ENV', 'development')
 
 # Puma starts a configurable number of processes (workers) and each process
 # serves each request in a thread from an internal thread pool.
@@ -22,17 +22,17 @@ rails_env = ENV.fetch("RAILS_ENV", "development")
 # Any libraries that use a connection pool or another resource pool should
 # be configured to provide at least as many connections as the number of
 # threads. This includes Active Record's `pool` parameter in `database.yml`.
-threads_count = ENV.fetch("RAILS_MAX_THREADS") { 3 }
+threads_count = ENV.fetch('RAILS_MAX_THREADS', 3)
 threads threads_count, threads_count
 
-if rails_env == "production"
+if rails_env == 'production'
   # If you are running more than 1 thread per process, the workers count
   # should be equal to the number of processors (CPU cores) in production.
   #
   # It defaults to 1 because it's impossible to reliably detect how many
   # CPU cores are available. Make kubera to set the `WEB_CONCURRENCY` environment
   # variable to match the number of processors.
-  workers_count = Integer(ENV.fetch("WEB_CONCURRENCY") { 1 })
+  workers_count = Integer(ENV.fetch('WEB_CONCURRENCY', 1))
   workers workers_count if workers_count > 1
 
   preload_app!
@@ -42,7 +42,7 @@ end
 # (3000 is reserved for MCP Hub). Set via PORT env var if needed.
 # The bind host is controlled via the Rails-native `BINDING` env var (set to
 # `0.0.0.0` in containers, or `::` for IPv6 dual-stack). See docs/hosting/docker.md.
-port ENV.fetch("PORT") { 3002 }
+port ENV.fetch('PORT', 3002)
 
 # Specifies the `environment` that Puma will run in.
 environment rails_env
@@ -50,9 +50,9 @@ environment rails_env
 # Allow puma to be restarted by `bin/rails restart` command.
 plugin :tmp_restart
 
-pidfile ENV["PIDFILE"] if ENV["PIDFILE"]
+pidfile ENV['PIDFILE'] if ENV['PIDFILE']
 
-if rails_env == "development"
+if rails_env == 'development'
   # Specifies a very generous `worker_timeout` so that the worker
   # isn't killed by Puma when suspended by a debugger.
   worker_timeout 3600

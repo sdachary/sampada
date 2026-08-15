@@ -11,15 +11,15 @@ RSpec.describe 'Debts API', type: :request do
     it 'returns empty array when no debts' do
       get '/api/v1/debts'
       expect(response).to have_http_status(:success)
-      expect(JSON.parse(response.body)).to eq([])
+      expect(response.parsed_body).to eq([])
     end
 
     it 'returns all debts' do
-      create(:debt, user: user, name: 'Home Loan', amount: 100000)
-      create(:debt, user: user, name: 'Car Loan', amount: 20000)
+      create(:debt, user: user, name: 'Home Loan', amount: 100_000)
+      create(:debt, user: user, name: 'Car Loan', amount: 20_000)
       get '/api/v1/debts'
       expect(response).to have_http_status(:success)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json.length).to eq(2)
     end
   end
@@ -29,7 +29,7 @@ RSpec.describe 'Debts API', type: :request do
       debt = create(:debt, user: user, name: 'Personal Loan')
       get "/api/v1/debts/#{debt.id}"
       expect(response).to have_http_status(:success)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json['name']).to eq('Personal Loan')
     end
 
@@ -43,13 +43,13 @@ RSpec.describe 'Debts API', type: :request do
     it 'creates debt with valid params' do
       params = {
         name: 'New Loan',
-        amount: 50000,
+        amount: 50_000,
         interest_rate: 12.0,
         emi_amount: 1000
       }
       post '/api/v1/debts', params: params
       expect(response).to have_http_status(:created)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json['name']).to eq('New Loan')
     end
 
@@ -64,7 +64,7 @@ RSpec.describe 'Debts API', type: :request do
       debt = create(:debt, user: user, name: 'Old Name')
       put "/api/v1/debts/#{debt.id}", params: { name: 'Updated Name' }
       expect(response).to have_http_status(:success)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json['name']).to eq('Updated Name')
     end
 
@@ -85,10 +85,10 @@ RSpec.describe 'Debts API', type: :request do
 
   describe 'POST /api/v1/debts/:id/simulate' do
     it 'returns simulation result' do
-      debt = create(:debt, user: user, amount: 10000, interest_rate: 10.0, emi_amount: 500)
+      debt = create(:debt, user: user, amount: 10_000, interest_rate: 10.0, emi_amount: 500)
       post "/api/v1/debts/#{debt.id}/simulate", params: { extra_monthly_payment: 100 }
       expect(response).to have_http_status(:success)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json).to have_key('months')
       expect(json).to have_key('total_interest')
     end

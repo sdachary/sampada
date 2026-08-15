@@ -4,7 +4,7 @@ class DebtPayoffService
     @extra_payment = extra_payment.to_f
     @lump_sum = lump_sum_amount.to_f
     @annual_extra = annual_extra.to_f
-    @custom_extras = custom_extra_payments.map { |ce| [ce[:month].to_i, ce[:amount].to_f] }.to_h
+    @custom_extras = custom_extra_payments.to_h { |ce| [ce[:month].to_i, ce[:amount].to_f] }
   end
 
   def avalanche_plan
@@ -18,12 +18,12 @@ class DebtPayoffService
   private
 
   def calculate_plan(prioritized_debts)
-    debts = prioritized_debts.map { |d| d.dup }
+    debts = prioritized_debts.map(&:dup)
     months = 0
     total_interest = 0
     schedule = []
 
-    while debts.any? { |d| d[:balance] > 0 }
+    while debts.any? { |d| d[:balance].positive? }
       months += 1
       payment = @extra_payment
       month_interest = 0
@@ -31,6 +31,7 @@ class DebtPayoffService
 
       debts.each_with_index do |debt, index|
         next if debt[:balance] <= 0
+
         interest = debt[:balance] * (debt[:interest_rate] / 100 / 12)
         debt[:balance] += interest
         total_interest += interest
@@ -38,16 +39,16 @@ class DebtPayoffService
         monthly_min = [debt[:min_payment], debt[:balance]].min
         debt[:balance] -= monthly_min
         month_principal += monthly_min
-        payment += monthly_min if index == debts.find_index { |d| d[:balance] > 0 }
+        payment += monthly_min if index == debts.find_index { |d| d[:balance].positive? }
       end
 
       extra = payment
       extra += @lump_sum if months == 1
-      extra += @annual_extra if months % 12 == 0
+      extra += @annual_extra if (months % 12).zero?
       extra += @custom_extras[months].to_f if @custom_extras[months]
 
-      priority_debt = debts.find { |d| d[:balance] > 0 }
-      if priority_debt && extra > 0
+      priority_debt = debts.find { |d| d[:balance].positive? }
+      if priority_debt && extra.positive?
         amount = [extra, priority_debt[:balance]].min
         priority_debt[:balance] -= amount
         month_principal += amount

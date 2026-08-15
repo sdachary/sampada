@@ -1,4 +1,4 @@
-require "active_support/core_ext/integer/time"
+require 'active_support/core_ext/integer/time'
 
 # The test environment is used exclusively to run your application's
 # test suite. You never need to work with it otherwise. Remember that
@@ -15,16 +15,16 @@ Rails.application.configure do
   # this is usually not necessary, and can slow down your test suite. However, it's
   # recommended that you enable it in continuous integration systems to enkubera eager
   # loading is working properly before deploying your code.
-  config.eager_load = ENV["CI"].present?
+  config.eager_load = ENV['CI'].present?
 
   # Configure public file server for tests with Cache-Control for performance.
   config.public_file_server.enabled = true
   config.public_file_server.headers = {
-    "Cache-Control" => "public, max-age=#{1.hour.to_i}"
+    'Cache-Control' => "public, max-age=#{1.hour.to_i}"
   }
 
   # Set default sender email for tests
-  ENV["EMAIL_SENDER"] = "hello@example.com"
+  ENV['EMAIL_SENDER'] = 'hello@example.com'
 
   # Show full error reports and disable caching.
   config.consider_all_requests_local = true
@@ -69,12 +69,12 @@ Rails.application.configure do
   # Raise error when a before_action's only/except options reference missing actions
   config.action_controller.raise_on_missing_callback_actions = true
 
-  config.active_record.encryption.primary_key = "test"
-  config.active_record.encryption.deterministic_key = "test"
-  config.active_record.encryption.key_derivation_salt = "test"
+  config.active_record.encryption.primary_key = 'test'
+  config.active_record.encryption.deterministic_key = 'test'
+  config.active_record.encryption.key_derivation_salt = 'test'
   config.active_record.encryption.encrypt_fixtures = true
 
   config.autoload_paths += %w[test/support]
 
-  config.action_mailer.default_url_options = { host: "example.com" }
+  config.action_mailer.default_url_options = { host: 'example.com' }
 end

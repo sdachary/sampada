@@ -82,6 +82,20 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_07_000000) do
     t.index ["user_id", "budget_category_id"], name: "index_budgets_on_user_id_and_budget_category_id"
   end
 
+  create_table "consent_records", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "user_id", null: false
+    t.string "feature", null: false
+    t.boolean "granted", null: false
+    t.string "ip_address"
+    t.string "user_agent"
+    t.datetime "granted_at", precision: nil, default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.datetime "revoked_at", precision: nil
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
+    t.index ["user_id", "feature"], name: "index_consent_records_on_user_id_and_feature"
+    t.index ["user_id"], name: "index_consent_records_on_user_id"
+  end
+
   create_table "conversations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "user_id", null: false
     t.string "title"
@@ -145,6 +159,21 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_07_000000) do
     t.index ["household_id"], name: "index_debts_on_household_id"
     t.index ["status"], name: "index_debts_on_status"
     t.index ["user_id"], name: "index_debts_on_user_id"
+  end
+
+  create_table "deletion_requests", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "user_id", null: false
+    t.string "status", default: "pending", null: false
+    t.string "cancel_token", null: false
+    t.boolean "export_data", default: true
+    t.datetime "scheduled_for", precision: nil, null: false
+    t.datetime "deleted_at", precision: nil
+    t.text "notes"
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
+    t.index ["cancel_token"], name: "index_deletion_requests_on_cancel_token", unique: true
+    t.index ["user_id", "status"], name: "index_deletion_requests_on_user_id_and_status"
+    t.index ["user_id"], name: "index_deletion_requests_on_user_id"
   end
 
   create_table "dividend_sips", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -331,6 +360,19 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_07_000000) do
     t.index ["user_id"], name: "index_recurring_expenses_on_user_id"
   end
 
+  create_table "sessions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "user_id", null: false
+    t.string "token", null: false
+    t.string "ip_address"
+    t.string "user_agent"
+    t.datetime "expires_at", precision: nil, null: false
+    t.datetime "revoked_at", precision: nil
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
+    t.index ["token"], name: "index_sessions_on_token", unique: true
+    t.index ["user_id"], name: "index_sessions_on_user_id"
+  end
+
   create_table "settings", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "user_id", null: false
     t.string "key", null: false
@@ -457,8 +499,24 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_07_000000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "storage_backend", default: "local", null: false
+    t.string "github_uid"
+    t.text "github_token"
+    t.string "google_uid"
+    t.string "avatar_url"
+    t.text "refresh_token"
+    t.boolean "consent_granted", default: false
+    t.datetime "consent_granted_at"
+    t.datetime "deleted_at"
+    t.string "encrypted_email"
+    t.string "encrypted_email_iv"
+    t.string "password_reset_token"
+    t.datetime "password_reset_sent_at"
     t.string "better_auth_user_id"
+    t.index ["better_auth_user_id"], name: "index_users_on_better_auth_user_id", unique: true, where: "(better_auth_user_id IS NOT NULL)"
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["github_uid"], name: "index_users_on_github_uid", unique: true
+    t.index ["google_uid"], name: "index_users_on_google_uid", unique: true
+    t.index ["password_reset_token"], name: "index_users_on_password_reset_token", unique: true
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
@@ -468,12 +526,14 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_07_000000) do
   add_foreign_key "budgets", "budget_categories"
   add_foreign_key "budgets", "households"
   add_foreign_key "budgets", "users"
+  add_foreign_key "consent_records", "users", name: "consent_records_user_id_fkey"
   add_foreign_key "conversations", "users"
   add_foreign_key "debt_payoff_debts", "debt_payoffs"
   add_foreign_key "debt_payoff_debts", "debts"
   add_foreign_key "debt_payoffs", "users"
   add_foreign_key "debts", "households"
   add_foreign_key "debts", "users"
+  add_foreign_key "deletion_requests", "users", name: "deletion_requests_user_id_fkey"
   add_foreign_key "dividend_sips", "portfolios"
   add_foreign_key "grievances", "users"
   add_foreign_key "household_memberships", "households"
@@ -488,6 +548,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_07_000000) do
   add_foreign_key "portfolios", "users"
   add_foreign_key "recurring_expenses", "households"
   add_foreign_key "recurring_expenses", "users"
+  add_foreign_key "sessions", "users", name: "sessions_user_id_fkey"
   add_foreign_key "settings", "users"
   add_foreign_key "tenants", "users"
   add_foreign_key "transactions", "budget_categories"

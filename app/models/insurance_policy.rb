@@ -10,6 +10,6 @@ class InsurancePolicy < TenantRecord
   validates :premium_frequency, inclusion: { in: PREMIUM_FREQUENCIES }
   validates :coverage_amount, numericality: { greater_than: 0 }, allow_nil: true
 
-  scope :active, -> { where(renewal_date: nil).or(where(renewal_date: Date.today..)) }
-  scope :renewing_soon, -> { where(renewal_date: Date.today..30.days.from_now) }
+  scope :active, -> { where(renewal_date: nil).or(where(renewal_date: Time.zone.today..)) }
+  scope :renewing_soon, -> { where(renewal_date: Time.zone.today..30.days.from_now) }
 end

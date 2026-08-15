@@ -19,7 +19,7 @@ class AiService
     end
 
     text = rule_response(prompt)
-    text += ai_setup_prompt if !@provider.configured? && !prompt.to_s.downcase.include?("setup")
+    text += ai_setup_prompt if !@provider.configured? && prompt.to_s.downcase.exclude?('setup')
     AiResponse.new(text: text)
   end
 
@@ -41,13 +41,13 @@ class AiService
   end
 
   def fallback_advice(down, prompt)
-    if down.include?("debt") || down.include?("loan") || down.include?("emi") || down.include?("credit card")
+    if down.include?('debt') || down.include?('loan') || down.include?('emi') || down.include?('credit card')
       @advice.debt_advice
-    elsif down.include?("invest") || down.include?("sip") || down.include?("dividend") || down.include?("stock")
+    elsif down.include?('invest') || down.include?('sip') || down.include?('dividend') || down.include?('stock')
       @advice.invest_advice
-    elsif down.include?("budget") || down.include?("expense") || down.include?("spend") || down.include?("save")
+    elsif down.include?('budget') || down.include?('expense') || down.include?('spend') || down.include?('save')
       @advice.budget_advice
-    elsif down.include?("overview") || down.include?("summary") || down.include?("net worth")
+    elsif down.include?('overview') || down.include?('summary') || down.include?('net worth')
       @advice.overview
     elsif down.match?(/\b(hi|hello|hey)\b/) && prompt.length < 20
       @advice.greeting
@@ -58,11 +58,15 @@ class AiService
 
   def anomaly_report
     anomalies = AnomalyDetectionService.new(@user).detect
-    return "✅ No anomalies detected! Your spending patterns look normal." if anomalies.empty?
+    return '✅ No anomalies detected! Your spending patterns look normal.' if anomalies.empty?
 
     text = "⚠️ #{anomalies.length} anomaly(ies) detected:\n\n"
     anomalies.first(5).each do |a|
-      icon = a[:severity] >= 8 ? "🔴" : a[:severity] >= 4 ? "🟡" : "🟢"
+      icon = if a[:severity] >= 8
+               '🔴'
+             else
+               a[:severity] >= 4 ? '🟡' : '🟢'
+             end
       text += "#{icon} **#{a[:title]}**: #{a[:description]}\n"
     end
     text += "\n...and #{anomalies.length - 5} more. Check your dashboard for details." if anomalies.length > 5
@@ -82,18 +86,18 @@ class AiService
 
   def export_instructions
     "📁 **Export Options**:\n\n" \
-    "• Say \"export my debts\" for CSV\n" \
-    "• Say \"export transactions\" for CSV\n" \
-    "• Say \"export portfolio\" for CSV\n" \
-    "• Say \"export net worth\" for CSV\n" \
-    "• Say \"generate annual report\" for a full-year summary\n\n" \
-    "Exports are available from the Reports section of your dashboard."
+      "• Say \"export my debts\" for CSV\n" \
+      "• Say \"export transactions\" for CSV\n" \
+      "• Say \"export portfolio\" for CSV\n" \
+      "• Say \"export net worth\" for CSV\n" \
+      "• Say \"generate annual report\" for a full-year summary\n\n" \
+      'Exports are available from the Reports section of your dashboard.'
   end
 
   def ai_setup_prompt
     "\n\n💡 **Want smarter AI-powered answers?** " \
-    "Say **'setup'** and I'll check your system and help you configure AI " \
-    "(local or cloud, whatever works best for you)."
+      "Say **'setup'** and I'll check your system and help you configure AI " \
+      '(local or cloud, whatever works best for you).'
   end
 
   def system_prompt
@@ -104,13 +108,17 @@ class AiService
     code = @formatter.currency_code
 
     context = []
-    context << "User's debts: #{debts.map { |d| "#{d.name}: #{symbol}#{d.remaining_amount.to_i} remaining at #{d.interest_rate}% (#{d.currency_code})" }.join(', ')}" if debts.any?
+    if debts.any?
+      context << "User's debts: #{debts.map do |d|
+        "#{d.name}: #{symbol}#{d.remaining_amount.to_i} remaining at #{d.interest_rate}% (#{d.currency_code})"
+      end.join(', ')}"
+    end
     context << "User's portfolios: #{portfolios.map(&:name).join(', ')} (#{code})" if portfolios.any?
     context << "Journey phase: #{journey.phase}, debt-free target: #{journey.zero_day_target}" if journey
     context << "User's base currency: #{code} (#{symbol})"
-    context_str = context.any? ? "\n\nCurrent financial data:\n#{context.join("\n")}" : ""
+    context_str = context.any? ? "\n\nCurrent financial data:\n#{context.join("\n")}" : ''
 
-    provider_notice = @provider.cloud_provider? ? "\n\nPrivacy: This user chose cloud AI. Only share necessary financial data. Do not store or log their information beyond this conversation." : ""
+    provider_notice = @provider.cloud_provider? ? "\n\nPrivacy: This user chose cloud AI. Only share necessary financial data. Do not store or log their information beyond this conversation." : ''
 
     <<~PROMPT
       You are Sampada, an AI financial freedom assistant. You help users manage their

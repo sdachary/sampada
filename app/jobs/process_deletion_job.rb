@@ -10,7 +10,7 @@ class ProcessDeletionJob
 
     if request.export_data
       request.update!(status: 'exporting')
-      result = GoogleSheetSyncService.new(user).sync!
+      GoogleSheetSyncService.new(user).sync!
       request.update!(status: 'exported')
     end
 

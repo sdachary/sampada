@@ -13,7 +13,11 @@ class Portfolio < TenantRecord
   end
 
   def allocation_summary
-    by_sector = investments.group_by(&:sector).transform_values { |inv| inv.sum { |i| (i.shares || 0) * (i.current_price || 0) } }
+    by_sector = investments.group_by(&:sector).transform_values do |inv|
+      inv.sum do |i|
+        (i.shares || 0) * (i.current_price || 0)
+      end
+    end
     { sectors: by_sector, dividend_sips: dividend_sips.sum(:amount) }
   end
 end

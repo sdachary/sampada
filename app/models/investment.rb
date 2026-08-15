@@ -10,10 +10,10 @@ class Investment < TenantRecord
   }, allow_nil: true
 
   EXCHANGE_SUFFIXES = {
-    "NSE" => ".NS", "BSE" => ".BO", "NYSE" => "",
-    "NASDAQ" => "", "LSE" => ".L", "TSE" => ".T",
-    "FRA" => ".F", "ASX" => ".AX", "HKEX" => ".HK",
-    "TSX" => ".TO"
+    'NSE' => '.NS', 'BSE' => '.BO', 'NYSE' => '',
+    'NASDAQ' => '', 'LSE' => '.L', 'TSE' => '.T',
+    'FRA' => '.F', 'ASX' => '.AX', 'HKEX' => '.HK',
+    'TSX' => '.TO'
   }.freeze
 
   def yahoo_symbol
@@ -43,6 +43,7 @@ class Investment < TenantRecord
 
   def gain_loss_percentage
     return 0.0 if cost_basis <= 0
+
     (gain_loss / cost_basis * 100).round(2)
   end
 
@@ -53,8 +54,8 @@ class Investment < TenantRecord
   def calculate_sip(monthly_amount, months)
     total_invested = monthly_amount * months
     rate_per_period = (dividend_yield || 0) / 100.0 / 12
-    projected_value = monthly_amount * (((1 + rate_per_period) ** months - 1) / rate_per_period) * (1 + rate_per_period)
-    projected_value = rate_per_period > 0 ? projected_value : total_invested
+    projected_value = monthly_amount * ((((1 + rate_per_period)**months) - 1) / rate_per_period) * (1 + rate_per_period)
+    projected_value = total_invested unless rate_per_period.positive?
     { projected_value: projected_value.round(2), total_invested: total_invested }
   end
 

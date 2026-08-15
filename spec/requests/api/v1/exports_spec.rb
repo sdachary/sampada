@@ -12,7 +12,7 @@ RSpec.describe 'Exports API', type: :request do
     it 'exports transactions as CSV' do
       create(:transaction, user: user)
       get '/api/v1/exports/transactions', params: { format: 'csv' }
-      
+
       expect(response).to have_http_status(:success)
       expect(response.content_type).to include('text/csv')
       expect(response.header['Content-Disposition']).to include('transactions_')
@@ -21,7 +21,7 @@ RSpec.describe 'Exports API', type: :request do
     it 'exports transactions as JSON' do
       create(:transaction, user: user)
       get '/api/v1/exports/transactions', params: { format: 'json' }
-      
+
       expect(response).to have_http_status(:success)
       expect(response.content_type).to include('application/json')
     end

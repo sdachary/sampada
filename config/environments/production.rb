@@ -1,4 +1,4 @@
-require "active_support/core_ext/integer/time"
+require 'active_support/core_ext/integer/time'
 
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
@@ -31,7 +31,7 @@ Rails.application.configure do
   # config.action_dispatch.x_sendfile_header = "X-Accel-Redirect" # for NGINX
 
   # Store uploaded files on the local file system (see config/storage.yml for options).
-  config.active_storage.service = ENV.fetch("ACTIVE_STORAGE_SERVICE", "local").to_sym
+  config.active_storage.service = ENV.fetch('ACTIVE_STORAGE_SERVICE', 'local').to_sym
 
   # Set Active Storage URL expiration time to 7 days
   config.active_storage.urls_expire_in = 7.days
@@ -42,36 +42,36 @@ Rails.application.configure do
   # config.action_cable.allowed_request_origins = [ "http://example.com", /http:\/\/example.*/ ]
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
-  config.force_ssl = ActiveModel::Type::Boolean.new.cast(ENV.fetch("RAILS_FORCE_SSL", true))
+  config.force_ssl = ActiveModel::Type::Boolean.new.cast(ENV.fetch('RAILS_FORCE_SSL', true))
 
   # Assume all access to the app is happening through a SSL-terminating reverse proxy.
   # Can be used together with config.force_ssl for Strict-Transport-Security and secure cookies.
-  config.assume_ssl = ActiveModel::Type::Boolean.new.cast(ENV.fetch("RAILS_ASSUME_SSL", true))
+  config.assume_ssl = ActiveModel::Type::Boolean.new.cast(ENV.fetch('RAILS_ASSUME_SSL', true))
 
   # Log to Logtail if API key is present, otherwise log to STDOUT
-  base_logger = if ENV["LOGTAIL_API_KEY"].present? && ENV["LOGTAIL_INGESTING_HOST"].present?
-    Logtail::Logger.create_default_logger(
-      ENV["LOGTAIL_API_KEY"],
-      ingesting_host: ENV["LOGTAIL_INGESTING_HOST"]
-    )
-  else
-    ActiveSupport::Logger.new(STDOUT)
-      .tap { |logger| logger.formatter = ::Logger::Formatter.new }
-  end
+  base_logger = if ENV['LOGTAIL_API_KEY'].present? && ENV['LOGTAIL_INGESTING_HOST'].present?
+                  Logtail::Logger.create_default_logger(
+                    ENV.fetch('LOGTAIL_API_KEY', nil),
+                    ingesting_host: ENV.fetch('LOGTAIL_INGESTING_HOST', nil)
+                  )
+                else
+                  ActiveSupport::Logger.new($stdout)
+                                       .tap { |logger| logger.formatter = Logger::Formatter.new }
+                end
 
   config.logger = ActiveSupport::TaggedLogging.new(base_logger)
 
   # Prepend all log lines with the following tags.
-  config.log_tags = [ :request_id ]
+  config.log_tags = [:request_id]
 
   # "info" includes generic and useful information about system operation, but avoids logging too much
   # information to avoid inadvertent expokubera of personally identifiable information (PII). If you
   # want to log everything, set the level to "debug".
-  config.log_level = ENV.fetch("RAILS_LOG_LEVEL", "info")
+  config.log_level = ENV.fetch('RAILS_LOG_LEVEL', 'info')
 
-  if ENV["REDIS_URL"].present?
+  if ENV['REDIS_URL'].present?
     config.cache_store = :redis_cache_store, {
-      url: ENV["REDIS_URL"],
+      url: ENV['REDIS_URL'],
       pool: false,
       reconnect_attempts: 1
     }
@@ -79,17 +79,17 @@ Rails.application.configure do
 
   config.action_mailer.perform_caching = false
   config.action_mailer.deliver_later_queue_name = :high_priority
-  config.action_mailer.default_url_options = { host: ENV["APP_DOMAIN"] }
-#   config.action_mailer.delivery_method = :smtp
-#   config.action_mailer.smtp_settings = {
-#     address:             ENV["SMTP_ADDRESS"],
-#     port:                ENV["SMTP_PORT"],
-#     user_name:           ENV["SMTP_USERNAME"],
-#     password:            ENV["SMTP_PASSWORD"],
-#     tls:                 ENV["SMTP_TLS_ENABLED"] == "true",
-#     openssl_verify_mode: ENV["SMTP_TLS_SKIP_VERIFY"] == "true" ? OpenSSL::SSL::VERIFY_NONE : OpenSSL::SSL::VERIFY_PEER,
-#     ca_file:             ENV["SSL_CA_FILE"]
-#   }
+  config.action_mailer.default_url_options = { host: ENV.fetch('APP_DOMAIN', nil) }
+  #   config.action_mailer.delivery_method = :smtp
+  #   config.action_mailer.smtp_settings = {
+  #     address:             ENV["SMTP_ADDRESS"],
+  #     port:                ENV["SMTP_PORT"],
+  #     user_name:           ENV["SMTP_USERNAME"],
+  #     password:            ENV["SMTP_PASSWORD"],
+  #     tls:                 ENV["SMTP_TLS_ENABLED"] == "true",
+  #     openssl_verify_mode: ENV["SMTP_TLS_SKIP_VERIFY"] == "true" ? OpenSSL::SSL::VERIFY_NONE : OpenSSL::SSL::VERIFY_PEER,
+  #     ca_file:             ENV["SSL_CA_FILE"]
+  #   }
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
   # config.action_mailer.raise_delivery_errors = false
 

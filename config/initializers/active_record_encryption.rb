@@ -5,16 +5,16 @@
 # 3. Rails credentials (fallback, handled in application.rb)
 
 # Check if keys are provided via environment variables
-primary_key = ENV["ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY"]
-deterministic_key = ENV["ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY"]
-key_derivation_salt = ENV["ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT"]
+primary_key = ENV.fetch('ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY', nil)
+deterministic_key = ENV.fetch('ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY', nil)
+key_derivation_salt = ENV.fetch('ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT', nil)
 
 # If all environment variables are present, use them (works for both managed and self-hosted)
 if primary_key.present? && deterministic_key.present? && key_derivation_salt.present?
   Rails.application.config.active_record.encryption.primary_key = primary_key
   Rails.application.config.active_record.encryption.deterministic_key = deterministic_key
   Rails.application.config.active_record.encryption.key_derivation_salt = key_derivation_salt
-elsif !Rails.application.credentials.active_record_encryption.present?
+elsif Rails.application.credentials.active_record_encryption.blank?
   # For self-hosted instances without credentials or env vars, auto-generate keys
   # Use SECRET_KEY_BASE as the seed for deterministic key generation
   # This enkuberas keys are consistent across container restarts

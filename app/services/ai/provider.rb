@@ -14,8 +14,8 @@ module Ai
       )
 
       messages = [
-        { role: "system", content: system_prompt },
-        { role: "user", content: prompt }
+        { role: 'system', content: system_prompt },
+        { role: 'user', content: prompt }
       ]
 
       response = client.chat(
@@ -27,7 +27,7 @@ module Ai
         }
       )
 
-      response.dig("choices", 0, "message", "content")
+      response.dig('choices', 0, 'message', 'content')
     rescue Faraday::Error, OpenAI::Error => e
       Rails.logger.warn "[AI] API call failed: #{e.message}"
       nil
@@ -43,37 +43,37 @@ module Ai
 
     def self.presets
       {
-        "openai"     => { uri: "https://api.openai.com/v1",        model: "gpt-4o-mini" },
-        "gemini"     => { uri: "https://generativelanguage.googleapis.com/v1beta/openai/", model: "gemini-1.5-flash" },
-        "grok"       => { uri: "https://api.x.ai/v1",              model: "grok-beta" },
-        "openrouter" => { uri: "https://openrouter.ai/api/v1",     model: "openai/gpt-4o-mini" }
+        'openai' => { uri: 'https://api.openai.com/v1', model: 'gpt-4o-mini' },
+        'gemini' => { uri: 'https://generativelanguage.googleapis.com/v1beta/openai/', model: 'gemini-1.5-flash' },
+        'grok' => { uri: 'https://api.x.ai/v1', model: 'grok-beta' },
+        'openrouter' => { uri: 'https://openrouter.ai/api/v1', model: 'openai/gpt-4o-mini' }
       }
     end
 
     private
 
     def provider_setting
-      Setting.get("ai_provider", user: @user)
+      Setting.get('ai_provider', user: @user)
     end
 
     def api_token
       if provider_setting.present?
-        Setting.get("ai_api_key", user: @user).presence || ENV["OPENAI_ACCESS_TOKEN"]
+        Setting.get('ai_api_key', user: @user).presence || ENV.fetch('OPENAI_ACCESS_TOKEN', nil)
       else
-        "ollama"
+        'ollama'
       end
     end
 
     def ai_uri
-      Setting.get("ai_uri", user: @user).presence ||
-        ENV["OPENAI_URI_BASE"].presence ||
-        "http://localhost:11434/v1"
+      Setting.get('ai_uri', user: @user).presence ||
+        ENV['OPENAI_URI_BASE'].presence ||
+        'http://localhost:11434/v1'
     end
 
     def ai_model
-      Setting.get("ai_model", user: @user).presence ||
-        ENV["OPENAI_MODEL"].presence ||
-        "gemma:2b"
+      Setting.get('ai_model', user: @user).presence ||
+        ENV['OPENAI_MODEL'].presence ||
+        'gemma:2b'
     end
   end
 end

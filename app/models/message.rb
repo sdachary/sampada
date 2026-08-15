@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 class Message < TenantRecord
   belongs_to :conversation
 

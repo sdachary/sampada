@@ -1,5 +1,5 @@
-require_relative "boot"
-require "rails/all"
+require_relative 'boot'
+require 'rails/all'
 Bundler.require(*Rails.groups)
 
 module Sampada

@@ -1,8 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe Portfolio, type: :model do
-  it { should have_many(:dividend_sips) }
-  it { should belong_to(:user) }
+  it { is_expected.to have_many(:dividend_sips) }
+  it { is_expected.to belong_to(:user) }
 
   describe 'associations' do
     it 'can have multiple dividend sips' do

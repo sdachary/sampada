@@ -10,16 +10,16 @@ class RecurringExpense < TenantRecord
 
   def monthly_amount
     case frequency
-    when "weekly" then amount * 4.33
-    when "monthly" then amount
-    when "quarterly" then amount / 3.0
-    when "yearly" then amount / 12.0
-    else amount
+    when 'weekly' then amount * 4.33
+    when 'monthly', 'daily' then amount
+    when 'quarterly' then amount / 3.0
+    when 'yearly' then amount / 12.0
     end
   end
 
   def next_due_days
     return nil if next_due_date.nil?
-    (next_due_date - Date.today).to_i
+
+    (next_due_date - Time.zone.today).to_i
   end
 end

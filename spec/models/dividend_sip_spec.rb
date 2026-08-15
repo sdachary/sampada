@@ -1,8 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe DividendSip, type: :model do
-  it { should belong_to(:portfolio) }
-  it { should validate_presence_of(:amount) }
+  it { is_expected.to belong_to(:portfolio) }
+  it { is_expected.to validate_presence_of(:amount) }
 
   describe 'validations' do
     it 'is valid with valid attributes' do
@@ -33,8 +33,8 @@ RSpec.describe DividendSip, type: :model do
     end
 
     it 'has target_income attribute' do
-      dividend_sip = create(:dividend_sip, target_income: 10000.0)
-      expect(dividend_sip.target_income).to eq(10000.0)
+      dividend_sip = create(:dividend_sip, target_income: 10_000.0)
+      expect(dividend_sip.target_income).to eq(10_000.0)
     end
 
     it 'has dividend_yield attribute' do

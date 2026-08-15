@@ -11,7 +11,7 @@ RSpec.describe 'Portfolio API', type: :request do
     it 'returns empty array when no portfolios' do
       get '/api/v1/portfolios'
       expect(response).to have_http_status(:success)
-      expect(JSON.parse(response.body)).to eq([])
+      expect(response.parsed_body).to eq([])
     end
 
     it 'returns all portfolios' do
@@ -19,7 +19,7 @@ RSpec.describe 'Portfolio API', type: :request do
       create(:portfolio, user: user, name: 'Debt Portfolio')
       get '/api/v1/portfolios'
       expect(response).to have_http_status(:success)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json.length).to eq(2)
     end
   end
@@ -29,7 +29,7 @@ RSpec.describe 'Portfolio API', type: :request do
       portfolio = create(:portfolio, user: user, name: 'Test Portfolio')
       get "/api/v1/portfolios/#{portfolio.id}"
       expect(response).to have_http_status(:success)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json['name']).to eq('Test Portfolio')
     end
   end
@@ -46,7 +46,7 @@ RSpec.describe 'Portfolio API', type: :request do
       }
       post '/api/v1/portfolios', params: params
       expect(response).to have_http_status(:created)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json['name']).to eq('New Portfolio')
     end
 
@@ -63,7 +63,7 @@ RSpec.describe 'Portfolio API', type: :request do
       params = { portfolio: { name: 'Updated Name' } }
       put "/api/v1/portfolios/#{portfolio.id}", params: params
       expect(response).to have_http_status(:success)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json['name']).to eq('Updated Name')
     end
   end
@@ -83,7 +83,7 @@ RSpec.describe 'Portfolio API', type: :request do
       create(:investment, portfolio: portfolio, symbol: 'AXISBANK.NS', name: 'Axis Bank')
       post "/api/v1/portfolios/#{portfolio.id}/rebalance"
       expect(response).to have_http_status(:success)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json).to have_key('optimal_weights')
     end
   end

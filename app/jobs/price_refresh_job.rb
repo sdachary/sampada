@@ -2,9 +2,10 @@
 
 class PriceRefreshJob
   include Sidekiq::Job
+
   sidekiq_options queue: :default, retry: 3, backtrace: true
 
-  QUOTE_CACHE_PREFIX = "portfolio_quote:"
+  QUOTE_CACHE_PREFIX = 'portfolio_quote:'
   QUOTE_CACHE_TTL = 15.minutes
 
   def perform(portfolio_id)

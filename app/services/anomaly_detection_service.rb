@@ -30,9 +30,9 @@ class AnomalyDetectionService
 
   def detect_transaction_anomalies
     Transaction.detect_anomalies(@user.id).map do |t|
-      cat = t.budget_category&.name || "Uncategorized"
+      cat = t.budget_category&.name || 'Uncategorized'
       {
-        type: "unusual_transaction",
+        type: 'unusual_transaction',
         severity: calculate_severity(t.amount, t.budget_category&.monthly_spending(@user.id) || 0),
         title: "Unusual #{cat} transaction",
         description: "#{format_amount(t.amount)} on #{t.description} (#{t.transaction_date}) is significantly above normal",
@@ -47,21 +47,24 @@ class AnomalyDetectionService
 
   def detect_spending_trend_breaks
     anomalies = []
-    current_month = Transaction.where(user: @user, transaction_type: "expense")
-      .for_month(Date.today.year, Date.today.month)
-      .sum { |t| convert(t.amount, t.currency_code) }
+    current_month = Transaction.where(user: @user, transaction_type: 'expense')
+                               .for_month(Time.zone.today.year, Time.zone.today.month)
+                               .sum do |t|
+      convert(t.amount,
+              t.currency_code)
+    end
 
-    prev_month = Transaction.where(user: @user, transaction_type: "expense")
-      .for_month((Date.today - 1.month).year, (Date.today - 1.month).month)
-      .sum { |t| convert(t.amount, t.currency_code) }
+    prev_month = Transaction.where(user: @user, transaction_type: 'expense')
+                            .for_month((Time.zone.today - 1.month).year, (Time.zone.today - 1.month).month)
+                            .sum { |t| convert(t.amount, t.currency_code) }
 
-    if prev_month > 0 && current_month > prev_month * 1.5
+    if prev_month.positive? && current_month > prev_month * 1.5
       anomalies << {
-        type: "spending_surge",
+        type: 'spending_surge',
         severity: 6,
-        title: "Spending surge this month",
-        description: "Current month spending (#{format_amount(current_month)}) is #{((current_month / prev_month - 1) * 100).round(0)}% higher than last month",
-        date: Date.today,
+        title: 'Spending surge this month',
+        description: "Current month spending (#{format_amount(current_month)}) is #{(((current_month / prev_month) - 1) * 100).round(0)}% higher than last month",
+        date: Time.zone.today,
         amount: (current_month - prev_month).round(2),
         currency_code: @base_currency
       }
@@ -75,11 +78,11 @@ class AnomalyDetectionService
       b.usage_percentage > 90
     end.map do |b|
       {
-        type: "budget_breach",
+        type: 'budget_breach',
         severity: b.usage_percentage > 100 ? 7 : 4,
         title: "#{b.budget_category.name} budget nearly exhausted",
         description: "#{b.usage_percentage}% used (#{format_amount(b.spent_this_month)} of #{format_amount(b.monthly_limit)})",
-        date: Date.today,
+        date: Time.zone.today,
         amount: b.spent_this_month.to_f,
         currency_code: b.currency_code,
         budget_id: b.id,
@@ -90,6 +93,7 @@ class AnomalyDetectionService
 
   def calculate_severity(amount, category_total)
     return 1 if category_total <= 0
+
     ratio = amount / category_total
     if ratio > 3 then 9
     elsif ratio > 2 then 7

@@ -29,9 +29,9 @@ RSpec.describe InsurancePolicy, type: :model do
     it 'active returns policies with no renewal or future renewal' do
       active = create(:insurance_policy, user: user, renewal_date: nil)
       upcoming = create(:insurance_policy, user: user, renewal_date: 2.weeks.from_now)
-      expired = create(:insurance_policy, user: user, renewal_date: 1.month.ago)
-      expect(InsurancePolicy.active).to contain_exactly(active, upcoming)
-      expect(InsurancePolicy.renewing_soon).to contain_exactly(upcoming)
+      create(:insurance_policy, user: user, renewal_date: 1.month.ago)
+      expect(described_class.active).to contain_exactly(active, upcoming)
+      expect(described_class.renewing_soon).to contain_exactly(upcoming)
     end
   end
 end

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 class Setting < TenantRecord
   belongs_to :user
 

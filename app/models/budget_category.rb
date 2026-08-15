@@ -30,25 +30,25 @@ class BudgetCategory < TenantRecord
 
   def self.category_icons
     {
-      "Food" => "utensils", "Transport" => "car", "Utilities" => "bolt",
-      "Rent" => "home", "Entertainment" => "film", "Healthcare" => "heart-pulse",
-      "Shopping" => "shopping-bag", "Education" => "graduation-cap",
-      "Insurance" => "shield", "Savings" => "piggy-bank",
-      "Investment" => "trending-up", "Income" => "wallet",
-      "Salary" => "briefcase", "Freelance" => "laptop", "Business" => "building",
-      "Other" => "more-horizontal"
+      'Food' => 'utensils', 'Transport' => 'car', 'Utilities' => 'bolt',
+      'Rent' => 'home', 'Entertainment' => 'film', 'Healthcare' => 'heart-pulse',
+      'Shopping' => 'shopping-bag', 'Education' => 'graduation-cap',
+      'Insurance' => 'shield', 'Savings' => 'piggy-bank',
+      'Investment' => 'trending-up', 'Income' => 'wallet',
+      'Salary' => 'briefcase', 'Freelance' => 'laptop', 'Business' => 'building',
+      'Other' => 'more-horizontal'
     }
   end
 
-  def monthly_spending(user_id, year: Date.today.year, month: Date.today.month)
+  def monthly_spending(user_id, year: Time.zone.today.year, month: Time.zone.today.month)
     transactions.where(user_id: user_id)
-      .where("EXTRACT(YEAR FROM transaction_date) = ? AND EXTRACT(MONTH FROM transaction_date) = ?", year, month)
-      .sum(:amount)
+                .where('EXTRACT(YEAR FROM transaction_date) = ? AND EXTRACT(MONTH FROM transaction_date) = ?', year, month)
+                .sum(:amount)
   end
 
   def period_spending(user_id, start_date, end_date)
     transactions.where(user_id: user_id)
-      .where(transaction_date: start_date..end_date)
-      .sum(:amount)
+                .where(transaction_date: start_date..end_date)
+                .sum(:amount)
   end
 end

@@ -1,11 +1,13 @@
 class ImportMarketDataJob
   include Sidekiq::Job
+
   sidekiq_options queue: :market_data, retry: 3, backtrace: true
 
-  def perform(*args)
+  def perform(*_args)
     provider = Providers::YahooFinanceAdapter.new
     Investment.find_each do |investment|
       next if investment.symbol.blank?
+
       quote = provider.fetch_quote(investment.symbol)
       next unless quote
 

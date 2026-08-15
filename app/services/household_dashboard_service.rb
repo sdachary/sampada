@@ -25,7 +25,7 @@ class HouseholdDashboardService
       portfolios: user.portfolios.sum(&:total_value),
       monthly_expenses: user.recurring_expenses.active.sum(&:monthly_amount),
       transactions: Transaction.where(user: user, transaction_date: 30.days.ago..)
-        .sum { |t| convert(t.amount, t.currency_code) }
+                               .sum { |t| convert(t.amount, t.currency_code) }
     }
   end
 
@@ -77,7 +77,7 @@ class HouseholdDashboardService
       finances = member_finances(user)
       {
         id: user.id,
-        name: [user.first_name, user.last_name].compact.join(" "),
+        name: [user.first_name, user.last_name].compact.join(' '),
         email: user.email,
         role: membership&.role,
         joined_at: membership&.joined_at,

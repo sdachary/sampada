@@ -7,8 +7,8 @@ class Trip < TenantRecord
 
   validates :name, presence: true
 
-  scope :active, -> { where(status: "active") }
-  scope :settled, -> { where(status: "settled") }
+  scope :active, -> { where(status: 'active') }
+  scope :settled, -> { where(status: 'settled') }
 
   after_create :seed_default_categories
 
@@ -32,8 +32,10 @@ class Trip < TenantRecord
     end
 
     trip_settlements.each do |settlement|
-      member_balances[settlement.from_trip_member_id] = member_balances[settlement.from_trip_member_id].to_i + settlement.amount_cents
-      member_balances[settlement.to_trip_member_id] = member_balances[settlement.to_trip_member_id].to_i - settlement.amount_cents
+      member_balances[settlement.from_trip_member_id] =
+        member_balances[settlement.from_trip_member_id].to_i + settlement.amount_cents
+      member_balances[settlement.to_trip_member_id] =
+        member_balances[settlement.to_trip_member_id].to_i - settlement.amount_cents
     end
 
     member_balances
@@ -49,8 +51,9 @@ class Trip < TenantRecord
     debtors = []
 
     balances_cents.each do |member_id, balance_cents|
-      next if balance_cents == 0
-      if balance_cents > 0
+      next if balance_cents.zero?
+
+      if balance_cents.positive?
         creditors << { member_id: member_id, amount: balance_cents }
       else
         debtors << { member_id: member_id, amount: -balance_cents }
@@ -81,8 +84,8 @@ class Trip < TenantRecord
       creditor[:amount] -= transfer_amount
       debtor[:amount] -= transfer_amount
 
-      creditors_idx += 1 if creditor[:amount] == 0
-      debtors_idx += 1 if debtor[:amount] == 0
+      creditors_idx += 1 if creditor[:amount].zero?
+      debtors_idx += 1 if debtor[:amount].zero?
     end
 
     settlements
@@ -100,19 +103,19 @@ class Trip < TenantRecord
   end
 
   def can_settle?
-    status == "active"
+    status == 'active'
   end
 
   private
 
   def seed_default_categories
     defaults = [
-      { name: "Travel", color: "#3B82F6" },
-      { name: "Commute", color: "#8B5CF6" },
-      { name: "Food", color: "#F59E0B" },
-      { name: "Stays", color: "#10B981" },
-      { name: "Activities", color: "#EC4899" },
-      { name: "Misc", color: "#6B7280" }
+      { name: 'Travel', color: '#3B82F6' },
+      { name: 'Commute', color: '#8B5CF6' },
+      { name: 'Food', color: '#F59E0B' },
+      { name: 'Stays', color: '#10B981' },
+      { name: 'Activities', color: '#EC4899' },
+      { name: 'Misc', color: '#6B7280' }
     ]
     defaults.each { |attrs| trip_categories.create!(attrs) }
   end

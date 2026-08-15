@@ -19,7 +19,7 @@ RSpec.describe 'Reports API', type: :request do
     it 'returns the cash flow forecast data' do
       get '/api/v1/reports/cash_flow_forecast', params: { months: 12 }
       expect(response).to have_http_status(:success)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json).to have_key('forecast')
       expect(json).to have_key('summary')
     end
@@ -36,7 +36,7 @@ RSpec.describe 'Reports API', type: :request do
     it 'returns chart data for financial goals' do
       get '/api/v1/reports/goal_charts'
       expect(response).to have_http_status(:success)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json).to have_key('debt_free_progress')
       expect(json).to have_key('wealth_growth')
       expect(json).to have_key('budget_chart')

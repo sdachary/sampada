@@ -12,11 +12,11 @@ class GoalChartService
     months = debts.map(&:months_remaining).compact.max || 0
     monthly_emi = debts.sum(&:emi_amount)
     projection = (0..[months, 60].min).map do |m|
-      month_date = Date.today + m.months
+      month_date = Time.zone.today + m.months
       paid_so_far = monthly_emi * m
       {
-        month: month_date.strftime("%Y-%m"),
-        label: month_date.strftime("%b %Y"),
+        month: month_date.strftime('%Y-%m'),
+        label: month_date.strftime('%b %Y'),
         remaining: [(total - paid) - paid_so_far, 0].max.round(2),
         target: 0
       }

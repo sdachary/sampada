@@ -1,8 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe RecurringExpense, type: :model do
-  it { should validate_presence_of(:frequency) }
-  it { should validate_presence_of(:amount) }
+  it { is_expected.to validate_presence_of(:frequency) }
+  it { is_expected.to validate_presence_of(:amount) }
 
   describe 'validations' do
     it 'is valid with valid attributes' do
@@ -37,7 +37,7 @@ RSpec.describe RecurringExpense, type: :model do
     end
 
     it 'has next_due_date attribute' do
-      date = Date.today + 1.week
+      date = Time.zone.today + 1.week
       expense = create(:recurring_expense, next_due_date: date)
       expect(expense.next_due_date).to eq(date)
     end

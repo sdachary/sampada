@@ -1,7 +1,7 @@
 # Use HTTP delivery method for emails via the mail relay service
-require "http_delivery"
+require 'http_delivery'
 
-if Rails.env.production? || Rails.env.staging?
+if Rails.env.production?
   ActionMailer::Base.add_delivery_method :http_delivery, HttpDelivery
   ActionMailer::Base.delivery_method = :http_delivery
   ActionMailer::Base.http_delivery_settings = {

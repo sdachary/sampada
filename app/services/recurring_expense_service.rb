@@ -25,6 +25,7 @@ class RecurringExpenseService
 
     while current <= end_date
       break if expense[:end_date] && current > Date.parse(expense[:end_date].to_s)
+
       events << {
         id: expense[:id],
         title: expense[:name],
@@ -41,8 +42,6 @@ class RecurringExpenseService
   def next_occurrence(from_date, frequency)
     date = Date.parse(from_date.to_s)
     case frequency&.to_sym
-    when :daily
-      date
     when :weekly
       date + ((7 - date.wday) % 7).days
     when :monthly

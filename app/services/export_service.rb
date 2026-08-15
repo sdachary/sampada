@@ -1,4 +1,4 @@
-require "csv"
+require 'csv'
 
 class ExportService
   FORMATS = %w[csv json].freeze
@@ -9,25 +9,25 @@ class ExportService
     @base_currency = user.currency
   end
 
-  def export_debts(format: "csv")
+  def export_debts(format: 'csv')
     data = @user.debts.order(created_at: :desc).map { |d| debt_row(d) }
-    generate(data, format, "debts")
+    generate(data, format, 'debts')
   end
 
-  def export_portfolios(format: "csv")
+  def export_portfolios(format: 'csv')
     data = @user.portfolios.includes(:investments).map { |p| portfolio_row(p) }
-    generate(data, format, "portfolios")
+    generate(data, format, 'portfolios')
   end
 
-  def export_transactions(format: "csv", start_date: nil, end_date: nil)
+  def export_transactions(format: 'csv', start_date: nil, end_date: nil)
     scope = @user.transactions.order(transaction_date: :desc)
     scope = scope.where(transaction_date: start_date..) if start_date
     scope = scope.where(transaction_date: ..end_date) if end_date
     data = scope.map { |t| transaction_row(t) }
-    generate(data, format, "transactions")
+    generate(data, format, 'transactions')
   end
 
-  def export_net_worth(format: "csv")
+  def export_net_worth(format: 'csv')
     data = @user.net_worth_snapshots.ordered.map do |s|
       {
         date: s.snapshot_date,
@@ -37,7 +37,7 @@ class ExportService
         currency: s.currency_code
       }
     end
-    generate(data, format, "net_worth")
+    generate(data, format, 'net_worth')
   end
 
   private
@@ -56,9 +56,9 @@ class ExportService
     {
       portfolio: p.name, goal: p.goal, total_value: p.total_value.to_f,
       currency: p.currency_code,
-      investments: p.investments.map { |i|
+      investments: p.investments.map do |i|
         "#{i.symbol} (#{i.shares} shares @ #{i.current_price})"
-      }.join("; ")
+      end.join('; ')
     }
   end
 
@@ -71,16 +71,17 @@ class ExportService
     }
   end
 
-  def generate(data, format, prefix)
+  def generate(data, format, _prefix)
     case format
-    when "csv" then generate_csv(data)
-    when "json" then generate_json(data)
+    when 'csv' then generate_csv(data)
+    when 'json' then generate_json(data)
     else raise ArgumentError, "Unsupported format: #{format}"
     end
   end
 
   def generate_csv(data)
-    return "No data" if data.empty?
+    return 'No data' if data.empty?
+
     headers = data.first.keys
     CSV.generate do |csv|
       csv << headers

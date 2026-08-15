@@ -11,7 +11,7 @@ RSpec.describe 'Recurring Expenses API', type: :request do
     it 'returns empty array when no expenses' do
       get '/api/v1/recurring_expenses'
       expect(response).to have_http_status(:success)
-      expect(JSON.parse(response.body)).to eq([])
+      expect(response.parsed_body).to eq([])
     end
 
     it 'returns all recurring expenses' do
@@ -19,7 +19,7 @@ RSpec.describe 'Recurring Expenses API', type: :request do
       create(:recurring_expense, user: user, name: 'Electricity', amount: 500)
       get '/api/v1/recurring_expenses'
       expect(response).to have_http_status(:success)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json.length).to eq(2)
     end
   end
@@ -29,7 +29,7 @@ RSpec.describe 'Recurring Expenses API', type: :request do
       expense = create(:recurring_expense, user: user, name: 'Monthly Rent')
       get "/api/v1/recurring_expenses/#{expense.id}"
       expect(response).to have_http_status(:success)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json['name']).to eq('Monthly Rent')
     end
   end
@@ -41,13 +41,13 @@ RSpec.describe 'Recurring Expenses API', type: :request do
           name: 'Internet Bill',
           amount: 1500,
           frequency: 'monthly',
-          next_due_date: Date.today + 1.month,
+          next_due_date: Time.zone.today + 1.month,
           category: 'Utilities'
         }
       }
       post '/api/v1/recurring_expenses', params: params
       expect(response).to have_http_status(:created)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json['name']).to eq('Internet Bill')
     end
 
@@ -64,7 +64,7 @@ RSpec.describe 'Recurring Expenses API', type: :request do
       params = { recurring_expense: { amount: 2500 } }
       put "/api/v1/recurring_expenses/#{expense.id}", params: params
       expect(response).to have_http_status(:success)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json['amount']).to eq(2500)
     end
   end
@@ -79,20 +79,22 @@ RSpec.describe 'Recurring Expenses API', type: :request do
 
   describe 'GET /api/v1/recurring_expenses/calendar' do
     it 'returns calendar data for all expenses' do
-      create(:recurring_expense, user: user, name: 'Rent', frequency: 'monthly', next_due_date: Date.today)
-      get '/api/v1/recurring_expenses/calendar', params: { month: Date.today.month, year: Date.today.year }
+      create(:recurring_expense, user: user, name: 'Rent', frequency: 'monthly', next_due_date: Time.zone.today)
+      get '/api/v1/recurring_expenses/calendar', params: { month: Time.zone.today.month, year: Time.zone.today.year }
       expect(response).to have_http_status(:success)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json).to have_key('expenses')
     end
   end
 
   describe 'GET /api/v1/recurring_expenses/:id/calendar' do
     it 'returns calendar data for specific expense' do
-      expense = create(:recurring_expense, user: user, name: 'Gym', frequency: 'monthly', next_due_date: Date.today)
-      get "/api/v1/recurring_expenses/#{expense.id}/calendar", params: { month: Date.today.month, year: Date.today.year }
+      expense = create(:recurring_expense, user: user, name: 'Gym', frequency: 'monthly',
+                                           next_due_date: Time.zone.today)
+      get "/api/v1/recurring_expenses/#{expense.id}/calendar",
+          params: { month: Time.zone.today.month, year: Time.zone.today.year }
       expect(response).to have_http_status(:success)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json).to have_key('expenses')
     end
   end

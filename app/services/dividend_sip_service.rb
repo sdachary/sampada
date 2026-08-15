@@ -34,7 +34,7 @@ class DividendSipService
   def score_stock(stock)
     yield_score = stock[:dividend_yield] || 0
     growth_score = stock[:growth_rate] || 0
-    (yield_score * 0.6 + growth_score * 0.4) * (stock[:weight] || 1)
+    ((yield_score * 0.6) + (growth_score * 0.4)) * (stock[:weight] || 1)
   end
 
   def analyze_stock(stock)

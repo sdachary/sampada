@@ -11,14 +11,14 @@ RSpec.describe 'Conversations API', type: :request do
     it 'lists conversations (empty by default)' do
       get '/api/v1/conversations'
       expect(response).to have_http_status(:success)
-      expect(JSON.parse(response.body)).to eq([])
+      expect(response.parsed_body).to eq([])
     end
 
     it 'shows a conversation with messages' do
       conv = user.conversations.create!(title: 'My chat')
       conv.messages.create!(role: 'user', content: 'hi')
       get "/api/v1/conversations/#{conv.id}"
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json['title']).to eq('My chat')
       expect(json['messages'].length).to eq(1)
       expect(json['messages'][0]['role']).to eq('user')
@@ -29,7 +29,7 @@ RSpec.describe 'Conversations API', type: :request do
     it 'creates a conversation' do
       post '/api/v1/conversations', params: { title: 'New chat' }
       expect(response).to have_http_status(:created)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json['title']).to eq('New chat')
       expect(user.conversations.count).to eq(1)
     end
@@ -42,7 +42,7 @@ RSpec.describe 'Conversations API', type: :request do
       expect(AiResponseJob).to receive(:perform_async).with(conv.id)
       post "/api/v1/conversations/#{conv.id}/messages", params: { role: 'user', content: 'hello' }
       expect(response).to have_http_status(:created)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json['role']).to eq('user')
       expect(conv.messages.count).to eq(1)
     end
@@ -56,7 +56,7 @@ RSpec.describe 'Conversations API', type: :request do
     it 'appends a pending placeholder when last message is a user prompt' do
       conv.messages.create!(role: 'user', content: 'question')
       get "/api/v1/conversations/#{conv.id}/messages"
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json.last['metadata']).to include('pending' => true)
     end
 
@@ -64,7 +64,7 @@ RSpec.describe 'Conversations API', type: :request do
       conv.messages.create!(role: 'user', content: 'question')
       conv.messages.create!(role: 'assistant', content: 'answer')
       get "/api/v1/conversations/#{conv.id}/messages"
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json.last['role']).to eq('assistant')
       expect(json.none? { |m| m['metadata']&.include?('pending') }).to be(true)
     end

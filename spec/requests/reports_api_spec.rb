@@ -11,7 +11,7 @@ RSpec.describe 'Reports API', type: :request do
     it 'returns annual report' do
       get '/api/v1/reports/annual', params: { year: 2026 }
       expect(response).to have_http_status(:success)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json).to have_key('summary')
     end
   end
@@ -20,7 +20,7 @@ RSpec.describe 'Reports API', type: :request do
     it 'returns net worth report' do
       get '/api/v1/reports/net_worth'
       expect(response).to have_http_status(:success)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json).to have_key('net_worth')
     end
   end

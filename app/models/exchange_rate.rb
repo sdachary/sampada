@@ -11,6 +11,7 @@ class ExchangeRate < TenantRecord
 
   def self.rate(from:, to:)
     return 1.0 if from == to
+
     record = find_by(from_currency: from, to_currency: to)
     return record.rate if record&.recent?
 
@@ -22,8 +23,10 @@ class ExchangeRate < TenantRecord
 
   def self.convert(amount, from:, to:)
     return amount if from == to
+
     rate = rate(from: from, to: to)
     return nil unless rate
+
     (amount * rate).round(4)
   end
 end

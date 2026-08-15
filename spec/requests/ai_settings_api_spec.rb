@@ -11,7 +11,7 @@ RSpec.describe 'AI Settings API', type: :request do
     it 'returns unconfigured by default' do
       get '/api/v1/ai_settings'
       expect(response).to have_http_status(:success)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json['configured']).to be(false)
       expect(json['provider']).to be_nil
       expect(json['presets']).to include('gemini', 'grok', 'openai', 'openrouter')
@@ -22,7 +22,7 @@ RSpec.describe 'AI Settings API', type: :request do
     it 'configures a provider with an api key' do
       put '/api/v1/ai_settings', params: { provider: 'gemini', api_key: 'AIza-test123' }
       expect(response).to have_http_status(:success)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json['configured']).to be(true)
       expect(json['provider']).to eq('gemini')
 
@@ -34,7 +34,7 @@ RSpec.describe 'AI Settings API', type: :request do
 
     it 'allows model override' do
       put '/api/v1/ai_settings', params: { provider: 'grok', api_key: 'xai-key', model: 'grok-2' }
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json['configured']).to be(true)
       expect(Setting.get('ai_model', user: user)).to eq('grok-2')
     end
@@ -55,7 +55,7 @@ RSpec.describe 'AI Settings API', type: :request do
 
       delete '/api/v1/ai_settings'
       expect(response).to have_http_status(:success)
-      expect(JSON.parse(response.body)['configured']).to be(false)
+      expect(response.parsed_body['configured']).to be(false)
       expect(Setting.where(user: user, key: %w[ai_provider ai_api_key ai_uri ai_model]).count).to eq(0)
     end
   end

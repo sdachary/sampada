@@ -10,6 +10,6 @@ class DebtPayoff < TenantRecord
   end
 
   def active_debts
-    debts.where(status: "active")
+    debts.where(status: 'active')
   end
 end

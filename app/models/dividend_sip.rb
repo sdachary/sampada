@@ -15,10 +15,9 @@ class DividendSip < TenantRecord
 
   def monthly_contribution
     case frequency
-    when "monthly" then amount
-    when "quarterly" then amount / 3.0
-    when "yearly" then amount / 12.0
-    else amount
+    when 'monthly' then amount
+    when 'quarterly' then amount / 3.0
+    when 'yearly' then amount / 12.0
     end
   end
 end

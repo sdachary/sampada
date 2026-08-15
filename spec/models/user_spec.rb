@@ -43,8 +43,8 @@ RSpec.describe User, type: :model do
     it '.active returns onboarded users' do
       active_user = create(:user, onboarded: true)
       inactive_user = create(:user, onboarded: false, email: 'inactive@example.com')
-      expect(User.active).to include(active_user)
-      expect(User.active).not_to include(inactive_user)
+      expect(described_class.active).to include(active_user)
+      expect(described_class.active).not_to include(inactive_user)
     end
   end
 end

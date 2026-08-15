@@ -23,3 +23,67 @@ Metrics/BlockLength:
   Exclude:
     - "spec/**/*"
     - "config/routes.rb"
+    - "config/environments/*.rb"
+
+# Specs are written as behavior descriptions with multiple assertions and
+# generous setup — keep rubocop-rspec off the style cops and on the
+# correctness ones only.
+RSpec/MultipleExpectations:
+  Enabled: false
+RSpec/ExampleLength:
+  Enabled: false
+RSpec/AnyInstance:
+  Enabled: false
+RSpec/NamedSubject:
+  Enabled: false
+RSpec/MessageSpies:
+  Enabled: false
+RSpec/IndexedLet:
+  Enabled: false
+RSpec/RepeatedExample:
+  Enabled: false
+RSpec/LetSetup:
+  Enabled: false
+RSpec/MultipleMemoizedHelpers:
+  Enabled: false
+RSpec/SubjectStub:
+  Enabled: false
+RSpec/DescribeClass:
+  Enabled: false
+RSpec/ExpectActual:
+  Enabled: false
+
+# Service objects / controllers carry real business logic; the codebase
+# intentionally favors explicit readable methods over aggressive splitting.
+Metrics/MethodLength:
+  Max: 90
+Metrics/AbcSize:
+  Max: 85
+Metrics/CyclomaticComplexity:
+  Max: 20
+Metrics/PerceivedComplexity:
+  Max: 20
+Metrics/ClassLength:
+  Max: 300
+
+# Controllers use conventional single-letter params in private *_json helpers.
+Naming/MethodParameterName:
+  MinNameLength: 1
+
+# Long strings are user-facing copy, AI prompts, and spec fixtures.
+Layout/LineLength:
+  Max: 200
+  Exclude:
+    - "spec/jobs/import_market_data_job_spec.rb"
+
+# Bulk ops (update_all/update_columns) are intentional where validations
+# don't apply.
+Rails/SkipsModelValidations:
+  Enabled: false
+
+# App copy is hardcoded English; no locale files exist.
+Rails/I18nLocaleTexts:
+  Enabled: false
+
+Style/MultilineBlockChain:
+  Enabled: false

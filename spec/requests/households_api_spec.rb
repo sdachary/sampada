@@ -11,7 +11,7 @@ RSpec.describe 'Households API', type: :request do
     it 'returns empty array when no households' do
       get '/api/v1/households'
       expect(response).to have_http_status(:success)
-      expect(JSON.parse(response.body)).to eq([])
+      expect(response.parsed_body).to eq([])
     end
 
     it 'returns all households' do
@@ -19,7 +19,7 @@ RSpec.describe 'Households API', type: :request do
       create(:household_membership, household: household, user: user, role: 'owner')
       get '/api/v1/households'
       expect(response).to have_http_status(:success)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json.length).to eq(1)
     end
   end
@@ -30,7 +30,7 @@ RSpec.describe 'Households API', type: :request do
       create(:household_membership, household: household, user: user, role: 'owner')
       get "/api/v1/households/#{household.id}"
       expect(response).to have_http_status(:success)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json['name']).to eq('Test Family')
     end
   end
@@ -40,7 +40,7 @@ RSpec.describe 'Households API', type: :request do
       params = { name: 'New Family', currency: 'INR' }
       post '/api/v1/households', params: params
       expect(response).to have_http_status(:created)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json['name']).to eq('New Family')
     end
 
@@ -58,7 +58,7 @@ RSpec.describe 'Households API', type: :request do
       params = { name: 'Updated Name' }
       put "/api/v1/households/#{household.id}", params: params
       expect(response).to have_http_status(:success)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json['name']).to eq('Updated Name')
     end
   end
