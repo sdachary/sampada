@@ -71,4 +71,20 @@ RSpec.describe Trip, type: :model do
       expect(trip.total_spent).to eq(150.0)
     end
   end
+
+  describe 'destroy with expenses and settlements' do
+    it 'destroys without NotNullViolation (members, expenses, settlements cascade)' do
+      trip = create(:trip)
+      alice = create(:trip_member, trip: trip, name: 'Alice')
+      bob = create(:trip_member, trip: trip, name: 'Bob')
+      create(:trip_expense, trip: trip, trip_member: alice, amount: 1000.00, split_type: 'equal')
+      create(:trip_settlement, trip: trip, from_member: bob, to_member: alice, amount: 200.00)
+
+      expect { trip.destroy }.not_to raise_error
+      expect(Trip.where(id: trip.id)).to be_empty
+      expect(TripMember.where(trip_id: trip.id)).to be_empty
+      expect(TripExpense.where(trip_id: trip.id)).to be_empty
+      expect(TripSettlement.where(trip_id: trip.id)).to be_empty
+    end
+  end
 end

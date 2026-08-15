@@ -36,6 +36,7 @@ RSpec.describe User, type: :model do
     it { is_expected.to have_many(:debts).dependent(:destroy) }
     it { is_expected.to have_many(:portfolios).dependent(:destroy) }
     it { is_expected.to have_many(:journeys).dependent(:destroy) }
+    it { is_expected.to have_many(:grievances).dependent(:destroy) }
   end
 
   describe 'scopes' do

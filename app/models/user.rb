@@ -4,6 +4,7 @@ class User < ApplicationRecord
   has_many :conversations, dependent: :destroy
   has_many :consent_records, dependent: :destroy
   has_many :deletion_requests, dependent: :destroy
+  has_many :grievances, dependent: :destroy
   has_many :debts, dependent: :destroy
   has_many :debt_payoffs, dependent: :destroy
   has_many :insurance_policies, dependent: :destroy

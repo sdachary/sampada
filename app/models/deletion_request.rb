@@ -6,7 +6,7 @@ class DeletionRequest < ApplicationRecord
   validates :status, inclusion: { in: STATUSES }
   validates :cancel_token, presence: true
 
-  before_create :set_defaults
+  before_validation :set_defaults, on: :create
 
   scope :pending, -> { where(status: 'pending') }
 
