@@ -1,16 +1,24 @@
-import { useState } from 'react'
-import { Link, useParams, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useSearchParams, useNavigate } from 'react-router-dom'
 import { auth } from '../lib/api'
 
 export default function ResetPassword() {
-  const { token } = useParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
+  const [token, setToken] = useState('')
   const [password, setPassword] = useState('')
   const [passwordConfirmation, setPasswordConfirmation] = useState('')
   const [showPw, setShowPw] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const [error, setError] = useState('')
   const [done, setDone] = useState(false)
+
+  useEffect(() => {
+    const t = searchParams.get('token')
+    const err = searchParams.get('error')
+    if (err) setError(err === 'INVALID_TOKEN' ? 'Invalid or expired reset link' : err)
+    if (t) setToken(t)
+  }, [searchParams])
 
   const handleSubmit = async (e) => {
     e.preventDefault()

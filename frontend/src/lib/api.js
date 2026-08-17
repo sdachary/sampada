@@ -50,12 +50,12 @@ export const auth = {
 
   forgotPassword: (email) => betterAuthRequest('/request-password-reset', {
     method: 'POST',
-    body: JSON.stringify({ email }),
+    body: JSON.stringify({ email, redirectTo: `${window.location.origin}/reset-password` }),
   }),
 
-  resetPassword: (token, password) => betterAuthRequest('/reset-password', {
+  resetPassword: (token, newPassword) => betterAuthRequest('/reset-password', {
     method: 'POST',
-    body: JSON.stringify({ token, password }),
+    body: JSON.stringify({ token, newPassword }),
   }),
 
   // OAuth - redirect to Better-Auth
