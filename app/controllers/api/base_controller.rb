@@ -9,8 +9,9 @@ module Api
 
     protected
 
-    def render_success(data = {}, status: :ok)
-      render json: data, status: status
+    def render_success(data = {}, message: nil, status: :ok)
+      body = data.is_a?(Hash) && message ? data.merge(message: message) : data
+      render json: body, status: status
     end
 
     def render_error(message, status: :unprocessable_entity, errors: nil)
