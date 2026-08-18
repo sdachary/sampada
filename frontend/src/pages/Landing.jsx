@@ -23,7 +23,7 @@ const FEATURES = [
   { icon: RefreshCw, title: 'Portfolio rebalancing', body: 'Modern Portfolio Theory checks your allocation every month and flags what\u2019s off track.' },
   { icon: MessageSquare, title: 'Natural-language entries', body: '\u201cI spent \u20b9500 on groceries\u201d becomes a categorized transaction, no forms.' },
   { icon: AlertTriangle, title: 'Anomaly detection', body: 'A 3-sigma algorithm flags spending that breaks your normal pattern, automatically.' },
-  { icon: Globe, title: 'Multi-currency, global markets', body: '32 currencies with live rates. NYSE, NASDAQ, LSE, TSE, ASX \u2014 plus native NSE/BSE support.' },
+  { icon: Globe, title: 'Multi-currency, global markets', body: '32 currencies with live rates. NYSE, NASDAQ, LSE, TSE, ASX — plus native NSE/BSE support.' },
   { icon: Users, title: 'Household sharing', body: 'Add family members with role-based access and one shared household dashboard.' },
   { icon: Cpu, title: 'Free AI, by default', body: 'Runs on OpenRouter\u2019s free models or fully local via Ollama. No AI paywall, ever.' },
 ]
@@ -68,13 +68,13 @@ export default function Landing() {
           Zero is better than <em style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', color: 'var(--coral)' }}>negative</em>.
         </h1>
         <p style={{ fontSize: 16, color: 'var(--ink-mute)', maxWidth: 480, margin: '0 auto 32px', lineHeight: 1.6 }}>
-          Debt payoff, AI-guided SIPs, and portfolio rebalancing in one self-hosted app \u2014 built to clear what you owe before it grows what you keep.
+          Debt payoff, AI-guided SIPs, and portfolio rebalancing in one self-hosted app — built to clear what you owe before it grows what you keep.
         </p>
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
           <Link to="/register" className="btn btn-primary">Get started free</Link>
         </div>
         <p style={{ fontSize: 12, color: 'var(--ink-faint)', marginTop: 20, letterSpacing: '0.02em' }}>
-          Open source \u00b7 Apache 2.0 \u00b7 Free forever
+          Open source · Apache 2.0 · Free forever
         </p>
       </section>
 
@@ -95,7 +95,7 @@ export default function Landing() {
         ))}
       </div>
       <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--ink-faint)', maxWidth: 420, margin: '14px auto 40px', lineHeight: 1.6 }} data-reveal>
-        Set a goal like <em style={{ fontStyle: 'italic', color: 'var(--ink-mute)' }}>\u201c\u20b925,000/month passive income by 2030\u201d</em> \u2014 Sampada reverse-engineers the SIP amount, stock picks, and rebalance cadence to get there.
+        Set a goal like <em style={{ fontStyle: 'italic', color: 'var(--ink-mute)' }}>"₹25,000/month passive income by 2030"</em> — Sampada reverse-engineers the SIP amount, stock picks, and rebalance cadence to get there.
       </p>
 
       {/* 3. Feature grid */}
