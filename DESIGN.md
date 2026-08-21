@@ -1,4 +1,4 @@
-# Kubera
+# Sampada
 
 > Category: Financial Dashboard
 > Warm editorial personal-finance app — think warm paper ledger meets modern dashboard.
@@ -70,7 +70,7 @@ No neumorphism, no glassmorphism.
 - Prevent iOS zoom: inputs/selects/textareas at 16px font minimum
 
 ## Agent Prompt Guide
-- The existing Kubera palette is intentionally warm. Do not introduce cool blues or greys.
+- The existing Sampada palette is intentionally warm. Do not introduce cool blues or greys.
 - Cards should never have a left-border accent line. Use the coral color sparingly — progress fill, CTA, one stat per grid.
 - Progress bars inside debt cards are the canonical way to show payoff status — not border colors.
 - Financial figures always use `.fin` class for `font-variant-numeric: tabular-nums`.
