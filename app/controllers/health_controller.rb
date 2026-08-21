@@ -15,7 +15,7 @@ class HealthController < ActionController::API
       services: {
         database: db_ok ? 'connected' : 'disconnected'
       },
-      version: ENV.fetch('KUBERA_VERSION', nil),
+      version: ENV.fetch('SAMPADA_VERSION', nil),
       rails_env: Rails.env
     }, status: status
   end

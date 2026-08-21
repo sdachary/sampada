@@ -30,7 +30,7 @@ if rails_env == 'production'
   # should be equal to the number of processors (CPU cores) in production.
   #
   # It defaults to 1 because it's impossible to reliably detect how many
-  # CPU cores are available. Make kubera to set the `WEB_CONCURRENCY` environment
+  # CPU cores are available. Make sure to set the `WEB_CONCURRENCY` environment
   # variable to match the number of processors.
   workers_count = Integer(ENV.fetch('WEB_CONCURRENCY', 1))
   workers workers_count if workers_count > 1

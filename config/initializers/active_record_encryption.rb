@@ -17,7 +17,7 @@ if primary_key.present? && deterministic_key.present? && key_derivation_salt.pre
 elsif Rails.application.credentials.active_record_encryption.blank?
   # For self-hosted instances without credentials or env vars, auto-generate keys
   # Use SECRET_KEY_BASE as the seed for deterministic key generation
-  # This enkuberas keys are consistent across container restarts
+  # This ensures keys are consistent across container restarts
   secret_base = Rails.application.secret_key_base
 
   # Generate deterministic keys from the secret base

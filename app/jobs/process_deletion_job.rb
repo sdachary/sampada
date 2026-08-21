@@ -14,7 +14,7 @@ class ProcessDeletionJob
       request.update!(status: 'exported')
     end
 
-    user.email = "deleted-#{user.id}@kubera.app"
+    user.email = "deleted-#{user.id}@sampada.app"
     user.first_name = 'Deleted'
     user.last_name = 'User'
     user.save!

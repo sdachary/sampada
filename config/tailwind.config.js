@@ -15,7 +15,7 @@ module.exports = {
         mono: ["Space Mono", ...defaultTheme.fontFamily.mono]
       },
       colors: {
-        kubera: {
+        brand: {
           50: "#f0fdfa",
           100: "#ccfbf1",
           200: "#99f6e4",

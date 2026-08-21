@@ -16,7 +16,7 @@ Rails.application.configure do
   config.consider_all_requests_local = false
   config.action_controller.perform_caching = true
 
-  # Enkuberas that a master key has been made available in ENV["RAILS_MASTER_KEY"], config/master.key, or an environment
+  # Ensure that a master key has been made available in ENV["RAILS_MASTER_KEY"], config/master.key, or an environment
   # key such as config/credentials/production.key. This key is used to decrypt credentials (and other encrypted files).
   # config.require_master_key = true
 
@@ -65,7 +65,7 @@ Rails.application.configure do
   config.log_tags = [:request_id]
 
   # "info" includes generic and useful information about system operation, but avoids logging too much
-  # information to avoid inadvertent expokubera of personally identifiable information (PII). If you
+  # information to avoid inadvertent exposure of personally identifiable information (PII). If you
   # want to log everything, set the level to "debug".
   config.log_level = ENV.fetch('RAILS_LOG_LEVEL', 'info')
 
