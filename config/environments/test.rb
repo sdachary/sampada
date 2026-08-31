@@ -74,7 +74,5 @@ Rails.application.configure do
   config.active_record.encryption.key_derivation_salt = 'test'
   config.active_record.encryption.encrypt_fixtures = true
 
-  config.autoload_paths += %w[test/support]
-
   config.action_mailer.default_url_options = { host: 'example.com' }
 end
