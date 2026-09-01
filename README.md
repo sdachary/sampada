@@ -74,7 +74,7 @@ The app never blocks you from doing whatever you want with your money — but de
 ## Why Sampada? (vs. other finance apps)
 
 | Feature | **Sampada** | YNAB | Mint† | Empower | Rocket Money |
-|---|---|---|---|---|---|---|
+|---|---|---|---|---|---|
 | **Free forever (hosted)** | ✅ | ❌ ~$15/mo | Was free | Freemium | Freemium |
 | **Debt-first philosophy** | ✅ Core | Partial | ❌ | ❌ | ❌ |
 | Multi-currency | ✅ 32 currencies | ❌ | ❌ | ❌ | ❌ |
@@ -196,6 +196,7 @@ Full plan: [`docs/roadmap-updated.md`](docs/roadmap-updated.md)
 - ✅ v2.4 — Onboarding tour, Insurance tracker, correctness fixes
 - ✅ Phase 5 — Optimization & refactoring
 - 🔜 **v2.5** — PWA, offline support, push notifications
+
 ---
 
 ## Why Open Source?
