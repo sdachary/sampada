@@ -29,14 +29,14 @@ class GoalForecastService
       corpus += monthly + top_up
       corpus *= (1.0 + monthly_rate)
 
+      next unless (m % 12).zero?
+
       year_num = (m / 12.0).ceil
-      if (m % 12).zero?
-        yearly_points << {
-          year: Date.current.year + year_num,
-          projected_corpus: corpus.round(2),
-          goal_target: @goal.target_amount.to_f
-        }
-      end
+      yearly_points << {
+        year: Date.current.year + year_num,
+        projected_corpus: corpus.round(2),
+        goal_target: @goal.target_amount.to_f
+      }
     end
 
     final_target_year = Date.current.year + (months / 12.0).ceil
@@ -70,13 +70,13 @@ class GoalForecastService
         corpus += monthly + top_up
         corpus *= (1.0 + monthly_rate)
 
-        if (m % 12).zero?
-          year_num = (m / 12.0).ceil
-          yearly_points << {
-            year: Date.current.year + year_num,
-            projected_corpus: corpus.round(2)
-          }
-        end
+        next unless (m % 12).zero?
+
+        year_num = (m / 12.0).ceil
+        yearly_points << {
+          year: Date.current.year + year_num,
+          projected_corpus: corpus.round(2)
+        }
       end
 
       results[name] = {

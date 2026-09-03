@@ -10,9 +10,7 @@ RSpec.describe GoalForecastService, type: :service do
 
     context 'with a moderate allocation goal' do
       let(:goal) do
-        create(:goal, user: user, monthly_sip: 25_000, target_amount: 5_000_000,
-          target_year: Date.current.year + 5, allocation: 'moderate',
-          equity_growth: 12, debt_growth: 7, gold_growth: 8)
+        create(:goal, user: user, monthly_sip: 25_000, target_amount: 5_000_000, target_year: Date.current.year + 5, allocation: 'moderate', equity_growth: 12, debt_growth: 7, gold_growth: 8)
       end
 
       it 'returns a projection with yearly points' do
@@ -39,16 +37,13 @@ RSpec.describe GoalForecastService, type: :service do
 
     context 'with top-up' do
       let(:goal) do
-        create(:goal, user: user, monthly_sip: 25_000, top_up_amount: 10_000,
-          top_up_frequency: 'quarterly', target_amount: 5_000_000,
-          target_year: Date.current.year + 5, allocation: 'moderate')
+        create(:goal, user: user, monthly_sip: 25_000, top_up_amount: 10_000, top_up_frequency: 'quarterly', target_amount: 5_000_000, target_year: Date.current.year + 5, allocation: 'moderate')
       end
 
       it 'includes top-up in projection' do
         goal_with_topup = service.projection
-        goal_no_topup = described_class.new(create(:goal, user: user, monthly_sip: 25_000,
-          top_up_amount: 0, target_amount: 5_000_000,
-          target_year: Date.current.year + 5, allocation: 'moderate')).projection
+        goal_without_topup = create(:goal, user: user, monthly_sip: 25_000, top_up_amount: 0, target_amount: 5_000_000, target_year: Date.current.year + 5, allocation: 'moderate')
+        goal_no_topup = described_class.new(goal_without_topup).projection
         expect(goal_with_topup[:final_corpus]).to be > goal_no_topup[:final_corpus]
       end
     end
