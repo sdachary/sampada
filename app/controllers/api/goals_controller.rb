@@ -33,8 +33,8 @@ module Api
 
     def goal_params
       params.require(:goal).permit(:name, :target_amount, :target_year, :currency_code,
-        :monthly_sip, :top_up_amount, :top_up_frequency, :allocation,
-        :equity_growth, :debt_growth, :gold_growth)
+                                   :monthly_sip, :top_up_amount, :top_up_frequency, :allocation,
+                                   :equity_growth, :debt_growth, :gold_growth)
     end
 
     def goal_json(g)

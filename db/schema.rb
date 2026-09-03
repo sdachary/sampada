@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_08_07_000000) do
+ActiveRecord::Schema[7.2].define(version: 2026_09_03_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -219,6 +219,25 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_07_000000) do
     t.index ["reference_number"], name: "index_grievances_on_reference_number", unique: true
     t.index ["user_id", "status"], name: "index_grievances_on_user_id_and_status"
     t.index ["user_id"], name: "index_grievances_on_user_id"
+  end
+
+  create_table "goals", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "user_id", null: false
+    t.string "name", null: false
+    t.decimal "target_amount", precision: 19, scale: 4, null: false
+    t.integer "target_year", null: false
+    t.string "currency_code", default: "INR", null: false
+    t.decimal "monthly_sip", precision: 19, scale: 4, default: "0.0", null: false
+    t.decimal "top_up_amount", precision: 19, scale: 4, default: "0.0"
+    t.string "top_up_frequency", default: "none"
+    t.string "allocation", default: "moderate", null: false
+    t.decimal "equity_growth", precision: 5, scale: 2, default: "12.0"
+    t.decimal "debt_growth", precision: 5, scale: 2, default: "7.0"
+    t.decimal "gold_growth", precision: 5, scale: 2, default: "8.0"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["allocation"], name: "index_goals_on_allocation"
+    t.index ["user_id"], name: "index_goals_on_user_id"
   end
 
   create_table "household_memberships", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -536,6 +555,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_07_000000) do
   add_foreign_key "deletion_requests", "users", name: "deletion_requests_user_id_fkey"
   add_foreign_key "dividend_sips", "portfolios"
   add_foreign_key "grievances", "users"
+  add_foreign_key "goals", "users"
   add_foreign_key "household_memberships", "households"
   add_foreign_key "household_memberships", "users"
   add_foreign_key "insurance_policies", "users"

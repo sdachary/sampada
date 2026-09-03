@@ -20,7 +20,7 @@ class GoalForecastService
     preset = ALLOCATIONS[@goal.allocation]
     blended = blended_cagr(preset, @goal.equity_growth.to_f, @goal.debt_growth.to_f, @goal.gold_growth.to_f)
     rate = blended / 100.0
-    monthly_rate = (1.0 + rate) ** (1.0 / 12.0) - 1.0
+    monthly_rate = ((1.0 + rate)**(1.0 / 12.0)) - 1.0
 
     corpus = 0.0
     yearly_points = []
@@ -61,7 +61,7 @@ class GoalForecastService
     ALLOCATIONS.each do |name, preset|
       blended = blended_cagr(preset, @goal.equity_growth.to_f, @goal.debt_growth.to_f, @goal.gold_growth.to_f)
       rate = blended / 100.0
-      monthly_rate = (1.0 + rate) ** (1.0 / 12.0) - 1.0
+      monthly_rate = ((1.0 + rate)**(1.0 / 12.0)) - 1.0
 
       corpus = 0.0
       yearly_points = []
