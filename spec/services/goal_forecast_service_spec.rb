@@ -61,12 +61,11 @@ RSpec.describe GoalForecastService, type: :service do
   end
 
   describe '#risk_comparison' do
-    let(:goal) do
-      create(:goal, user: user, monthly_sip: 25_000, target_amount: 5_000_000,
-        target_year: Date.current.year + 5, allocation: 'moderate',
-        equity_growth: 12, debt_growth: 7, gold_growth: 8)
-    end
     subject(:service) { described_class.new(goal) }
+
+    let(:goal) do
+      create(:goal, user: user, monthly_sip: 25_000, target_amount: 5_000_000, target_year: Date.current.year + 5, allocation: 'moderate', equity_growth: 12, debt_growth: 7, gold_growth: 8)
+    end
 
     it 'returns comparison for all three allocations' do
       result = service.risk_comparison
