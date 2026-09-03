@@ -77,6 +77,21 @@ FactoryBot.define do
     association :debt
   end
 
+  factory :goal do
+    association :user
+    name { 'Retirement Corpus' }
+    target_amount { 5_000_000.0 }
+    target_year { Date.current.year + 5 }
+    monthly_sip { 25_000.0 }
+    top_up_amount { 0 }
+    top_up_frequency { 'none' }
+    allocation { 'moderate' }
+    equity_growth { 12.0 }
+    debt_growth { 7.0 }
+    gold_growth { 8.0 }
+    currency_code { 'INR' }
+  end
+
   factory :dividend_sip do
     association :portfolio
     name { 'Monthly SIP' }

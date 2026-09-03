@@ -42,6 +42,7 @@ Rails.application.routes.draw do
       end
     end
     resources :investments, only: %i[index create update destroy]
+    resources :goals, only: %i[index show create update destroy]
     resources :dividend_sips, only: %i[index show create update destroy] do
       member do
         get :suggest
