@@ -22,6 +22,7 @@ import Households from './pages/Households'
 import Conversations from './pages/Conversations'
 import Reports from './pages/Reports'
 import Exports from './pages/Exports'
+import Goals from './pages/Goals'
 import Settings from './pages/Settings'
 import Privacy from './pages/Privacy'
 import Onboarding from './pages/Onboarding'
@@ -54,6 +55,7 @@ export default function App() {
         <Route path="portfolios" element={<Portfolios />} />
         <Route path="investments" element={<Investments />} />
         <Route path="sips" element={<Sips />} />
+        <Route path="goals" element={<Goals />} />
         <Route path="journey" element={<Journey />} />
         <Route path="trips" element={<Trips />} />
         <Route path="households" element={<Households />} />

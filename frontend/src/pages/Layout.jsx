@@ -21,6 +21,7 @@ const iconMap = {
   'simulator': Calculator,
   'portfolio': Briefcase,
   'investments': TrendingUp,
+  'goal': Target,
   'sip': Clock,
   'journey': Map,
   'trip': Plane,
@@ -57,6 +58,7 @@ const groups = [
     { name: 'Portfolios', path: '/dashboard/portfolios', icon: 'portfolio' },
     { name: 'Investments', path: '/dashboard/investments', icon: 'investments' },
     { name: 'SIPs', path: '/dashboard/sips', icon: 'sip' },
+    { name: 'Goals', path: '/dashboard/goals', icon: 'goal' },
   ]},
   { name: 'More', children: [
     { name: 'Trip Mode', path: '/dashboard/trips', icon: 'trip' },
