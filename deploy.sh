@@ -8,7 +8,7 @@ echo "==> Pulling latest..."
 sudo git pull
 
 echo "==> Decrypting secrets..."
-sops -d secrets.enc.env > .env.secrets 2>/dev/null
+sops -d secrets.enc.env | sudo tee .env.secrets > /dev/null
 
 # Merge secrets into .env (secrets override existing keys)
 while IFS='=' read -r key value; do
