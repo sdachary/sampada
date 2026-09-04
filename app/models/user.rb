@@ -14,6 +14,7 @@ class User < ApplicationRecord
   has_many :net_worth_snapshots, dependent: :destroy
   has_many :recurring_expenses, dependent: :destroy
   has_many :notifications, dependent: :destroy
+  has_many :push_subscriptions, dependent: :destroy
   has_many :settings, dependent: :destroy
   has_many :budget_categories, dependent: :destroy
   has_many :budgets, dependent: :destroy

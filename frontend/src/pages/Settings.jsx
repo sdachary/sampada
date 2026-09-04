@@ -3,6 +3,7 @@ import { useAuth } from '../lib/auth'
 import { api, auth as authApi } from '../lib/api'
 import { useNavigate } from 'react-router-dom'
 import { Field } from '../components/ui'
+import { registerServiceWorker, subscribeToPush, unsubscribeFromPush, isPushSupported, isPushSubscribed } from '../lib/push'
 
 const PROVIDERS = [
   { value: 'zerodha', label: 'Zerodha' },
@@ -32,6 +33,9 @@ export default function Settings() {
   const [aiConfigured, setAiConfigured] = useState(false)
   const [aiForm, setAiForm] = useState({ provider: '', api_key: '' })
   const [aiError, setAiError] = useState('')
+  const [pushSupported, setPushSupported] = useState(false)
+  const [pushSubscribed, setPushSubscribed] = useState(false)
+  const [swReg, setSwReg] = useState(null)
 
   useEffect(() => { fetchCredentials() }, [])
 
@@ -41,6 +45,34 @@ export default function Settings() {
       setAiConfigured(!!d.configured)
     }).catch(() => {})
   }, [])
+
+  useEffect(() => {
+    isPushSupported().then(supported => {
+      setPushSupported(supported)
+      if (supported) {
+        registerServiceWorker().then(reg => {
+          setSwReg(reg)
+          isPushSubscribed(reg).then(setPushSubscribed)
+        })
+      }
+    })
+  }, [])
+
+  const togglePush = async () => {
+    if (!swReg) return
+    if (pushSubscribed) {
+      await unsubscribeFromPush(swReg)
+      setPushSubscribed(false)
+      setMsg('Push notifications disabled')
+    } else {
+      const sub = await subscribeToPush(swReg)
+      if (sub) {
+        setPushSubscribed(true)
+        setMsg('Push notifications enabled')
+      }
+    }
+    setTimeout(() => setMsg(''), 3000)
+  }
 
   const saveAi = async () => {
     setAiError('')
@@ -274,6 +306,21 @@ export default function Settings() {
           </div>
         )}
       </div>
+
+      {pushSupported && (
+        <div className="card" style={{ padding: '18px 20px', borderLeft: '3px solid var(--teal)' }}>
+          <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 4 }}>Push Notifications</p>
+          <p style={{ fontSize: 12, color: 'var(--ink-mute)', marginBottom: 8 }}>Get notified about debt reminders and SIP alerts.</p>
+          <button onClick={togglePush} className="btn" style={{
+            fontSize: 12.5, padding: '7px 16px',
+            background: pushSubscribed ? 'transparent' : 'var(--teal)',
+            border: `1px solid ${pushSubscribed ? 'var(--line)' : 'var(--teal)'}`,
+            color: pushSubscribed ? 'var(--coral)' : '#fff',
+          }}>
+            {pushSubscribed ? 'Disable' : 'Enable'}
+          </button>
+        </div>
+      )}
 
       <div className="card" style={{ padding: '18px 20px', borderLeft: '3px solid var(--ink-faint)' }}>
         <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 4, letterSpacing: '-0.01em' }}>Logout</p>

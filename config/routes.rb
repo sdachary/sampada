@@ -65,6 +65,9 @@ Rails.application.routes.draw do
     resources :notifications, only: %i[index update] do
       collection { post :mark_all_read }
     end
+    resources :push_subscriptions, only: %i[create destroy] do
+      collection { get :vapid_public_key }
+    end
     get 'dashboard', to: 'dashboard#show'
     get 'dashboard/projection', to: 'dashboard#projection'
 
