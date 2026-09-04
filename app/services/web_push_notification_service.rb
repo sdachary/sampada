@@ -13,8 +13,4 @@ class WebPushNotificationService
       PushNotificationDeliveryJob.perform_later(sub.id, payload)
     end
   end
-
-  def self.vapid_key
-    @vapid_key ||= WebPush::VapidKey.generate
-  end
 end
