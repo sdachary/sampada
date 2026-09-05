@@ -27,8 +27,8 @@ Method: Static code review of the full repository (controllers, models, auth mid
 | SEC-02 | Household invites grant instant access with no invitee consent step | Privacy / Authorization | High | In Progress |
 | SEC-03 | Edge→origin traffic falls back to plaintext HTTP on a public IP | Security / Infra | **Critical** | In Progress |
 | SEC-04 | Brakeman is installed but never run in CI; `brakeman.ignore` is stale/copy-pasted from a different app | Security / CI | Medium | In Progress |
-| SEC-05 | Active Record encryption keys silently auto-derive from `SECRET_KEY_BASE` | Security / Crypto | Medium | In Progress |
-| SEC-06 | Dead `GoogleAuthService` code references a token flow that no longer exists | Security debt / Cleanup | Low | In Progress |
+| SEC-05 | Active Record encryption keys silently auto-derive from `SECRET_KEY_BASE` | Security / Crypto | Medium | Fixed |
+| SEC-06 | Dead `GoogleAuthService` code references a token flow that no longer exists | Security debt / Cleanup | Low | Fixed |
 | REL-01 | No authorization/negative-path tests exist for households (test suite only covers the "owner" happy path) | Reliability / Test coverage | Medium | In Progress |
 | UX-01 | Auth forms (Login/Register) have no loading/disabled state on submit | UX | Low | In Progress |
 | UX-02 | Auth inputs missing `autoComplete` attributes | UX / Accessibility | Low | In Progress |
@@ -159,7 +159,7 @@ Both the Better-Auth proxy and the Rails API proxy fall back to a **plaintext `h
 ---
 
 ### SEC-05 — Active Record encryption keys silently auto-derive from `SECRET_KEY_BASE`
-**Status:** In Progress
+**Status:** Fixed
 **Severity:** Medium
 **Area:** Crypto config — `config/initializers/active_record_encryption.rb`
 
@@ -175,12 +175,17 @@ Both the Better-Auth proxy and the Rails API proxy fall back to a **plaintext `h
 - Rewrote `config/initializers/active_record_encryption.rb`: explicit env vars are used when all three are present; otherwise the `SECRET_KEY_BASE`-derived fallback runs and — in `production` — `Rails.logger.warn` now logs a loud boot-time warning explaining the collapsed security domains and pointing to the fix (rec. 1).
 - **Deviation on rec. 2 (refuse-to-boot):** deliberately NOT made fatal by default. Verified the current production deploy (docker-compose, deploy.sh + sops) sets **no** `ACTIVE_RECORD_ENCRYPTION_*` vars (`secrets.enc.env` holds only VAPID keys; docker-compose doesn't list them) — refusing to boot would break the very next deploy. Kept derivation working in production but now loud, so the residual risk is operator-visible.
 - Documented the guidance in `docs/DEPLOYMENT.md` (env-var table + a callout explaining the derivation risk and recommending sops-shipped keys); production checklist entry now requires setting the three vars independently.
-- Files modified: `config/initializers/active_record_encryption.rb`, `docs/DEPLOYMENT.md`
+- **Operator decision (2026-09-05): Rotate to new independent keys** — added first-class key-rotation support so the defense-in-depth split can actually be realized without losing data:
+  - `config/initializers/active_record_encryption.rb` now honors `ACTIVE_RECORD_ENCRYPTION_PREVIOUS_PRIMARY_KEY/_PREVIOUS_DETERMINISTIC_KEY/_PREVIOUS_KEY_DERIVATION_SALT` (mapped to Rails' `previous_*` config) **only when the main trio is explicitly set** — they let the app keep reading rows encrypted under the old key set during a rotation. Logs `previous keys configured (rotation in progress)` on boot when active.
+  - New `lib/tasks/encryption_rotation.rake` (`rake sampada:reencrypt`): eager-loads, discovers every model with `encrypted_attributes`, and rewrites each row so it re-encrypts under the current keys. Safe for the current single encrypted model (`ApiCredential`).
+  - **Critical operator caveat (documented in the runbook):** production currently uses the **derived** keys (no explicit vars set). Rotating to independent keys therefore requires setting `PREVIOUS_*` to the derived keys (`SHA256(SECRET_KEY_BASE:…)[0..63]`, recompute snippet in the runbook) so existing `ApiCredential#encrypted_value` rows stay decryptable; otherwise the app boots but can't read existing rows.
+- Added a **"Rotating the encryption keys (SEC-05)"** runbook to `docs/DEPLOYMENT.md` (generate → sops → previous keys → deploy → `sampada:reencrypt` → verify → drop previous) and `PREVIOUS_*` placeholders to `.env.example`.
+- Files modified: `config/initializers/active_record_encryption.rb`, `lib/tasks/encryption_rotation.rake` (new), `docs/DEPLOYMENT.md`, `.env.example`
 
 ---
 
 ### SEC-06 — Dead `GoogleAuthService` code
-**Status:** In Progress
+**Status:** Fixed
 **Severity:** Low
 **Area:** Code hygiene — `app/services/google_auth_service.rb`
 
@@ -191,12 +196,13 @@ Both the Better-Auth proxy and the Rails API proxy fall back to a **plaintext `h
 **Recommended fix:** Either delete the file (and its callers, if any — verify with `grep -rn GoogleAuthService app/`) or replace it with a real implementation that pulls the Google token from Better-Auth's stored account data, if that feature (Sheets sync) is still wanted. `docs/` mentions Google Sheets backup jobs (`google_sheet_backup_job.rb`, `google_sheet_sync_service.rb`) — confirm whether those depend on this dead code path before deleting.
 
 **Implementation Notes:**
-- **Confirmed the dead chain:** `WeeklyBackupJob` (scheduled from `config/sidekiq.yml`) → `GoogleSheetBackupJob` → `GoogleSheetSyncService` → `GoogleAuthService`; `ProcessDeletionJob` (DPDP deletion flow) also calls `GoogleSheetSyncService.new(user).sync!`. The whole chain is non-functional: `authorize` returned nil and `drive_service` referenced the **unbundled** `google-apis-drive_v3` gem, so `GoogleSheetSyncService.new` raised `NameError` *before its own `rescue`* — which would crash the DPDP data-export step mid-deletion. Fixed that latent breakage too.
-- **Chosen "replace with honest dead code" over "delete the feature":** removing the whole Sheets-backup feature is a product decision (is backup wanted?) that shouldn't be made unilaterally on a Low-severity item. Instead:
-  - Rewrote `GoogleAuthService`: removed the misleading `drive_service`→DriveV3 method and the `authorize` that silently returned `nil`; replaced with a clear `NotSupportedError` explaining the Better-Auth integration gap.
-  - `GoogleSheetSyncService` now builds clients inside `sync!` (moved out of `initialize`), so the failure is contained by the existing `rescue` → returns `{ success: false, error: ... }` and logs — the deletion job proceeds, the backup job logs a clean failure.
-- **Open decision for the operator:** the Google Sheets backup feature is disabled until someone implements Better-Auth token storage integration — or `WeeklyBackupJob`/`GoogleSheetBackupJob`/`GoogleSheetSyncService`/`GoogleAuthService` can be deleted together (and the schedule removed from `sidekiq.yml`) if backup isn't wanted.
-- Files modified: `app/services/google_auth_service.rb`, `app/services/google_sheet_sync_service.rb`
+- **Confirmed the dead chain:** `WeeklyBackupJob` (scheduled from `config/sidekiq.yml`) → `GoogleSheetBackupJob` → `GoogleSheetSyncService` → `GoogleAuthService`; `ProcessDeletionJob` (DPDP deletion flow) also calls `GoogleSheetSyncService.new(user).sync!`. The whole chain was non-functional: `authorize` returned nil and `drive_service` referenced the **unbundled** `google-apis-drive_v3` gem, so `GoogleSheetSyncService.new` raised `NameError` *before its own `rescue`* — which would crash the DPDP data-export step mid-deletion.
+- **Operator decision (2026-09-05): Delete the chain (Recommended)** — the Sheet backup feature exists no more.
+- **Deleted:** `app/jobs/weekly_backup_job.rb`, `app/jobs/google_sheet_backup_job.rb`, `app/services/google_sheet_sync_service.rb`, `app/services/google_auth_service.rb`; removed the `weekly_backup` cron from `config/sidekiq.yml`; removed `google-apis-sheets_v4` + `googleauth` + their comment from `Gemfile`.
+- **`ProcessDeletionJob` rewritten:** no longer materializes a user's export to a third party during deletion. DPDP data export is still served to the user during the 48h cancel window via `DpdpController#full_export` and `Api::ExportsController`, so nothing user-facing is lost. The `exporting`/`exported` status transitions were unreachable (nothing enqueued those states) and were dropped.
+- **Drive-by fix:** the original guard `request&.pending?` was a latent `NoMethodError` — `pending?` is not defined anywhere (`status` is a plain string column; only the rake/`scope :pending` exist). Changed to `request.status == 'pending'`.
+- **Docs cleaned:** `docs/ARCHITECTURE.md`, `docs/DEPLOYMENT.md`, `docs/MAP.md` (also fixed stale `app/sidekiq/`→`app/jobs/` paths), `docs/DPDP_COMPLIANCE.md` D21, `docs/CONTEXT.md`, `docs/CONVENTIONS.md` (dropped `GOOGLE_SHEETS_CREDENTIALS`), `docs/Sampada_IMPLEMENTATION_PLAN.md`. Historical timeline mentions (CONTEXT.md:86, impl-plan §4) intentionally left as history.
+- Files: 4 jobs/services deleted, `app/jobs/process_deletion_job.rb` rewritten, `Gemfile`, `config/sidekiq.yml`, 7 docs updated.
 
 ---
 
@@ -454,4 +460,7 @@ _(Append one entry per fix, newest at bottom.)_
 | 2026-09-05 | SEC-03 | `node --check frontend/functions/[[path]].js` | Pass — syntax-valid; fail-closed 502 path reaches both proxy blocks. |
 | 2026-09-05 | SEC-01, SEC-02, REL-01 | Static review only | **Not run** — no Ruby toolchain in working env. Operator must run `bundle exec rspec spec/requests/households_api_spec.rb`; regression expectation: full role×action matrix green. |
 | 2026-09-05 | SEC-04 | Static review only | **Not run** — `bundle install` unavailable here (brakeman added to Gemfile; `Gemfile.lock` pending resolution). First CI `Run Brakeman` step will surface real warnings for triage (empty ignore baseline + `--exit-on-warn`). |
-| 2026-09-05 | SEC-05, SEC-06, CFG-01, CFG-02, CFG-06 | Static review only | Not runtime-verifiable statically — SEC-05/CFG-01 prod boot warning should appear in app logs when derivation is active; SEC-06 deletion job should log a clean `SheetSync` failure instead of crashing; CFG-02/CFG-06 are repo-state changes (verified by grep/file listing). |
+| 2026-09-05 | SEC-05, SEC-06, CFG-01, CFG-02, CFG-06 | Static review only | SEC-05/CFG-01 prod boot warning should appear in app logs when derivation is active; SEC-06 → see deletion row below; CFG-02/CFG-06 are repo-state changes (verified by grep/file listing). |
+| 2026-09-05 | SEC-06 (delete backup chain) | Repo-state + grep sweep | Pass — 4 job/service files deleted, `Gemfile`/`config/sidekiq.yml`/7 docs updated; grep for `google_sheet|GoogleSheetSync|GoogleAuthService|weekly_backup|sheets_v4|googleauth` in `app config spec db lib bin` returns zero hits. **Not runtime-verified** — no Ruby toolchain; operator should boot once (confirm no removed gems referenced) and run one deletion_request cycle through `ProcessDeletionJob` (expect status `deleted`, no export step). |
+| 2026-09-05 | SEC-05 (key rotation) | Static review (no Ruby toolchain) | **Not run** — cannot execute. Operator must: (1) `ruby -c` both `config/initializers/active_record_encryption.rb` and `lib/tasks/encryption_rotation.rake`; (2) dry-run the rotation on a staging copy (derive current keys → set as `PREVIOUS_*` → set new independent keys → `rake sampada:reencrypt` → confirm a sample `ApiCredential#encrypted_value` row decrypts and its ciphertext changed → drop `PREVIOUS_*`). No production data was rotated in this change — the code only adds the capability. |
+| 2026-09-05 | CI: add bundle + npm audit | `python3` YAML parse of `.github/workflows/ci.yml` | Pass — valid YAML. Added `bundle exec bundle-audit check --update` to the `lint` job and `npm audit --audit-level=high` to the `frontend` job. **Caveat:** `bundler-audit` is added to `Gemfile` but `Gemfile.lock` is not yet regenerated (no Ruby toolchain here) — CI's `bundler-cache` resolves it, but operator should run `bundle install` locally before pushing so the committed lock is in sync, and watch the first `Run Bundler Audit` / `Run npm audit` steps for real findings. |

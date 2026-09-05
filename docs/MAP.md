@@ -111,9 +111,7 @@
 | Trip expenses | `app/controllers/trip_expenses_controller.rb` |
 | Trip members | `app/controllers/trip_members_controller.rb` |
 | Trip settlements | `app/controllers/trip_settlements_controller.rb` |
-| Sheet backup job | `app/sidekiq/google_sheet_backup_job.rb` |
-| Weekly backup | `app/sidekiq/weekly_backup_job.rb` |
-| Deletion processing | `app/sidekiq/process_deletion_job.rb` |
+| Deletion processing | `app/jobs/process_deletion_job.rb` |
 | Check deletions | `app/sidekiq/check_deletions_job.rb` |
 | API v1 handlers | `app/controllers/api/` |
 | Models | `app/models/` |

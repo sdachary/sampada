@@ -61,7 +61,6 @@ Standard Rails `rescue_from` in `ApplicationController`. JSON API errors return 
 | `DATABASE_URL` | Yes | PostgreSQL connection |
 | `REDIS_URL` | Yes | Redis/Sidekiq connection |
 | `SECRET_KEY_BASE` | Yes | Rails secret key base |
-| `GOOGLE_SHEETS_CREDENTIALS` | No | Weekly backup to Drive |
 | `DPO_EMAIL` | Yes | dpo@sampada.app |
 
 ---

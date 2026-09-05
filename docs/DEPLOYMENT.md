@@ -149,6 +149,34 @@ Interval: every 10 minutes
 | `SMTP_TLS_ENABLED` | — | `false` | Enable TLS for SMTP |
 | `CORS_ORIGINS` | — | `*` | Allowed CORS origins (comma-separated) |
 
+#### Rotating the encryption keys (SEC-05)
+
+Encrypted columns (`ApiCredential#encrypted_value`, encrypted `User` fields) are
+protected by the three `ACTIVE_RECORD_ENCRYPTION_*` keys. If your deployment has
+been relying on the `SECRET_KEY_BASE`-derived fallback (no explicit vars set),
+**rotating to independent keys requires the old derived keys as `PREVIOUS_*`**
+so existing rows stay readable — otherwise the app boots but can no longer
+decrypt existing data.
+
+1. **Generate three new independent keys** (different from each other and from anything else):
+   ```
+   openssl rand -hex 32   # repeat 3× → PRIMARY, DETERMINISTIC, DERIVATION_SALT
+   ```
+2. **Store the new keys** in `ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY` / `_DETERMINISTIC_KEY` / `_KEY_DERIVATION_SALT` (via sops, see `.sops.yaml`).
+3. **Store the old keys** in `ACTIVE_RECORD_ENCRYPTION_PREVIOUS_PRIMARY_KEY` / `_PREVIOUS_DETERMINISTIC_KEY` / `_PREVIOUS_KEY_DERIVATION_SALT`.
+   - If the old keys were the derived fallback, recompute them from the current `SECRET_KEY_BASE`:
+     ```
+     ruby -rdigest -e 'k=ENV["SECRET_KEY_BASE"]; puts Digest::SHA256.hexdigest("#{k}:primary_key")[0..63]'
+     ruby -rdigest -e 'k=ENV["SECRET_KEY_BASE"]; puts Digest::SHA256.hexdigest("#{k}:deterministic_key")[0..63]'
+     ruby -rdigest -e 'k=ENV["SECRET_KEY_BASE"]; puts Digest::SHA256.hexdigest("#{k}:key_derivation_salt")[0..63]'
+     ```
+4. **Deploy.** The app reads old rows via the previous keys (a boot log line confirms: `previous keys configured (rotation in progress)`).
+5. **Re-encrypt every row** under the new keys:
+   ```
+   RAILS_ENV=production bundle exec rake sampada:reencrypt
+   ```
+6. **Verify** a sample of encrypted rows decrypts (read them via the API / console), then **remove the `PREVIOUS_*` vars** and redeploy — old keys are no longer needed.
+
 ---
 
 ## Google OAuth Setup
@@ -161,7 +189,6 @@ Interval: every 10 minutes
 6. Add authorized redirect URI: `https://YOUR_DOMAIN/auth/google_oauth2/callback`
    - For local dev: `http://localhost:3000/auth/google_oauth2/callback`
 7. Copy the Client ID and Client Secret
-8. Enable the **Google Sheets API** if you want Sheet backup
 
 ---
 

@@ -18,7 +18,7 @@
 
 ## Architecture
 
-Personal finance & expense management SaaS. Multi-tenant, email/password + Google OAuth + GitHub OAuth auth, DPDP-compliant India hosting. Uses Rails 7.2 API + views pattern with Sidekiq for async jobs (backups, deletion workflows). Includes Trip Expense Mode for group trip tracking, and extensive DPDP compliance infrastructure (consent_records, erasure with Sheet backup, DPO page). Fully Docker-deployable to India-based VMs — zero external SaaS dependencies post-migration.
+Personal finance & expense management SaaS. Multi-tenant, email/password + Google OAuth + GitHub OAuth auth, DPDP-compliant India hosting. Uses Rails 7.2 API + views pattern with Sidekiq for async jobs (backups, deletion workflows). Includes Trip Expense Mode for group trip tracking, and extensive DPDP compliance infrastructure (consent_records, erasure with 48h cancel window, DPO page). Fully Docker-deployable to India-based VMs — zero external SaaS dependencies post-migration.
 
 ---
 

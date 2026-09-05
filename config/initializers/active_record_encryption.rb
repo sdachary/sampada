@@ -19,9 +19,25 @@ deterministic_key = ENV['ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY']
 key_derivation_salt = ENV['ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT']
 
 if primary_key.present? && deterministic_key.present? && key_derivation_salt.present?
-  Rails.application.config.active_record.encryption.primary_key = primary_key
-  Rails.application.config.active_record.encryption.deterministic_key = deterministic_key
-  Rails.application.config.active_record.encryption.key_derivation_salt = key_derivation_salt
+  config = Rails.application.config.active_record.encryption
+  config.primary_key = primary_key
+  config.deterministic_key = deterministic_key
+  config.key_derivation_salt = key_derivation_salt
+
+  # Rotation support (SEC-05): during a key rotation, set ACTIVE_RECORD_ENCRYPTION_PREVIOUS_*
+  # to the keys that were in use before, so rows still encrypted under the old keys remain
+  # readable. Only honored when the main trio above is explicitly set — meaningless with the
+  # derived fallback (derivation is deterministic, so there is nothing to rotate from).
+  # Once `rake sampada:reencrypt` has rewritten every row to the current keys, drop these vars.
+  previous_primary_key = ENV['ACTIVE_RECORD_ENCRYPTION_PREVIOUS_PRIMARY_KEY']
+  previous_deterministic_key = ENV['ACTIVE_RECORD_ENCRYPTION_PREVIOUS_DETERMINISTIC_KEY']
+  previous_key_derivation_salt = ENV['ACTIVE_RECORD_ENCRYPTION_PREVIOUS_KEY_DERIVATION_SALT']
+  if previous_primary_key.present? && previous_deterministic_key.present? && previous_key_derivation_salt.present?
+    config.previous_primary_key = previous_primary_key
+    config.previous_deterministic_key = previous_deterministic_key
+    config.previous_key_derivation_salt = previous_key_derivation_salt
+    Rails.logger.info('Active Record encryption: previous keys configured (rotation in progress).')
+  end
 else
   if Rails.env.production?
     Rails.logger.warn(

@@ -131,11 +131,10 @@ Sampada's own Rails app becomes a pure API + background-job service: no server-r
 - Tighten `TripExpense#split_shares` to cents-based integer math for precision, consistent with `money-rails` conventions elsewhere.
 - Backfill specs: `spec/models/trip*`, `spec/requests/trip*` (currently zero coverage).
 
-### 9.8 Reports & Notifications (`app/services/annual_report_service.rb`, `app/controllers/dpdp_controller.rb`, `app/services/google_sheet_sync_service.rb`)
+### 9.8 Reports & Notifications (`app/services/annual_report_service.rb`, `app/controllers/dpdp_controller.rb`)
 - Add a scheduled daily `NetWorthSnapshot` creation job (Sidekiq-Cron), so `AnnualReportService`'s exact-date snapshot lookups actually have data.
 - Remove the unused `transactions` local variable in `AnnualReportService#full_summary`.
 - Fix `DpdpController#full_export` — replace the hard 500/100 truncation with genuine completeness (pagination or an explicit disclosure of what's included).
-- Rename the Google Sheet target from `"Kubera — Financial Summary"` to `"Sampada — Financial Summary"`.
 - Move `app/controllers/dpdp_controller.rb` into the `Api::` namespace/folder for consistency with every other controller (it already inherits `Api::BaseController` but lives outside `app/controllers/api/`).
 
 ### 9.9 Frontend (`frontend/src/pages/*`)

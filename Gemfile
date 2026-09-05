@@ -17,13 +17,9 @@ gem 'sidekiq'
 gem 'sidekiq-cron'
 gem 'webpush'
 
-# DPDP — Google Sheets sync. require: false → lazy-loaded inside the
-# services, so they don't sit in every Puma/Sidekiq process baseline.
-gem 'google-apis-sheets_v4', '~> 0.36', require: false
-gem 'googleauth', '~> 1.11', require: false
-
 group :development, :test do
   gem 'brakeman', require: false
+  gem 'bundler-audit', require: false
   gem 'factory_bot_rails'
   gem 'faker'
   gem 'rspec-rails'
