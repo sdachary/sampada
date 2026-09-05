@@ -1,10 +1,22 @@
 # Deploying Sampada
 
-Sampada is a **local-first, open-source** Rails app. You deploy it yourself on your own infrastructure. This guide covers three options:
+Sampada is a **local-first, open-source** Rails app. You deploy it yourself on your own infrastructure.
 
-- **Local Docker** (quick start, development)
-- **Single VM** (Oracle Cloud Mumbai free tier / Hostinger VPS India ₹99/mo)
-- **Manual setup** (bare metal, custom infra)
+> **Supported deployment path — Docker Compose + sops.** This is the one actively-maintained
+> deploy story: `deploy.sh` + `docker-compose.yml`, with secrets encrypted via `sops`
+> in `secrets.enc.env`. Every config and SSL change in this app is validated against this
+> path only. Use it for any real deployment.
+>
+> **Unsupported / retired alternatives.** The Render.com buildpack path (`bin/render-build.sh`)
+> was dropped 2026-06-12 during the DPDP overhaul (US-hosted infra retired — see
+> `docs/CONTEXT.md`); the manual bare-metal / Nginx + Certbot steps below are kept as
+> reference only. Neither is maintained, exercised in CI, or a valid target for new config
+> changes. Prefer `deploy.sh` for production.
+
+This guide covers:
+
+- **Quick Start (local Docker)** — run the same Compose stack locally for development
+- **Single VM Deploy** — production-style self-hosted deploy on a cloud VM (Oracle Cloud / Hostinger)
 
 ---
 
@@ -120,9 +132,16 @@ Interval: every 10 minutes
 | `RAILS_ASSUME_SSL` | — | `true` | Assume SSL in proxy mode |
 | `SIDEKIQ_WEB_USERNAME` | — | `sampada` | Sidekiq dashboard username |
 | `SIDEKIQ_WEB_PASSWORD` | — | `sampada` | Sidekiq dashboard password |
-| `ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY` | — | auto-generated | Rails encryption key |
-| `ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY` | — | auto-generated | Rails deterministic key |
-| `ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT` | — | auto-generated | Rails encryption salt |
+| `ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY` | **recommended** | derived from `SECRET_KEY_BASE` | Rails encryption key (set independently for real deployments — see note below) |
+| `ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY` | **recommended** | derived from `SECRET_KEY_BASE` | Rails deterministic key |
+| `ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT` | **recommended** | derived from `SECRET_KEY_BASE` | Rails encryption salt |
+
+> **Encryption keys:** if the three `ACTIVE_RECORD_ENCRYPTION_*` vars are not set, the app
+> derives them from `SECRET_KEY_BASE`. Deriving them lets a single leaked `SECRET_KEY_BASE`
+> also reconstruct the keys protecting encrypted columns (`ApiCredential#encrypted_value`,
+> encrypted `User` fields), so the app logs a loud boot-time warning in production whenever
+> the fallback is active. Any real deployment should set the three vars independently —
+> ship them via sops, see `.sops.yaml`.
 | `SMTP_ADDRESS` | — | — | SMTP server for emails |
 | `SMTP_PORT` | — | `587` | SMTP port |
 | `SMTP_USERNAME` | — | — | SMTP username |
@@ -151,7 +170,7 @@ Interval: every 10 minutes
 - [ ] Strong `SECRET_KEY_BASE` (64+ hex chars)
 - [ ] Strong `POSTGRES_PASSWORD` (20+ chars)
 - [ ] Google OAuth credentials configured
-- [ ] Rails encryption keys set (if using encrypted columns)
+- [ ] Rails encryption keys set independently (`ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY`/`_DETERMINISTIC_KEY`/`_KEY_DERIVATION_SALT`, via sops) — do NOT rely on the `SECRET_KEY_BASE`-derived fallback in production
 - [ ] SMTP configured for emails
 - [ ] SSL enabled (Let's Encrypt + Nginx)
 - [ ] Firewall: ports 22, 80, 443 only

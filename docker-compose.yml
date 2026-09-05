@@ -1,3 +1,29 @@
+# Infra env keys shared by app + sidekiq. Interpolated by Compose
+# (precedence: shell that ran `docker compose up` → project .env → this default).
+# Keys defined here are ALSO present in env_file: .env below; in that case the
+# container sees the interpolated `environment:` value, not the raw .env line
+# (Compose `environment:` overrides `env_file` for the same key). So for these
+# keys the source of truth is: shell export > .env > default — NOT .env alone.
+# All other env vars come only from env_file: .env.
+#
+# network_mode: host + hardcoded IP defaults (DB_HOST/REDIS_HOST -> 10.0.1.46)
+# are DELIBERATE: Postgres, Redis and the external Better-Auth ("oradb")
+# service all live on the same self-hosted VM as this app, addressed by VM IP
+# rather than as services inside this Compose project. Host networking is
+# Linux-only and skips Compose's bridge isolation between containers — the
+# tradeoff is accepted so the app can reach VM-local services directly. Override
+# the addresses via DB_HOST / REDIS_HOST / BETTER_AUTH_VERIFY_URL in .env or the
+# launching shell if the topology changes.
+x-common-env: &common-env
+  RAILS_ENV: production
+  DB_HOST: ${DB_HOST:-10.0.1.46}
+  DB_PORT: ${DB_PORT:-5432}
+  REDIS_URL: redis://${REDIS_HOST:-10.0.1.46}:6379/0
+  BETTER_AUTH_VERIFY_URL: ${BETTER_AUTH_VERIFY_URL:-http://localhost:4000/api/auth/verify}
+  BETTER_AUTH_APP_ID: ${BETTER_AUTH_APP_ID:-sampada}
+  BETTER_AUTH_CACHE_TTL: ${BETTER_AUTH_CACHE_TTL:-300}
+  DATABASE_BACKUP_ENABLED: ${DATABASE_BACKUP_ENABLED:-false}
+
 services:
   app:
     build: .
@@ -6,15 +32,7 @@ services:
     network_mode: host
     env_file:
       - .env
-    environment:
-      RAILS_ENV: production
-      DB_HOST: ${DB_HOST:-10.0.1.46}
-      DB_PORT: ${DB_PORT:-5432}
-      REDIS_URL: redis://${REDIS_HOST:-10.0.1.46}:6379/0
-      BETTER_AUTH_VERIFY_URL: ${BETTER_AUTH_VERIFY_URL:-http://localhost:4000/api/auth/verify}
-      BETTER_AUTH_APP_ID: ${BETTER_AUTH_APP_ID:-sampada}
-      BETTER_AUTH_CACHE_TTL: ${BETTER_AUTH_CACHE_TTL:-300}
-      DATABASE_BACKUP_ENABLED: ${DATABASE_BACKUP_ENABLED:-false}
+    environment: *common-env
     volumes:
       - sampada-storage:/rails/storage
 
@@ -27,15 +45,7 @@ services:
     command: ["bundle", "exec", "sidekiq"]
     env_file:
       - .env
-    environment:
-      RAILS_ENV: production
-      DB_HOST: ${DB_HOST:-10.0.1.46}
-      DB_PORT: ${DB_PORT:-5432}
-      REDIS_URL: redis://${REDIS_HOST:-10.0.1.46}:6379/0
-      BETTER_AUTH_VERIFY_URL: ${BETTER_AUTH_VERIFY_URL:-http://localhost:4000/api/auth/verify}
-      BETTER_AUTH_APP_ID: ${BETTER_AUTH_APP_ID:-sampada}
-      BETTER_AUTH_CACHE_TTL: ${BETTER_AUTH_CACHE_TTL:-300}
-      DATABASE_BACKUP_ENABLED: ${DATABASE_BACKUP_ENABLED:-false}
+    environment: *common-env
     volumes:
       - sampada-storage:/rails/storage
 

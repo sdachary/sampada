@@ -10,12 +10,10 @@ class GoogleSheetSyncService
 
   def initialize(user)
     @user = user
-    @sheets = GoogleAuthService.new(user).sheets_service
-    @drive = GoogleAuthService.new(user).drive_service
-    @spreadsheet_id = find_or_create_spreadsheet
   end
 
   def sync!
+    build_clients
     populate_summary
     populate_transactions
     populate_debts
@@ -24,11 +22,21 @@ class GoogleSheetSyncService
     populate_budgets
     { success: true, spreadsheet_id: @spreadsheet_id }
   rescue StandardError => e
+    # Clients are built inside sync! (not initialize) so that a broken Google
+    # auth (see GoogleAuthService / SEC-06) surfaces as a clean { success: false }
+    # instead of crashing callers — notably ProcessDeletionJob's data-export step,
+    # which must not fail the DPDP deletion flow because the backup is disabled.
     Rails.logger.error "[SheetSync] Failed for user #{@user.id}: #{e.message}"
     { success: false, error: e.message }
   end
 
   private
+
+  def build_clients
+    @sheets = GoogleAuthService.new(@user).sheets_service
+    @drive = GoogleAuthService.new(@user).drive_service
+    @spreadsheet_id = find_or_create_spreadsheet
+  end
 
   def find_or_create_spreadsheet
     require 'google/apis/sheets_v4'

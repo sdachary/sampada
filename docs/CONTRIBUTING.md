@@ -13,6 +13,14 @@ Sampada follows one rule: **debt first, then wealth.** Every contribution should
 5. Run RuboCop (`bundle exec rubocop`)
 6. Open a PR
 
+## Secrets
+
+Secrets live in `secrets.enc.env`, encrypted via sops — see `.sops.yaml`.
+This is the **only** secret store. The old Rails encrypted-credentials path
+(`config/credentials.yml.enc`) has been removed; do not add secrets there. For local
+development, copy `.env.example` to `.env` and fill in non-secret defaults; secrets are
+decrypted into `.env` at deploy time by `deploy.sh`.
+
 ## What We Accept
 
 - Bug fixes and security patches (always welcome)

@@ -8,8 +8,40 @@
  * forwards Set-Cookie headers so the cookie sticks.
  */
 
-const ORADB_FALLBACK = 'http://acharylab.140.245.227.176.nip.io'
 const APP_NAME = 'sampada'
+
+const securityHeaders = {
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+}
+
+// Fallbacks are plaintext HTTP origins only used for local/dev testing.
+// They are NEVER reached in production: they require ALLOW_INSECURE_ORIGIN === 'true'
+// (a flag that must not be set in the deployed Cloudflare Pages project). With the
+// flag absent, a missing ORADB_URL / API_URL fails closed with a 502 instead of
+// silently degrading the transport to plaintext HTTP over the public internet.
+const ORADB_FALLBACK = 'http://acharylab.140.245.227.176.nip.io'
+const API_FALLBACK = 'http://sampada.140.245.227.176.nip.io'
+
+function originFor(env, primaryKey, fallback) {
+  if (env[primaryKey]) return env[primaryKey]
+  if (env.ALLOW_INSECURE_ORIGIN === 'true') return fallback
+  return null
+}
+
+function misconfigured(rid, name) {
+  return new Response(
+    JSON.stringify({
+      error: `${name} origin not configured`,
+      meta: { request_id: rid, timestamp: new Date().toISOString() },
+    }),
+    {
+      status: 502,
+      headers: { 'Content-Type': 'application/json', ...securityHeaders },
+    },
+  )
+}
 
 function cookiesFrom(res) {
   const setCookies = res.headers.getSetCookie?.() ?? [res.headers.get('set-cookie')]
@@ -25,12 +57,6 @@ export async function onRequest(context) {
   const requestOrigin = request.headers.get('Origin')
   const allowOrigin =
     requestOrigin && requestOrigin !== 'null' ? requestOrigin : new URL(request.url).origin
-
-  const securityHeaders = {
-    'X-Content-Type-Options': 'nosniff',
-    'X-Frame-Options': 'DENY',
-    'Referrer-Policy': 'strict-origin-when-cross-origin',
-  }
 
   // OPTIONS preflight
   if (request.method === 'OPTIONS' && reqPath.startsWith('/auth/v2/')) {
@@ -51,7 +77,8 @@ export async function onRequest(context) {
   // Better-Auth proxy
   if (reqPath.startsWith('/auth/v2/')) {
     try {
-      const ORADB = env.ORADB_URL || ORADB_FALLBACK
+      const ORADB = originFor(env, 'ORADB_URL', ORADB_FALLBACK)
+      if (!ORADB) return misconfigured(rid, 'Auth')
       const proxyUrl = `${ORADB}${reqPath}${url.search}`
 
       const modifiedHeaders = new Headers(request.headers)
@@ -128,7 +155,8 @@ export async function onRequest(context) {
   // forward it as Bearer, since Rails verifies via Authorization header.
   if (reqPath.startsWith('/api/v1/')) {
     try {
-      const API_ORIGIN = env.API_URL || 'http://sampada.140.245.227.176.nip.io'
+      const API_ORIGIN = originFor(env, 'API_URL', API_FALLBACK)
+      if (!API_ORIGIN) return misconfigured(rid, 'API')
       const proxyUrl = `${API_ORIGIN}${reqPath}${url.search}`
 
       const modifiedHeaders = new Headers(request.headers)

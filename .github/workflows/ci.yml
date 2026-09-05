@@ -26,6 +26,8 @@ jobs:
         run: docker run -v ${{ github.workspace }}:/repo ghcr.io/gitleaks/gitleaks:latest detect -c /repo/.gitleaks.toml -s /repo
       - name: Run RuboCop
         run: bundle exec rubocop --parallel
+      - name: Run Brakeman
+        run: bundle exec brakeman -A --no-pager --exit-on-warn
 
   frontend:
     runs-on: ubuntu-latest

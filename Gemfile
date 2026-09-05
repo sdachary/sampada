@@ -23,6 +23,7 @@ gem 'google-apis-sheets_v4', '~> 0.36', require: false
 gem 'googleauth', '~> 1.11', require: false
 
 group :development, :test do
+  gem 'brakeman', require: false
   gem 'factory_bot_rails'
   gem 'faker'
   gem 'rspec-rails'

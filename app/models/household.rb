@@ -14,10 +14,14 @@ class Household < TenantRecord
   end
 
   def member?(user)
-    household_memberships.exists?(user: user)
+    household_memberships.accepted.exists?(user: user)
   end
 
-  def add_member(user, role: 'member')
-    household_memberships.create!(user: user, role: role, joined_at: Time.current)
+  def add_member(user, role: 'member', invite_status: 'pending')
+    household_memberships.create!(user: user, role: role, invite_status: invite_status, joined_at: Time.current)
+  end
+
+  def pending_invites
+    household_memberships.pending.includes(:user)
   end
 end

@@ -102,9 +102,14 @@ Rails.application.routes.draw do
     end
 
     resources :households, only: %i[index show create update destroy] do
+      collection do
+        get :pending_invites
+      end
       member do
         get :members
         post :invite
+        post :accept_invite
+        post :decline_invite
         delete :leave
         get :dashboard
       end
