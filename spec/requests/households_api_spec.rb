@@ -163,7 +163,7 @@ RSpec.describe 'Households API', type: :request do
         post "/api/v1/households/#{household.id}/invite", params: { email: 'invitee@example.com', role: 'member' }
       end.to change(HouseholdMembership, :count).by(1)
       expect(response).to have_http_status(:success)
-      membership = HouseholdMembership.last
+      membership = household.household_memberships.find_by(user: invitee)
       expect(membership.invite_status).to eq('pending')
       expect(membership.role).to eq('member')
     end
@@ -173,7 +173,7 @@ RSpec.describe 'Households API', type: :request do
       expect do
         post "/api/v1/households/#{household.id}/invite", params: { email: 'invitee@example.com', role: 'member' }
       end.to change(Notification, :count).by(1)
-      notification = Notification.last
+      notification = invitee.notifications.find_by(notification_type: 'household_invite')
       expect(notification.user).to eq(invitee)
       expect(notification.notification_type).to eq('household_invite')
       expect(notification.message).to include(household.name)

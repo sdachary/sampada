@@ -17,7 +17,7 @@ class Household < TenantRecord
     household_memberships.accepted.exists?(user: user)
   end
 
-  def add_member(user, role: 'member', invite_status: 'pending')
+  def add_member(user, role: 'member', invite_status: 'accepted')
     household_memberships.create!(user: user, role: role, invite_status: invite_status, joined_at: Time.current)
   end
 

@@ -2,6 +2,8 @@ module Api
   class HouseholdsController < Api::BaseController
     before_action :find_household, only: %i[show update destroy members invite accept_invite decline_invite leave dashboard]
     before_action :load_membership, only: %i[update destroy invite]
+    before_action :authorize_owner_or_admin!, only: %i[update invite]
+    before_action :authorize_owner!, only: %i[destroy]
 
     def index
       households = current_user.households
@@ -20,13 +22,11 @@ module Api
     end
 
     def update
-      authorize_owner_or_admin!
       @household.update!(params.permit(:name, :currency, :description))
       render_success(household_summary(@household))
     end
 
     def destroy
-      authorize_owner!
       @household.destroy!
       head :no_content
     end
@@ -39,7 +39,6 @@ module Api
     end
 
     def invite
-      authorize_owner_or_admin!
       user = User.find_by(email: params[:email])
       return render_error('User not found', status: :not_found) unless user
 

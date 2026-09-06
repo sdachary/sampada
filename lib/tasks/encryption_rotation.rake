@@ -6,9 +6,9 @@
 # the current key. Once every row is rewritten, remove the PREVIOUS_* vars.
 #
 #   RAILS_ENV=production bundle exec rake sampada:reencrypt
-namespace :sampada do
+namespace :sampada do # rubocop:disable Metrics/BlockLength
   desc 'Re-encrypt all encrypted columns to the current encryption keys (run after rotating keys)'
-  task reencrypt: :environment do # rubocop:disable Metrics/BlockLength
+  task reencrypt: :environment do
     Rails.application.eager_load!
 
     models = ActiveRecord::Base.descendants
