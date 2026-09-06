@@ -1,10 +1,10 @@
 /**
  * Sampada — Cloudflare Pages Functions
- * Same-origin proxy for Better-Auth (/auth/v2/* → oradb:4000).
+ * Same-origin proxy for Better-Auth (/api/auth/* → oradb:4000).
  *
  * Better-Auth cookies are httpOnly + SameSite=lax and oradb has no HTTPS,
  * so a cross-origin call can't hold the session. This worker makes the
- * browser talk to /auth/v2 on ITS OWN origin (sampada.pages.dev) and
+ * browser talk to /api/auth on ITS OWN origin (sampada.pages.dev) and
  * forwards Set-Cookie headers so the cookie sticks.
  */
 
@@ -59,7 +59,7 @@ export async function onRequest(context) {
     requestOrigin && requestOrigin !== 'null' ? requestOrigin : new URL(request.url).origin
 
   // OPTIONS preflight
-  if (request.method === 'OPTIONS' && reqPath.startsWith('/auth/v2/')) {
+  if (request.method === 'OPTIONS' && reqPath.startsWith('/api/auth/')) {
     return new Response(null, {
       status: 204,
       headers: {
@@ -75,7 +75,7 @@ export async function onRequest(context) {
   }
 
   // Better-Auth proxy
-  if (reqPath.startsWith('/auth/v2/')) {
+  if (reqPath.startsWith('/api/auth/')) {
     try {
       const ORADB = originFor(env, 'ORADB_URL', ORADB_FALLBACK)
       if (!ORADB) return misconfigured(rid, 'Auth')
@@ -94,7 +94,7 @@ export async function onRequest(context) {
       const setCookies = cookiesFrom(response)
 
       // App isolation: only accounts registered for sampada pass
-      const appCheckPaths = ['/auth/v2/sign-in/email', '/auth/v2/session', '/auth/v2/sign-up/email', '/auth/v2/verify']
+      const appCheckPaths = ['/api/auth/sign-in/email', '/api/auth/session', '/api/auth/sign-up/email', '/api/auth/verify']
       if (
         appCheckPaths.some((p) => reqPath === p || reqPath.startsWith(p)) &&
         response.ok &&
@@ -132,7 +132,7 @@ export async function onRequest(context) {
       setCookies.forEach((c) => headers.append('Set-Cookie', c))
 
       // Force clear Better-Auth cookies on sign-out
-      if (reqPath === '/auth/v2/sign-out') {
+      if (reqPath === '/api/auth/sign-out') {
         ;['better-auth.session_token', 'sampada-better-auth'].forEach((name) =>
           headers.append('Set-Cookie', `${name}=; Path=/; Max-Age=0; SameSite=Lax; Secure`),
         )

@@ -1,6 +1,6 @@
 const API = import.meta.env.VITE_API_URL || ''
 // Same-origin path — served by the CF Pages Functions proxy in functions/[[path]].js
-const BETTER_AUTH_URL = import.meta.env.VITE_BETTER_AUTH_URL || '/auth/v2'
+const BETTER_AUTH_URL = import.meta.env.VITE_BETTER_AUTH_URL || '/api/auth'
 
 async function request(path, options = {}) {
   const res = await fetch(`${API}${path}`, {

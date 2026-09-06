@@ -33,7 +33,7 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     const res = await auth.login({ email, password })
-    // Session carried by httpOnly cookie via the same-origin /auth/v2 proxy —
+    // Session carried by httpOnly cookie via the same-origin /api/auth proxy —
     // no token in localStorage (XSS-safe). The worker injects it as Bearer for /api/v1/*.
     await checkAuth()
     return res
