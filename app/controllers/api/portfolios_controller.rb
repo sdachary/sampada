@@ -6,7 +6,7 @@ module Api
     end
 
     def show
-      portfolio = current_user.portfolios.find(params[:id])
+      portfolio = current_user.portfolios.find(params.expect(:id))
       render_success(portfolio_json(portfolio))
     end
 
@@ -16,18 +16,18 @@ module Api
     end
 
     def update
-      portfolio = current_user.portfolios.find(params[:id])
+      portfolio = current_user.portfolios.find(params.expect(:id))
       portfolio.update!(portfolio_params)
       render_success(portfolio_json(portfolio))
     end
 
     def destroy
-      current_user.portfolios.find(params[:id]).destroy!
+      current_user.portfolios.find(params.expect(:id)).destroy!
       head :no_content
     end
 
     def rebalance
-      portfolio = current_user.portfolios.find(params[:id])
+      portfolio = current_user.portfolios.find(params.expect(:id))
       investments = portfolio.investments
       stocks = investments.select { |i| %w[stock etf].include?(i.investment_type.to_s) }
 
@@ -48,7 +48,7 @@ module Api
     end
 
     def prices
-      portfolio = current_user.portfolios.find(params[:id])
+      portfolio = current_user.portfolios.find(params.expect(:id))
       # Never block the request on external quote calls (5s timeout/symbol).
       # Kick a background refresh and return whatever is cached (or empty if first run).
       PriceRefreshJob.perform_async(portfolio.id)

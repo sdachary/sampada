@@ -6,7 +6,7 @@ module Api
     end
 
     def show
-      plan = current_user.debt_payoffs.find(params[:id])
+      plan = current_user.debt_payoffs.find(params.expect(:id))
       render_success(plan_json(plan))
     end
 
@@ -17,14 +17,14 @@ module Api
     end
 
     def update
-      plan = current_user.debt_payoffs.find(params[:id])
+      plan = current_user.debt_payoffs.find(params.expect(:id))
       plan.update!(plan_params)
       calculate_and_save(plan)
       render_success(plan_json(plan))
     end
 
     def destroy
-      current_user.debt_payoffs.find(params[:id]).destroy!
+      current_user.debt_payoffs.find(params.expect(:id)).destroy!
       head :no_content
     end
 

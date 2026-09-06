@@ -3,7 +3,7 @@ ruby file: '.ruby-version'
 
 gem 'pg'
 gem 'puma', '>= 5.0'
-gem 'rails', '>= 7.2.3.1', '< 7.3'
+gem 'rails', '~> 8.1.3'
 
 gem 'bootsnap', require: false
 gem 'dotenv-rails'

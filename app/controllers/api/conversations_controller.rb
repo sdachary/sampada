@@ -6,7 +6,7 @@ module Api
     end
 
     def show
-      conversation = current_user.conversations.find(params[:id])
+      conversation = current_user.conversations.find(params.expect(:id))
       messages = conversation.messages.order(created_at: :asc)
       render_success(conversation_json(conversation).merge(messages: messages.map { |m| message_json(m) }))
     end
@@ -17,7 +17,7 @@ module Api
     end
 
     def destroy
-      conversation = current_user.conversations.find(params[:id])
+      conversation = current_user.conversations.find(params.expect(:id))
       conversation.destroy!
       head :no_content
     end

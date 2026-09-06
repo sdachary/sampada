@@ -21,7 +21,7 @@ module Api
     end
 
     def destroy
-      subscription = current_user.push_subscriptions.find(params[:id])
+      subscription = current_user.push_subscriptions.find(params.expect(:id))
       subscription.destroy
       render_success({}, message: 'Push subscription removed')
     end

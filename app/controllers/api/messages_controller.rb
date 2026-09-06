@@ -25,7 +25,7 @@ module Api
     private
 
     def set_conversation
-      @conversation = current_user.conversations.find(params[:conversation_id])
+      @conversation = current_user.conversations.find(params.expect(:conversation_id))
     end
 
     def message_json(m)

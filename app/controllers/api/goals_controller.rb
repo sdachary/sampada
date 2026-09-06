@@ -8,7 +8,7 @@ module Api
     end
 
     def show
-      goal = current_user.goals.find(params[:id])
+      goal = current_user.goals.find(params.expect(:id))
       render_success(goal_json(goal))
     end
 
@@ -18,13 +18,13 @@ module Api
     end
 
     def update
-      goal = current_user.goals.find(params[:id])
+      goal = current_user.goals.find(params.expect(:id))
       goal.update!(goal_params)
       render_success(goal_json(goal))
     end
 
     def destroy
-      goal = current_user.goals.find(params[:id])
+      goal = current_user.goals.find(params.expect(:id))
       goal.destroy!
       head :no_content
     end
@@ -32,9 +32,9 @@ module Api
     private
 
     def goal_params
-      params.require(:goal).permit(:name, :target_amount, :target_year, :currency_code,
-                                   :monthly_sip, :top_up_amount, :top_up_frequency, :allocation,
-                                   :equity_growth, :debt_growth, :gold_growth)
+      params.expect(goal: %i[name target_amount target_year currency_code
+                             monthly_sip top_up_amount top_up_frequency allocation
+                             equity_growth debt_growth gold_growth])
     end
 
     def goal_json(g)

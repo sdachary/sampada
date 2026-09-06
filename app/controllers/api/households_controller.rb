@@ -87,7 +87,7 @@ module Api
     private
 
     def find_household
-      @household = current_user.households.find(params[:id])
+      @household = current_user.households.find(params.expect(:id))
     end
 
     def load_membership

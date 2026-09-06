@@ -16,7 +16,7 @@ module Api
     private
 
     def find_trip
-      @trip = current_user.trips.find(params[:trip_id])
+      @trip = current_user.trips.find(params.expect(:trip_id))
     end
 
     def settlement_params

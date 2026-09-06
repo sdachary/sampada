@@ -19,7 +19,7 @@ module Api
     end
 
     def show
-      transaction = current_user.transactions.find(params[:id])
+      transaction = current_user.transactions.find(params.expect(:id))
       render_success(transaction_json(transaction))
     end
 
@@ -29,13 +29,13 @@ module Api
     end
 
     def update
-      transaction = current_user.transactions.find(params[:id])
+      transaction = current_user.transactions.find(params.expect(:id))
       transaction.update!(transaction_params)
       render_success(transaction_json(transaction))
     end
 
     def destroy
-      current_user.transactions.find(params[:id]).destroy!
+      current_user.transactions.find(params.expect(:id)).destroy!
       head :no_content
     end
 

@@ -7,7 +7,7 @@ module Api
     end
 
     def show
-      policy = current_user.insurance_policies.find(params[:id])
+      policy = current_user.insurance_policies.find(params.expect(:id))
       render_success(policy_json(policy))
     end
 
@@ -17,13 +17,13 @@ module Api
     end
 
     def update
-      policy = current_user.insurance_policies.find(params[:id])
+      policy = current_user.insurance_policies.find(params.expect(:id))
       policy.update!(policy_params)
       render_success(policy_json(policy))
     end
 
     def destroy
-      current_user.insurance_policies.find(params[:id]).destroy!
+      current_user.insurance_policies.find(params.expect(:id)).destroy!
       render_success({}, message: 'Policy deleted')
     end
 

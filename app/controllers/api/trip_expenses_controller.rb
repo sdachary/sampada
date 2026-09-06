@@ -14,14 +14,14 @@ module Api
     end
 
     def destroy
-      @trip.trip_expenses.find(params[:id]).destroy!
+      @trip.trip_expenses.find(params.expect(:id)).destroy!
       render_success({})
     end
 
     private
 
     def find_trip
-      @trip = current_user.trips.find(params[:trip_id])
+      @trip = current_user.trips.find(params.expect(:trip_id))
     end
 
     def expense_params

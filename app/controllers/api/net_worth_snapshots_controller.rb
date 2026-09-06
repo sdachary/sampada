@@ -11,7 +11,7 @@ module Api
       snapshot = if params[:id] == 'current'
                    NetWorthSnapshot.current(current_user)
                  else
-                   current_user.net_worth_snapshots.find(params[:id])
+                   current_user.net_worth_snapshots.find(params.expect(:id))
                  end
       render_success(snapshot_json(snapshot))
     end

@@ -6,7 +6,7 @@ module Api
     end
 
     def show
-      expense = current_user.recurring_expenses.find(params[:id])
+      expense = current_user.recurring_expenses.find(params.expect(:id))
       render_success(expense_json(expense))
     end
 
@@ -16,19 +16,19 @@ module Api
     end
 
     def update
-      expense = current_user.recurring_expenses.find(params[:id])
+      expense = current_user.recurring_expenses.find(params.expect(:id))
       expense.update!(expense_params)
       render_success(expense_json(expense))
     end
 
     def destroy
-      current_user.recurring_expenses.find(params[:id]).destroy!
+      current_user.recurring_expenses.find(params.expect(:id)).destroy!
       head :no_content
     end
 
     def calendar
       expenses = if params[:id]
-                   [current_user.recurring_expenses.find(params[:id])]
+                   [current_user.recurring_expenses.find(params.expect(:id))]
                  else
                    current_user.recurring_expenses.order(created_at: :desc)
                  end

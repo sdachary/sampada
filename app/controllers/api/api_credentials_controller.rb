@@ -10,20 +10,20 @@ module Api
     end
 
     def update
-      credential = current_user.api_credentials.find(params[:id])
+      credential = current_user.api_credentials.find(params.expect(:id))
       credential.update!(credential_params)
       render json: { credential: credential.as_json(only: %i[id provider label]) }
     end
 
     def destroy
-      current_user.api_credentials.find(params[:id]).destroy!
+      current_user.api_credentials.find(params.expect(:id)).destroy!
       head :no_content
     end
 
     private
 
     def credential_params
-      params.require(:api_credential).permit(:provider, :label, :encrypted_value)
+      params.expect(api_credential: %i[provider label encrypted_value])
     end
   end
 end

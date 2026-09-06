@@ -8,7 +8,7 @@ module Api
     end
 
     def create
-      portfolio = current_user.portfolios.find(params[:portfolio_id])
+      portfolio = current_user.portfolios.find(params.expect(:portfolio_id))
       investment = portfolio.investments.create!(investment_params)
       render_success(investment_json(investment), status: :created)
     end
@@ -16,7 +16,7 @@ module Api
     def update
       investment = Investment.joins(:portfolio)
                              .where(portfolios: { user_id: current_user.id })
-                             .find(params[:id])
+                             .find(params.expect(:id))
       investment.update!(investment_params)
       render_success(investment_json(investment))
     end
@@ -24,7 +24,7 @@ module Api
     def destroy
       investment = Investment.joins(:portfolio)
                              .where(portfolios: { user_id: current_user.id })
-                             .find(params[:id])
+                             .find(params.expect(:id))
       investment.destroy!
       render_success({}, message: 'Investment deleted')
     end

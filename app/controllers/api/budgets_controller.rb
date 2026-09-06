@@ -6,7 +6,7 @@ module Api
     end
 
     def show
-      budget = current_user.budgets.find(params[:id])
+      budget = current_user.budgets.find(params.expect(:id))
       render_success(budget_json(budget))
     end
 
@@ -16,13 +16,13 @@ module Api
     end
 
     def update
-      budget = current_user.budgets.find(params[:id])
+      budget = current_user.budgets.find(params.expect(:id))
       budget.update!(budget_params)
       render_success(budget_json(budget))
     end
 
     def destroy
-      current_user.budgets.find(params[:id]).destroy!
+      current_user.budgets.find(params.expect(:id)).destroy!
       head :no_content
     end
 

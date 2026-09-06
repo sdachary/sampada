@@ -6,7 +6,7 @@ module Api
     end
 
     def show
-      trip = current_user.trips.find(params[:id])
+      trip = current_user.trips.find(params.expect(:id))
       render_success(trip_json(trip).merge(
                        members: trip.trip_members.order(:name).map { |m| member_json(m) },
                        expenses: trip.trip_expenses.includes(:trip_member, :trip_category)
@@ -28,13 +28,13 @@ module Api
     end
 
     def update
-      trip = current_user.trips.find(params[:id])
+      trip = current_user.trips.find(params.expect(:id))
       trip.update!(trip_params)
       render_success(trip_json(trip))
     end
 
     def destroy
-      current_user.trips.find(params[:id]).destroy!
+      current_user.trips.find(params.expect(:id)).destroy!
       render_success({})
     end
 

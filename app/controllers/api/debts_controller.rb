@@ -7,7 +7,7 @@ module Api
     end
 
     def show
-      debt = current_user.debts.find(params[:id])
+      debt = current_user.debts.find(params.expect(:id))
       render_success(debt_json(debt))
     end
 
@@ -17,18 +17,18 @@ module Api
     end
 
     def update
-      debt = current_user.debts.find(params[:id])
+      debt = current_user.debts.find(params.expect(:id))
       debt.update!(debt_params)
       render_success(debt_json(debt))
     end
 
     def destroy
-      current_user.debts.find(params[:id]).destroy!
+      current_user.debts.find(params.expect(:id)).destroy!
       render_success({}, message: 'Debt deleted')
     end
 
     def simulate
-      debt = current_user.debts.find(params[:id])
+      debt = current_user.debts.find(params.expect(:id))
       service = DebtPayoffService.new(
         [{ id: debt.id, balance: debt.remaining_amount, interest_rate: debt.interest_rate,
            min_payment: debt.emi_amount }],

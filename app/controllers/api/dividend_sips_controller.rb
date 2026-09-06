@@ -12,7 +12,7 @@ module Api
     def show
       sip = DividendSip.joins(portfolio: :user)
                        .where(users: { id: current_user.id })
-                       .find(params[:id])
+                       .find(params.expect(:id))
       render_success(sip_json(sip))
     end
 
@@ -28,7 +28,7 @@ module Api
     def update
       sip = DividendSip.joins(portfolio: :user)
                        .where(users: { id: current_user.id })
-                       .find(params[:id])
+                       .find(params.expect(:id))
       sip.update!(sip_params)
       render_success(sip_json(sip))
     end
@@ -36,7 +36,7 @@ module Api
     def suggest
       sip = DividendSip.joins(portfolio: :user)
                        .where(users: { id: current_user.id })
-                       .find(params[:id])
+                       .find(params.expect(:id))
       monthly = (params[:monthly_investment] || sip.amount).to_f
       years = (params[:years] || 10).to_i
       target = monthly * 12 * years * 0.04
@@ -47,7 +47,7 @@ module Api
     def destroy
       sip = DividendSip.joins(portfolio: :user)
                        .where(users: { id: current_user.id })
-                       .find(params[:id])
+                       .find(params.expect(:id))
       sip.destroy!
       head :no_content
     end

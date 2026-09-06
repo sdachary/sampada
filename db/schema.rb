@@ -10,30 +10,30 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_09_04_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_04_000000) do
   # These are extensions that must be enabled in order to support this database
+  enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
-  enable_extension "plpgsql"
 
   create_table "active_storage_attachments", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.string "name", null: false
-    t.string "record_type", null: false
-    t.uuid "record_id", null: false
     t.uuid "blob_id", null: false
     t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.uuid "record_id", null: false
+    t.string "record_type", null: false
     t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
     t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
   end
 
   create_table "active_storage_blobs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.string "key", null: false
-    t.string "filename", null: false
-    t.string "content_type"
-    t.text "metadata"
-    t.string "service_name", null: false
     t.bigint "byte_size", null: false
     t.string "checksum"
+    t.string "content_type"
     t.datetime "created_at", null: false
+    t.string "filename", null: false
+    t.string "key", null: false
+    t.text "metadata"
+    t.string "service_name", null: false
     t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
   end
 
@@ -44,404 +44,404 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_04_000000) do
   end
 
   create_table "api_credentials", force: :cascade do |t|
-    t.uuid "user_id", null: false
-    t.string "provider", null: false
-    t.string "label"
-    t.text "encrypted_value", null: false
-    t.jsonb "metadata", default: {}
     t.datetime "created_at", null: false
+    t.text "encrypted_value", null: false
+    t.string "label"
+    t.jsonb "metadata", default: {}
+    t.string "provider", null: false
     t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
     t.index ["user_id", "provider"], name: "index_api_credentials_on_user_id_and_provider", unique: true
   end
 
   create_table "budget_categories", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "user_id", null: false
-    t.string "name", null: false
-    t.string "icon"
-    t.string "color", default: "#6366f1"
-    t.integer "sort_order", default: 0
     t.boolean "active", default: true
+    t.string "color", default: "#6366f1"
     t.datetime "created_at", null: false
+    t.string "icon"
+    t.string "name", null: false
+    t.integer "sort_order", default: 0
     t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
     t.index ["user_id", "name"], name: "index_budget_categories_on_user_id_and_name", unique: true
   end
 
   create_table "budgets", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "user_id", null: false
     t.uuid "budget_category_id", null: false
-    t.decimal "monthly_limit", precision: 19, scale: 4, null: false
+    t.datetime "created_at", null: false
     t.string "currency_code", default: "INR", null: false
+    t.date "end_date"
+    t.uuid "household_id"
+    t.decimal "monthly_limit", precision: 19, scale: 4, null: false
+    t.text "notes"
     t.string "period", default: "monthly"
     t.date "start_date"
-    t.date "end_date"
-    t.text "notes"
-    t.uuid "household_id"
-    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
     t.index ["household_id"], name: "index_budgets_on_household_id"
     t.index ["user_id", "budget_category_id"], name: "index_budgets_on_user_id_and_budget_category_id"
   end
 
   create_table "consent_records", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "user_id", null: false
+    t.datetime "created_at", precision: nil, null: false
     t.string "feature", null: false
     t.boolean "granted", null: false
-    t.string "ip_address"
-    t.string "user_agent"
     t.datetime "granted_at", precision: nil, default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.string "ip_address"
     t.datetime "revoked_at", precision: nil
-    t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
+    t.string "user_agent"
+    t.uuid "user_id", null: false
     t.index ["user_id", "feature"], name: "index_consent_records_on_user_id_and_feature"
     t.index ["user_id"], name: "index_consent_records_on_user_id"
   end
 
   create_table "conversations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "user_id", null: false
-    t.string "title"
-    t.text "summary"
     t.datetime "created_at", null: false
+    t.text "summary"
+    t.string "title"
     t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
     t.index ["user_id"], name: "index_conversations_on_user_id"
   end
 
   create_table "currencies", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.boolean "active", default: true
     t.string "code", null: false
+    t.datetime "created_at", null: false
+    t.integer "decimal_places", default: 2
     t.string "name", null: false
     t.string "symbol", null: false
-    t.integer "decimal_places", default: 2
-    t.boolean "active", default: true
-    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["code"], name: "index_currencies_on_code", unique: true
   end
 
   create_table "debt_payoff_debts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "debt_payoff_id", null: false
     t.uuid "debt_id", null: false
+    t.uuid "debt_payoff_id", null: false
     t.index ["debt_id"], name: "index_debt_payoff_debts_on_debt_id"
     t.index ["debt_payoff_id", "debt_id"], name: "index_debt_payoff_debts_on_payoff_and_debt", unique: true
     t.index ["debt_payoff_id"], name: "index_debt_payoff_debts_on_debt_payoff_id"
   end
 
   create_table "debt_payoffs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "user_id", null: false
-    t.string "name"
-    t.string "strategy"
-    t.decimal "extra_payment", precision: 19, scale: 4
+    t.datetime "created_at", null: false
     t.string "currency_code", default: "INR", null: false
-    t.integer "months_saved"
     t.date "debt_free_date"
+    t.decimal "extra_payment", precision: 19, scale: 4
+    t.integer "months_saved"
+    t.string "name"
+    t.jsonb "schedule"
+    t.string "strategy"
     t.decimal "total_interest_paid", precision: 19, scale: 4
     t.decimal "total_interest_saved", precision: 19, scale: 4
-    t.jsonb "schedule"
-    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
     t.index ["user_id"], name: "index_debt_payoffs_on_user_id"
   end
 
   create_table "debts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "user_id", null: false
-    t.string "name", null: false
-    t.string "category"
     t.decimal "amount", precision: 19, scale: 4, null: false
-    t.decimal "interest_rate", precision: 10, scale: 3
-    t.decimal "emi_amount", precision: 19, scale: 4
-    t.date "due_date"
-    t.string "currency_code", default: "INR", null: false
-    t.uuid "household_id"
-    t.string "status", default: "active"
-    t.date "started_at"
-    t.decimal "paid_amount", precision: 19, scale: 4, default: "0.0"
-    t.text "notes"
+    t.string "category"
     t.datetime "created_at", null: false
+    t.string "currency_code", default: "INR", null: false
+    t.date "due_date"
+    t.decimal "emi_amount", precision: 19, scale: 4
+    t.uuid "household_id"
+    t.decimal "interest_rate", precision: 10, scale: 3
+    t.string "name", null: false
+    t.text "notes"
+    t.decimal "paid_amount", precision: 19, scale: 4, default: "0.0"
+    t.date "started_at"
+    t.string "status", default: "active"
     t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
     t.index ["household_id"], name: "index_debts_on_household_id"
     t.index ["status"], name: "index_debts_on_status"
     t.index ["user_id"], name: "index_debts_on_user_id"
   end
 
   create_table "deletion_requests", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "user_id", null: false
-    t.string "status", default: "pending", null: false
     t.string "cancel_token", null: false
-    t.boolean "export_data", default: true
-    t.datetime "scheduled_for", precision: nil, null: false
-    t.datetime "deleted_at", precision: nil
-    t.text "notes"
     t.datetime "created_at", precision: nil, null: false
+    t.datetime "deleted_at", precision: nil
+    t.boolean "export_data", default: true
+    t.text "notes"
+    t.datetime "scheduled_for", precision: nil, null: false
+    t.string "status", default: "pending", null: false
     t.datetime "updated_at", precision: nil, null: false
+    t.uuid "user_id", null: false
     t.index ["cancel_token"], name: "index_deletion_requests_on_cancel_token", unique: true
     t.index ["user_id", "status"], name: "index_deletion_requests_on_user_id_and_status"
     t.index ["user_id"], name: "index_deletion_requests_on_user_id"
   end
 
   create_table "dividend_sips", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "portfolio_id", null: false
-    t.string "name"
-    t.string "currency_code", default: "INR", null: false
     t.decimal "amount", precision: 19, scale: 4, null: false
+    t.datetime "created_at", null: false
+    t.string "currency_code", default: "INR", null: false
     t.string "frequency", null: false
+    t.string "name"
+    t.date "next_execution"
+    t.uuid "portfolio_id", null: false
     t.string "status", default: "active"
     t.decimal "target_income", precision: 19, scale: 4
-    t.date "next_execution"
-    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["portfolio_id"], name: "index_dividend_sips_on_portfolio_id"
     t.index ["status"], name: "index_dividend_sips_on_status"
   end
 
   create_table "exchange_rates", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "fetched_at", null: false
     t.string "from_currency", null: false
-    t.string "to_currency", null: false
     t.decimal "rate", precision: 19, scale: 10, null: false
     t.string "source", default: "yahoo_finance"
-    t.datetime "fetched_at", null: false
-    t.datetime "created_at", null: false
+    t.string "to_currency", null: false
     t.datetime "updated_at", null: false
     t.index ["from_currency", "to_currency"], name: "index_exchange_rates_on_from_currency_and_to_currency", unique: true
   end
 
   create_table "goals", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "user_id", null: false
+    t.string "allocation", default: "moderate", null: false
+    t.datetime "created_at", null: false
+    t.string "currency_code", default: "INR", null: false
+    t.decimal "debt_growth", precision: 5, scale: 2, default: "7.0"
+    t.decimal "equity_growth", precision: 5, scale: 2, default: "12.0"
+    t.decimal "gold_growth", precision: 5, scale: 2, default: "8.0"
+    t.decimal "monthly_sip", precision: 19, scale: 4, default: "0.0", null: false
     t.string "name", null: false
     t.decimal "target_amount", precision: 19, scale: 4, null: false
     t.integer "target_year", null: false
-    t.string "currency_code", default: "INR", null: false
-    t.decimal "monthly_sip", precision: 19, scale: 4, default: "0.0", null: false
     t.decimal "top_up_amount", precision: 19, scale: 4, default: "0.0"
     t.string "top_up_frequency", default: "none"
-    t.string "allocation", default: "moderate", null: false
-    t.decimal "equity_growth", precision: 5, scale: 2, default: "12.0"
-    t.decimal "debt_growth", precision: 5, scale: 2, default: "7.0"
-    t.decimal "gold_growth", precision: 5, scale: 2, default: "8.0"
-    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
     t.index ["allocation"], name: "index_goals_on_allocation"
     t.index ["user_id"], name: "index_goals_on_user_id"
   end
 
   create_table "grievances", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "user_id", null: false
-    t.string "name", null: false
-    t.string "email", null: false
-    t.string "phone"
-    t.string "grievance_type", null: false
-    t.text "description", null: false
-    t.string "status", default: "received", null: false
-    t.string "reference_number"
     t.datetime "acknowledged_at"
-    t.datetime "resolved_at"
-    t.text "resolution_notes"
     t.datetime "created_at", null: false
+    t.text "description", null: false
+    t.string "email", null: false
+    t.string "grievance_type", null: false
+    t.string "name", null: false
+    t.string "phone"
+    t.string "reference_number"
+    t.text "resolution_notes"
+    t.datetime "resolved_at"
+    t.string "status", default: "received", null: false
     t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
     t.index ["reference_number"], name: "index_grievances_on_reference_number", unique: true
     t.index ["user_id", "status"], name: "index_grievances_on_user_id_and_status"
     t.index ["user_id"], name: "index_grievances_on_user_id"
   end
 
   create_table "household_memberships", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
     t.uuid "household_id", null: false
-    t.uuid "user_id", null: false
-    t.string "role", default: "member"
     t.string "invite_status", default: "accepted"
     t.datetime "joined_at"
-    t.datetime "created_at", null: false
+    t.string "role", default: "member"
     t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
     t.index ["household_id", "user_id"], name: "index_household_memberships_on_household_id_and_user_id", unique: true
     t.index ["user_id", "household_id"], name: "index_household_memberships_on_user_id_and_household_id"
   end
 
   create_table "households", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.string "name", null: false
+    t.datetime "created_at", null: false
     t.string "currency", default: "INR"
     t.text "description"
-    t.datetime "created_at", null: false
+    t.string "name", null: false
     t.datetime "updated_at", null: false
   end
 
   create_table "insurance_policies", force: :cascade do |t|
-    t.uuid "user_id", null: false
+    t.decimal "coverage_amount", precision: 14, scale: 2
+    t.datetime "created_at", null: false
+    t.string "notes"
     t.string "policy_type", default: "other", null: false
-    t.string "provider_name"
     t.decimal "premium_amount", precision: 12, scale: 2, default: "0.0"
     t.string "premium_frequency", default: "yearly"
-    t.decimal "coverage_amount", precision: 14, scale: 2
+    t.string "provider_name"
     t.date "renewal_date"
-    t.string "notes"
-    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
     t.index ["user_id", "policy_type"], name: "index_insurance_policies_on_user_id_and_policy_type"
     t.index ["user_id"], name: "index_insurance_policies_on_user_id"
   end
 
   create_table "investments", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "portfolio_id", null: false
-    t.string "symbol"
-    t.string "name"
-    t.string "investment_type"
-    t.string "currency_code", default: "INR", null: false
-    t.string "exchange"
-    t.decimal "shares", precision: 24, scale: 8
     t.decimal "buy_price", precision: 19, scale: 4
+    t.datetime "created_at", null: false
+    t.string "currency_code", default: "INR", null: false
     t.decimal "current_price", precision: 19, scale: 4
     t.decimal "dividend_yield", precision: 10, scale: 4
-    t.string "sector"
+    t.string "exchange"
+    t.string "investment_type"
+    t.string "name"
     t.text "notes"
-    t.datetime "created_at", null: false
+    t.uuid "portfolio_id", null: false
+    t.string "sector"
+    t.decimal "shares", precision: 24, scale: 8
+    t.string "symbol"
     t.datetime "updated_at", null: false
     t.index ["portfolio_id"], name: "index_investments_on_portfolio_id"
     t.index ["symbol"], name: "index_investments_on_symbol"
   end
 
   create_table "journeys", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "user_id", null: false
-    t.string "phase", default: "negative"
-    t.string "currency_code", default: "INR", null: false
-    t.date "zero_day_target"
-    t.decimal "monthly_sip_goal", precision: 19, scale: 4
-    t.decimal "wealth_score", precision: 10, scale: 2
-    t.text "notes"
     t.datetime "created_at", null: false
+    t.string "currency_code", default: "INR", null: false
+    t.decimal "monthly_sip_goal", precision: 19, scale: 4
+    t.text "notes"
+    t.string "phase", default: "negative"
     t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
+    t.decimal "wealth_score", precision: 10, scale: 2
+    t.date "zero_day_target"
     t.index ["user_id"], name: "index_journeys_on_user_id"
   end
 
   create_table "messages", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "conversation_id", null: false
-    t.string "role", null: false
     t.text "content", null: false
-    t.jsonb "metadata", default: {}
+    t.uuid "conversation_id", null: false
     t.datetime "created_at", null: false
+    t.jsonb "metadata", default: {}
+    t.string "role", null: false
     t.datetime "updated_at", null: false
     t.index ["conversation_id"], name: "index_messages_on_conversation_id"
   end
 
   create_table "net_worth_snapshots", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "user_id", null: false
+    t.jsonb "breakdown"
+    t.datetime "created_at", null: false
+    t.string "currency_code", default: "INR", null: false
+    t.decimal "net_worth", precision: 19, scale: 4
     t.date "snapshot_date", null: false
     t.decimal "total_assets", precision: 19, scale: 4
     t.decimal "total_liabilities", precision: 19, scale: 4
-    t.decimal "net_worth", precision: 19, scale: 4
-    t.string "currency_code", default: "INR", null: false
-    t.jsonb "breakdown"
-    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
     t.index ["user_id", "snapshot_date"], name: "index_net_worth_snapshots_on_user_and_date", unique: true
     t.index ["user_id"], name: "index_net_worth_snapshots_on_user_id"
   end
 
   create_table "notifications", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "user_id", null: false
-    t.string "notification_type", null: false
+    t.datetime "created_at", null: false
     t.text "message", null: false
+    t.jsonb "metadata", default: {}
+    t.string "notification_type", null: false
     t.boolean "read", default: false
     t.datetime "read_at"
-    t.jsonb "metadata", default: {}
-    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
     t.index ["read"], name: "index_notifications_on_read"
     t.index ["user_id"], name: "index_notifications_on_user_id"
   end
 
   create_table "portfolios", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "user_id", null: false
-    t.string "name", null: false
-    t.string "goal"
+    t.datetime "created_at", null: false
+    t.string "currency_code", default: "INR", null: false
     t.jsonb "current_allocation", default: {}
+    t.string "goal"
+    t.uuid "household_id"
+    t.string "name", null: false
     t.decimal "risk_tolerance", precision: 3, scale: 2
     t.jsonb "target_allocation"
-    t.string "currency_code", default: "INR", null: false
-    t.uuid "household_id"
     t.decimal "total_value", precision: 19, scale: 4, default: "0.0"
-    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
     t.index ["household_id"], name: "index_portfolios_on_household_id"
     t.index ["user_id"], name: "index_portfolios_on_user_id"
   end
 
   create_table "push_subscriptions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "user_id", null: false
-    t.text "endpoint", null: false
-    t.text "p256dh", null: false
     t.text "auth", null: false
-    t.string "user_agent"
-    t.datetime "expires_at"
     t.datetime "created_at", null: false
+    t.text "endpoint", null: false
+    t.datetime "expires_at"
+    t.text "p256dh", null: false
+    t.string "user_agent"
+    t.uuid "user_id", null: false
     t.index ["endpoint"], name: "index_push_subscriptions_on_endpoint", unique: true
     t.index ["expires_at"], name: "index_push_subscriptions_on_expires_at"
     t.index ["user_id"], name: "index_push_subscriptions_on_user_id"
   end
 
   create_table "recurring_expenses", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "user_id", null: false
-    t.string "name", null: false
-    t.decimal "amount", precision: 19, scale: 4, null: false
-    t.string "frequency", null: false
-    t.date "next_due_date"
-    t.string "category"
-    t.string "currency_code", default: "INR", null: false
-    t.uuid "household_id"
-    t.boolean "auto_debit", default: false
     t.boolean "active", default: true
-    t.text "notes"
+    t.decimal "amount", precision: 19, scale: 4, null: false
+    t.boolean "auto_debit", default: false
+    t.string "category"
     t.datetime "created_at", null: false
+    t.string "currency_code", default: "INR", null: false
+    t.string "frequency", null: false
+    t.uuid "household_id"
+    t.string "name", null: false
+    t.date "next_due_date"
+    t.text "notes"
     t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
     t.index ["active"], name: "index_recurring_expenses_on_active"
     t.index ["household_id"], name: "index_recurring_expenses_on_household_id"
     t.index ["user_id"], name: "index_recurring_expenses_on_user_id"
   end
 
   create_table "sessions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "user_id", null: false
-    t.string "token", null: false
-    t.string "ip_address"
-    t.string "user_agent"
-    t.datetime "expires_at", precision: nil, null: false
-    t.datetime "revoked_at", precision: nil
     t.datetime "created_at", precision: nil, null: false
+    t.datetime "expires_at", precision: nil, null: false
+    t.string "ip_address"
+    t.datetime "revoked_at", precision: nil
+    t.string "token", null: false
     t.datetime "updated_at", precision: nil, null: false
+    t.string "user_agent"
+    t.uuid "user_id", null: false
     t.index ["token"], name: "index_sessions_on_token", unique: true
     t.index ["user_id"], name: "index_sessions_on_user_id"
   end
 
   create_table "settings", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "user_id", null: false
-    t.string "key", null: false
-    t.text "value"
     t.datetime "created_at", null: false
+    t.string "key", null: false
     t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
+    t.text "value"
     t.index ["user_id", "key"], name: "index_settings_on_user_id_and_key", unique: true
     t.index ["user_id"], name: "index_settings_on_user_id"
   end
 
   create_table "tenants", force: :cascade do |t|
-    t.uuid "user_id", null: false
-    t.string "name"
+    t.datetime "created_at", null: false
     t.text "db_url"
     t.jsonb "encrypted_api_keys", default: {}
+    t.string "name"
     t.boolean "onboarding_complete", default: false
-    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
     t.index ["user_id"], name: "index_tenants_on_user_id", unique: true
   end
 
   create_table "transactions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "user_id", null: false
-    t.uuid "budget_category_id"
-    t.string "description", null: false
     t.decimal "amount", precision: 19, scale: 4, null: false
+    t.uuid "budget_category_id"
+    t.datetime "created_at", null: false
     t.string "currency_code", default: "INR", null: false
-    t.date "transaction_date", null: false
-    t.string "transaction_type", default: "expense"
+    t.string "description", null: false
+    t.uuid "household_id"
     t.string "merchant"
+    t.jsonb "metadata", default: {}
     t.text "notes"
     t.boolean "recurring", default: false
     t.string "recurring_frequency"
-    t.jsonb "metadata", default: {}
-    t.uuid "household_id"
-    t.datetime "created_at", null: false
+    t.date "transaction_date", null: false
+    t.string "transaction_type", default: "expense"
     t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
     t.index ["household_id"], name: "index_transactions_on_household_id"
     t.index ["user_id", "budget_category_id"], name: "index_transactions_on_user_id_and_budget_category_id"
     t.index ["user_id", "transaction_date"], name: "index_transactions_on_user_id_and_transaction_date"
@@ -449,25 +449,25 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_04_000000) do
   end
 
   create_table "trip_categories", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "trip_id", null: false
-    t.string "name"
     t.decimal "budget", precision: 12, scale: 2
     t.string "color", default: "#6B7280"
     t.datetime "created_at", null: false
+    t.string "name"
+    t.uuid "trip_id", null: false
     t.datetime "updated_at", null: false
     t.index ["trip_id"], name: "index_trip_categories_on_trip_id"
   end
 
   create_table "trip_expenses", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "trip_id", null: false
-    t.uuid "trip_member_id", null: false
-    t.uuid "trip_category_id"
     t.decimal "amount", precision: 12, scale: 2
+    t.datetime "created_at", null: false
     t.string "description"
     t.date "expense_date"
-    t.string "split_type", default: "equal"
     t.jsonb "split_details"
-    t.datetime "created_at", null: false
+    t.string "split_type", default: "equal"
+    t.uuid "trip_category_id"
+    t.uuid "trip_id", null: false
+    t.uuid "trip_member_id", null: false
     t.datetime "updated_at", null: false
     t.index ["trip_category_id"], name: "index_trip_expenses_on_trip_category_id"
     t.index ["trip_id"], name: "index_trip_expenses_on_trip_id"
@@ -475,25 +475,25 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_04_000000) do
   end
 
   create_table "trip_members", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "trip_id", null: false
-    t.string "name", null: false
-    t.string "email"
-    t.string "role", default: "member"
     t.datetime "added_at"
     t.datetime "created_at", null: false
+    t.string "email"
+    t.string "name", null: false
+    t.string "role", default: "member"
+    t.uuid "trip_id", null: false
     t.datetime "updated_at", null: false
     t.index ["trip_id", "name"], name: "index_trip_members_on_trip_id_and_name", unique: true
     t.index ["trip_id"], name: "index_trip_members_on_trip_id"
   end
 
   create_table "trip_settlements", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "trip_id", null: false
-    t.uuid "from_trip_member_id", null: false
-    t.uuid "to_trip_member_id", null: false
     t.decimal "amount", precision: 12, scale: 2
-    t.datetime "settled_at"
-    t.text "notes"
     t.datetime "created_at", null: false
+    t.uuid "from_trip_member_id", null: false
+    t.text "notes"
+    t.datetime "settled_at"
+    t.uuid "to_trip_member_id", null: false
+    t.uuid "trip_id", null: false
     t.datetime "updated_at", null: false
     t.index ["from_trip_member_id"], name: "index_trip_settlements_on_from_trip_member_id"
     t.index ["to_trip_member_id"], name: "index_trip_settlements_on_to_trip_member_id"
@@ -501,49 +501,49 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_04_000000) do
   end
 
   create_table "trips", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "user_id", null: false
-    t.string "name", null: false
-    t.string "destination"
-    t.date "start_date"
-    t.date "end_date"
+    t.datetime "created_at", null: false
     t.string "currency", default: "INR"
+    t.string "destination"
+    t.date "end_date"
     t.string "group_type", default: "friends"
+    t.string "name", null: false
+    t.text "notes"
+    t.date "start_date"
     t.string "status", default: "active"
     t.decimal "total_budget", precision: 12, scale: 2
-    t.text "notes"
-    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
     t.index ["user_id"], name: "index_trips_on_user_id"
   end
 
   create_table "users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.string "email", null: false
-    t.string "password_digest"
-    t.string "first_name"
-    t.string "last_name"
-    t.string "theme", default: "dark"
-    t.string "currency", default: "INR"
-    t.string "locale", default: "en"
-    t.string "timezone"
-    t.boolean "onboarded", default: false
-    t.jsonb "preferences", default: {}
-    t.jsonb "goals", default: {}
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.string "storage_backend", default: "local", null: false
-    t.string "github_uid"
-    t.text "github_token"
-    t.string "google_uid"
     t.string "avatar_url"
-    t.text "refresh_token"
+    t.string "better_auth_user_id"
     t.boolean "consent_granted", default: false
     t.datetime "consent_granted_at"
+    t.datetime "created_at", null: false
+    t.string "currency", default: "INR"
     t.datetime "deleted_at"
+    t.string "email", null: false
     t.string "encrypted_email"
     t.string "encrypted_email_iv"
-    t.string "password_reset_token"
+    t.string "first_name"
+    t.text "github_token"
+    t.string "github_uid"
+    t.jsonb "goals", default: {}
+    t.string "google_uid"
+    t.string "last_name"
+    t.string "locale", default: "en"
+    t.boolean "onboarded", default: false
+    t.string "password_digest"
     t.datetime "password_reset_sent_at"
-    t.string "better_auth_user_id"
+    t.string "password_reset_token"
+    t.jsonb "preferences", default: {}
+    t.text "refresh_token"
+    t.string "storage_backend", default: "local", null: false
+    t.string "theme", default: "dark"
+    t.string "timezone"
+    t.datetime "updated_at", null: false
     t.index ["better_auth_user_id"], name: "index_users_on_better_auth_user_id", unique: true, where: "(better_auth_user_id IS NOT NULL)"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["github_uid"], name: "index_users_on_github_uid", unique: true

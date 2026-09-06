@@ -38,7 +38,7 @@ module Api
     end
 
     def cancel_deletion
-      request_record = current_user.deletion_requests.pending.find_by!(cancel_token: params[:cancel_token])
+      request_record = current_user.deletion_requests.pending.find_by!(cancel_token: params.expect(:cancel_token))
       request_record.cancel!
 
       render json: { success: true, message: 'Deletion request cancelled.' }

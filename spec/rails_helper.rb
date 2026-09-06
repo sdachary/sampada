@@ -30,6 +30,10 @@ RSpec.configure do |config|
   config.before(:each, type: :request) do
     allow_any_instance_of(Api::BaseController).to receive(:authenticate_with_better_auth)
   end
+
+  config.after(:each, type: :request) do
+    Rack::Attack.cache.store.clear
+  end
 end
 
 Shoulda::Matchers.configure do |config|

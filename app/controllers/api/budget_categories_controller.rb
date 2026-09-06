@@ -12,13 +12,13 @@ module Api
     end
 
     def update
-      cat = current_user.budget_categories.find(params[:id])
+      cat = current_user.budget_categories.find(params.expect(:id))
       cat.update!(category_params)
       render_success(category_json(cat))
     end
 
     def destroy
-      current_user.budget_categories.find(params[:id]).destroy!
+      current_user.budget_categories.find(params.expect(:id)).destroy!
       head :no_content
     end
 
