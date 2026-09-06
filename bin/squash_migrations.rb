@@ -57,5 +57,3 @@ end
 
 puts "\nDone! #{old_migrations.size} migrations archived to db/migrate/archive/"
 puts "Run: bin/rails db:migrate VERSION=20260508000000 to verify"
-\end
-RUBY

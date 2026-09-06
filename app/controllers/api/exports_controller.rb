@@ -8,13 +8,13 @@ module Api
     end
 
     def csv
-      type = params.dig(:export, :type) || 'transactions'
+      type = export_type
       export = ExportService.new(current_user).send("export_#{type}", format: 'csv')
       send_data export, filename: "#{type}_#{Time.zone.today}.csv", type: 'text/csv'
     end
 
     def export_json
-      type = params.dig(:export, :type) || 'transactions'
+      type = export_type
       export = ExportService.new(current_user).send("export_#{type}", format: 'json')
       send_data export, filename: "#{type}_#{Time.zone.today}.json", type: 'application/json'
     end
@@ -50,6 +50,11 @@ module Api
 
     def content_type
       format == 'csv' ? 'text/csv' : 'application/json'
+    end
+
+    def export_type
+      type = params.dig(:export, :type) || 'transactions'
+      EXPORT_TYPES.include?(type) ? type : 'transactions'
     end
   end
 end

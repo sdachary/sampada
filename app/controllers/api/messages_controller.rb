@@ -26,7 +26,7 @@ module Api
     end
 
     def message_params
-      params.permit(:role, :content, metadata: {})
+      params.permit(:content, metadata: {}).merge(role: 'user')
     end
 
     def message_json(m)

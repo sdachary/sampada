@@ -23,7 +23,7 @@ module Api
     end
 
     def member_params
-      params.permit(:name, :email, :role)
+      params.permit(:name, :email)
     end
 
     def member_json(m)
