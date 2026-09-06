@@ -14,7 +14,10 @@ module Api
     end
 
     def create
-      message = @conversation.messages.create!(message_params)
+      role = params[:role] || 'user'
+      return render_error('Invalid role', status: :unprocessable_entity) unless Message::ROLES.include?(role)
+
+      message = @conversation.messages.create!(content: params[:content], metadata: params[:metadata] || {}, role: role)
       AiResponseJob.perform_async(@conversation.id) if message.role == 'user'
       render_success(message_json(message), status: :created)
     end
@@ -23,10 +26,6 @@ module Api
 
     def set_conversation
       @conversation = current_user.conversations.find(params[:conversation_id])
-    end
-
-    def message_params
-      params.permit(:content, metadata: {}).merge(role: 'user')
     end
 
     def message_json(m)
