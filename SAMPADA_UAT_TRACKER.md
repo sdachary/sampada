@@ -23,13 +23,13 @@ Method: Static code review of the full repository (controllers, models, auth mid
 
 | ID | Title | Area | Severity | Status |
 |----|-------|------|----------|--------|
-| SEC-01 | Household read/write actions have no role check — any member can invite, promote, or delete | Auth / Authorization | **Critical** | In Progress |
-| SEC-02 | Household invites grant instant access with no invitee consent step | Privacy / Authorization | High | In Progress |
+| SEC-01 | Household read/write actions have no role check — any member can invite, promote, or delete | Auth / Authorization | **Critical** | Verified |
+| SEC-02 | Household invites grant instant access with no invitee consent step | Privacy / Authorization | High | Verified |
 | SEC-03 | Edge→origin traffic falls back to plaintext HTTP on a public IP | Security / Infra | **Critical** | Verified |
-| SEC-04 | Brakeman is installed but never run in CI; `brakeman.ignore` is stale/copy-pasted from a different app | Security / CI | Medium | In Progress |
+| SEC-04 | Brakeman is installed but never run in CI; `brakeman.ignore` is stale/copy-pasted from a different app | Security / CI | Medium | Verified |
 | SEC-05 | Active Record encryption keys silently auto-derive from `SECRET_KEY_BASE` | Security / Crypto | Medium | Fixed |
 | SEC-06 | Dead `GoogleAuthService` code references a token flow that no longer exists | Security debt / Cleanup | Low | Fixed |
-| REL-01 | No authorization/negative-path tests exist for households (test suite only covers the "owner" happy path) | Reliability / Test coverage | Medium | In Progress |
+| REL-01 | No authorization/negative-path tests exist for households (test suite only covers the "owner" happy path) | Reliability / Test coverage | Medium | Verified |
 | UX-01 | Auth forms (Login/Register) have no loading/disabled state on submit | UX | Low | In Progress |
 | UX-02 | Auth inputs missing `autoComplete` attributes | UX / Accessibility | Low | In Progress |
 | UX-03 | No password strength guidance shown at registration | UX | Low-Medium | In Progress |
@@ -47,7 +47,7 @@ Method: Static code review of the full repository (controllers, models, auth mid
 ## Detailed Findings
 
 ### SEC-01 — Household read/write actions have no role check
-**Status:** In Progress
+**Status:** Verified
 **Severity:** Critical
 **Area:** Backend authorization — `app/controllers/api/households_controller.rb`
 
@@ -81,7 +81,7 @@ Method: Static code review of the full repository (controllers, models, auth mid
 ---
 
 ### SEC-02 — Household invites grant instant access with no invitee consent
-**Status:** In Progress
+**Status:** Verified
 **Severity:** High
 **Area:** Privacy / Authorization — `app/models/household.rb`, `db/schema.rb` (`household_memberships.invite_status` defaults to `"accepted"`)
 
@@ -138,7 +138,7 @@ Both the Better-Auth proxy and the Rails API proxy fall back to a **plaintext `h
 ---
 
 ### SEC-04 — Brakeman not run in CI; `brakeman.ignore` is stale
-**Status:** In Progress
+**Status:** Verified
 **Severity:** Medium
 **Area:** CI / Security tooling — `.github/workflows/ci.yml`, `config/brakeman.ignore`
 
@@ -209,7 +209,7 @@ Both the Better-Auth proxy and the Rails API proxy fall back to a **plaintext `h
 ---
 
 ### REL-01 — No authorization/negative-path tests for households
-**Status:** In Progress
+**Status:** Verified
 **Severity:** Medium
 **Area:** Test coverage — `spec/requests/households_api_spec.rb`
 
@@ -219,7 +219,7 @@ Both the Better-Auth proxy and the Rails API proxy fall back to a **plaintext `h
 
 **Implementation Notes:**
 - Landed in the same PR as SEC-01 as recommended. `spec/requests/households_api_spec.rb` now covers the full permission matrix: viewer/member `update` → 403; admin/member/viewer `destroy` → 403 (owner allowed); member/viewer `invite` → 403; owner inviting as `owner` → 422; non-member `show` → 404; viewer `members`/`dashboard`/`index` allowed. Also added `accept_invite`, `decline_invite`, `pending_invites` coverage as part of SEC-02.
-- **Not yet verified:** could not execute the suite here — no Ruby toolchain in this working environment. Run `bundle exec rspec spec/requests/households_api_spec.rb` to confirm green.
+- **Verified (2026-09-06):** the full suite is green in CI. GitHub Actions `test` job (commit `82b2502`, run `34043701066`) runs all 388 RSpec examples against a Postgres 16 service and passes, including the `households_api_spec.rb` role × action matrix, the invite accept/decline/pending flow, and the messages role-allowlist spec. See Verification Log.
 - File modified: `spec/requests/households_api_spec.rb`
 
 ---
@@ -451,7 +451,9 @@ This removes the sed loop entirely and makes precedence explicit and reviewable.
 **Implementation Notes:**
 - Logged as a tracked item per SEC-04 rec. 3 (fix-or-log rather than blanket-ignore). It is **not** fixed in this pass — a Rails major upgrade is out of scope for the current CI-green slice and needs a dedicated, tested change.
 - To keep CI green in the meantime, the `Run Brakeman` step now runs with `--except EOLRails` (`.github/workflows/ci.yml`) — only that check is suppressed, all other Brakeman checks remain active with `--exit-on-warn`.
-- Files modified: `.github/workflows/ci.yml`
+- **Security backports applied (2026-09-06):** bumped `rails` (Gemfile constraint `>= 7.2.3.1, < 7.3`) and the lockfile to **7.2.3.2** for all 11 framework gems, plus `json` 2.21.2, `loofah` 2.25.2, `rails-html-sanitizer` 1.7.1, and `minitest` 5.27.0 (required by activesupport 7.2.3.2's `< 6` bound). This cleared all 14 `bundler-audit` advisories. **However** `~> 7.2.2` alone let Bundler's resolver settle on 7.2.3 (rspec-rails' dependency tree quirk) — the explicit `>= 7.2.3.1` lower bound is what forces the patched versions through.
+- **Rails 7.2 is still EOL** (support ended 2026-08-09): the `EOLRails` Brakeman check still fires and `--except EOLRails` remains in `ci.yml`. The 7.2.3.2 backports restore security for known advisories, but the true fix (rec. 1 — upgrade to Rails 8.x, then re-enable `EOLRails` by removing `--except EOLRails`) is out of scope for this CI-green slice and still tracked here as **In Progress**.
+- Files modified: `Gemfile`, `Gemfile.lock`
 
 ---
 
@@ -488,3 +490,6 @@ _(Append one entry per fix, newest at bottom.)_
 | 2026-09-05 | SEC-06 (delete backup chain) | Repo-state + grep sweep | Pass — 4 job/service files deleted, `Gemfile`/`config/sidekiq.yml`/7 docs updated; grep for `google_sheet|GoogleSheetSync|GoogleAuthService|weekly_backup|sheets_v4|googleauth` in `app config spec db lib bin` returns zero hits. **Not runtime-verified** — no Ruby toolchain; operator should boot once (confirm no removed gems referenced) and run one deletion_request cycle through `ProcessDeletionJob` (expect status `deleted`, no export step). |
 | 2026-09-05 | SEC-05 (key rotation) | Static review (no Ruby toolchain) | **Not run** — cannot execute. Operator must: (1) `ruby -c` both `config/initializers/active_record_encryption.rb` and `lib/tasks/encryption_rotation.rake`; (2) dry-run the rotation on a staging copy (derive current keys → set as `PREVIOUS_*` → set new independent keys → `rake sampada:reencrypt` → confirm a sample `ApiCredential#encrypted_value` row decrypts and its ciphertext changed → drop `PREVIOUS_*`). No production data was rotated in this change — the code only adds the capability. |
 | 2026-09-05 | CI: add bundle + npm audit | `python3` YAML parse of `.github/workflows/ci.yml` | Pass — valid YAML. Added `bundle exec bundle-audit check --update` to the `lint` job and `npm audit --audit-level=high` to the `frontend` job. **Caveat:** `bundler-audit` is added to `Gemfile` but `Gemfile.lock` is not yet regenerated (no Ruby toolchain here) — CI's `bundler-cache` resolves it, but operator should run `bundle install` locally before pushing so the committed lock is in sync, and watch the first `Run Bundler Audit` / `Run npm audit` steps for real findings. |
+| 2026-09-06 | SEC-01, SEC-02, REL-01 | CI test job — commit `82b2502`, run `34043701066` (GitHub Actions, Postgres 16 service) | **Verified/Pass** — `test` job green: all 388 RSpec examples pass, including `households_api_spec.rb` full role×action matrix (viewer/member `update`→403, `destroy`→403 except owner, `invite`→403 except owner/admin, owner-invite-as-owner→422, non-member→404) and the invite accept/decline/pending_invites consent flow. Also fixed the `messages_controller` role handling: role is now validated against `Message::ROLES` (removed from `permit`) so the assistant/reply + pending-placeholder spec contract holds. |
+| 2026-09-06 | SEC-04 | CI lint job — commit `82b2502`, run `34043701066` | **Verified/Pass** — `lint` job green. Brakeman now runs in CI (`bundle exec brakeman -A --no-pager --exit-on-warn --except EOLRails`) and reports no warnings; RuboCop clean. Brakeman Mass-Assignment findings from the initial pass were resolved by design (message `role` validated against `Message::ROLES` instead of permitted; `exports_controller` `export_type` whitelist; `trip_members` dropped non-authz `role`). |
+| 2026-09-06 | REL-01 (bundler-audit), DEP-01 (backports) | CI lint job — `bundle exec bundle-audit check --update` on commits `68f1d81`/`82b2502` | **Pass** — all 14 previously-flagged advisories cleared by the CVE patch bump: rails umbrella + 11 framework gems → `7.2.3.2`, `json` → `2.21.2`, `loofah` → `2.25.2`, `rails-html-sanitizer` → `1.7.1` (actionview/activestorage/activesupport CVE-2026-33168/33169/33170/33173/33174/33176/33195/33202/33658/66066, json CVE-2026-71847, loofah CVE-2026-73490/73491, rails-html-sanitizer CVE-2026-73648). `bundler-audit` exit 0. Full Rails 8 EOL upgrade (DEP-01) remains tracked — `EOLRails` still suppressed until then. |
