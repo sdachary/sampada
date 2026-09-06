@@ -9,6 +9,6 @@ namespace :vapid do
     puts
     puts "VAPID_PUBLIC_KEY=#{key.public_key}"
     puts "VAPID_PRIVATE_KEY=#{key.private_key}"
-    puts "VAPID_SUBJECT=mailto:notifications@sampada.app"
+    puts 'VAPID_SUBJECT=mailto:notifications@sampada.app'
   end
 end

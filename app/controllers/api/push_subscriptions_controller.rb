@@ -10,7 +10,7 @@ module Api
         p256dh: params.dig(:keys, :p256dh),
         auth: params.dig(:keys, :auth),
         user_agent: request.user_agent,
-        expires_at: params[:expirationTime] ? Time.at(params[:expirationTime].to_i) : nil
+        expires_at: params[:expirationTime] ? Time.zone.at(params[:expirationTime].to_i) : nil
       )
 
       if subscription.save

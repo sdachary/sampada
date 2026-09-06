@@ -159,9 +159,9 @@ RSpec.describe 'Households API', type: :request do
 
     it 'creates a pending membership invitation' do
       create_membership(household, user, 'owner')
-      expect {
+      expect do
         post "/api/v1/households/#{household.id}/invite", params: { email: 'invitee@example.com', role: 'member' }
-      }.to change(HouseholdMembership, :count).by(1)
+      end.to change(HouseholdMembership, :count).by(1)
       expect(response).to have_http_status(:success)
       membership = HouseholdMembership.last
       expect(membership.invite_status).to eq('pending')
@@ -170,9 +170,9 @@ RSpec.describe 'Households API', type: :request do
 
     it 'creates a notification for the invitee' do
       create_membership(household, user, 'owner')
-      expect {
+      expect do
         post "/api/v1/households/#{household.id}/invite", params: { email: 'invitee@example.com', role: 'member' }
-      }.to change(Notification, :count).by(1)
+      end.to change(Notification, :count).by(1)
       notification = Notification.last
       expect(notification.user).to eq(invitee)
       expect(notification.notification_type).to eq('household_invite')
@@ -259,9 +259,9 @@ RSpec.describe 'Households API', type: :request do
       household = create(:household, name: 'Invited Family')
       create(:household_membership, household: household, user: user, role: 'member', invite_status: 'pending')
 
-      expect {
+      expect do
         post "/api/v1/households/#{household.id}/decline_invite"
-      }.to change(HouseholdMembership, :count).by(-1)
+      end.to change(HouseholdMembership, :count).by(-1)
       expect(response).to have_http_status(:success)
     end
 

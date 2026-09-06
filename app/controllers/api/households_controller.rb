@@ -44,9 +44,7 @@ module Api
       return render_error('User not found', status: :not_found) unless user
 
       role = params[:role] || 'member'
-      unless %w[admin member viewer].include?(role)
-        return render_error('Invalid role', status: :unprocessable_entity)
-      end
+      return render_error('Invalid role', status: :unprocessable_entity) unless %w[admin member viewer].include?(role)
 
       membership = @household.add_member(user, role: role, invite_status: 'pending')
       Notification.create!(user: user, notification_type: 'household_invite', message: "You've been invited to join #{@household.name} as #{role.humanize}")

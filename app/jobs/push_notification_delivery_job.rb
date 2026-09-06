@@ -23,9 +23,7 @@ class PushNotificationDeliveryJob < ApplicationJob
         private_key: ENV.fetch('VAPID_PRIVATE_KEY')
       }
     )
-  rescue WebPush::ExpiredSubscription
-    subscription.destroy
-  rescue WebPush::Unauthorized
+  rescue WebPush::ExpiredSubscription, WebPush::Unauthorized
     subscription.destroy
   rescue StandardError => e
     Rails.logger.warn "[WebPush] Delivery failed for #{subscription_id}: #{e.message}"

@@ -8,12 +8,12 @@
 #   RAILS_ENV=production bundle exec rake sampada:reencrypt
 namespace :sampada do
   desc 'Re-encrypt all encrypted columns to the current encryption keys (run after rotating keys)'
-  task reencrypt: :environment do
+  task reencrypt: :environment do # rubocop:disable Metrics/BlockLength
     Rails.application.eager_load!
 
     models = ActiveRecord::Base.descendants
-              .select { |m| m.respond_to?(:encrypted_attributes) && m.encrypted_attributes.any? }
-              .reject { |m| m.abstract_class? }
+                               .select { |m| m.respond_to?(:encrypted_attributes) && m.encrypted_attributes.any? }
+                               .reject(&:abstract_class?)
 
     if models.empty?
       puts 'No models with encrypted attributes found.'

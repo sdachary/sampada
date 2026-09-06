@@ -14,9 +14,9 @@
 #    only acceptable outside production; when it happens there a loud warning is
 #    logged on every boot (see SEC-05).
 
-primary_key = ENV['ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY']
-deterministic_key = ENV['ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY']
-key_derivation_salt = ENV['ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT']
+primary_key = ENV.fetch('ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY', nil)
+deterministic_key = ENV.fetch('ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY', nil)
+key_derivation_salt = ENV.fetch('ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT', nil)
 
 if primary_key.present? && deterministic_key.present? && key_derivation_salt.present?
   config = Rails.application.config.active_record.encryption
@@ -29,9 +29,9 @@ if primary_key.present? && deterministic_key.present? && key_derivation_salt.pre
   # readable. Only honored when the main trio above is explicitly set — meaningless with the
   # derived fallback (derivation is deterministic, so there is nothing to rotate from).
   # Once `rake sampada:reencrypt` has rewritten every row to the current keys, drop these vars.
-  previous_primary_key = ENV['ACTIVE_RECORD_ENCRYPTION_PREVIOUS_PRIMARY_KEY']
-  previous_deterministic_key = ENV['ACTIVE_RECORD_ENCRYPTION_PREVIOUS_DETERMINISTIC_KEY']
-  previous_key_derivation_salt = ENV['ACTIVE_RECORD_ENCRYPTION_PREVIOUS_KEY_DERIVATION_SALT']
+  previous_primary_key = ENV.fetch('ACTIVE_RECORD_ENCRYPTION_PREVIOUS_PRIMARY_KEY', nil)
+  previous_deterministic_key = ENV.fetch('ACTIVE_RECORD_ENCRYPTION_PREVIOUS_DETERMINISTIC_KEY', nil)
+  previous_key_derivation_salt = ENV.fetch('ACTIVE_RECORD_ENCRYPTION_PREVIOUS_KEY_DERIVATION_SALT', nil)
   if previous_primary_key.present? && previous_deterministic_key.present? && previous_key_derivation_salt.present?
     config.previous_primary_key = previous_primary_key
     config.previous_deterministic_key = previous_deterministic_key
@@ -44,9 +44,9 @@ else
       'WARNING: ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY/_DETERMINISTIC_KEY/_KEY_DERIVATION_SALT ' \
       'are not set; deriving encryption keys from SECRET_KEY_BASE. A single leaked ' \
       'SECRET_KEY_BASE is sufficient to reconstruct these keys (protecting ' \
-      "ApiCredential#encrypted_value and encrypted User columns). Set the three " \
+      'ApiCredential#encrypted_value and encrypted User columns). Set the three ' \
       'ACTIVE_RECORD_ENCRYPTION_* env vars independently (ideally via sops) for any real ' \
-      'deployment.',
+      'deployment.'
     )
   end
 

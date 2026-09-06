@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_09_03_000000) do
+ActiveRecord::Schema[7.2].define(version: 2026_09_04_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -202,25 +202,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_03_000000) do
     t.index ["from_currency", "to_currency"], name: "index_exchange_rates_on_from_currency_and_to_currency", unique: true
   end
 
-  create_table "grievances", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "user_id", null: false
-    t.string "name", null: false
-    t.string "email", null: false
-    t.string "phone"
-    t.string "grievance_type", null: false
-    t.text "description", null: false
-    t.string "status", default: "received", null: false
-    t.string "reference_number"
-    t.datetime "acknowledged_at"
-    t.datetime "resolved_at"
-    t.text "resolution_notes"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["reference_number"], name: "index_grievances_on_reference_number", unique: true
-    t.index ["user_id", "status"], name: "index_grievances_on_user_id_and_status"
-    t.index ["user_id"], name: "index_grievances_on_user_id"
-  end
-
   create_table "goals", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "user_id", null: false
     t.string "name", null: false
@@ -238,6 +219,25 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_03_000000) do
     t.datetime "updated_at", null: false
     t.index ["allocation"], name: "index_goals_on_allocation"
     t.index ["user_id"], name: "index_goals_on_user_id"
+  end
+
+  create_table "grievances", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "user_id", null: false
+    t.string "name", null: false
+    t.string "email", null: false
+    t.string "phone"
+    t.string "grievance_type", null: false
+    t.text "description", null: false
+    t.string "status", default: "received", null: false
+    t.string "reference_number"
+    t.datetime "acknowledged_at"
+    t.datetime "resolved_at"
+    t.text "resolution_notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["reference_number"], name: "index_grievances_on_reference_number", unique: true
+    t.index ["user_id", "status"], name: "index_grievances_on_user_id_and_status"
+    t.index ["user_id"], name: "index_grievances_on_user_id"
   end
 
   create_table "household_memberships", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -358,6 +358,19 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_03_000000) do
     t.datetime "updated_at", null: false
     t.index ["household_id"], name: "index_portfolios_on_household_id"
     t.index ["user_id"], name: "index_portfolios_on_user_id"
+  end
+
+  create_table "push_subscriptions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "user_id", null: false
+    t.text "endpoint", null: false
+    t.text "p256dh", null: false
+    t.text "auth", null: false
+    t.string "user_agent"
+    t.datetime "expires_at"
+    t.datetime "created_at", null: false
+    t.index ["endpoint"], name: "index_push_subscriptions_on_endpoint", unique: true
+    t.index ["expires_at"], name: "index_push_subscriptions_on_expires_at"
+    t.index ["user_id"], name: "index_push_subscriptions_on_user_id"
   end
 
   create_table "recurring_expenses", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -554,8 +567,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_03_000000) do
   add_foreign_key "debts", "users"
   add_foreign_key "deletion_requests", "users", name: "deletion_requests_user_id_fkey"
   add_foreign_key "dividend_sips", "portfolios"
-  add_foreign_key "grievances", "users"
   add_foreign_key "goals", "users"
+  add_foreign_key "grievances", "users"
   add_foreign_key "household_memberships", "households"
   add_foreign_key "household_memberships", "users"
   add_foreign_key "insurance_policies", "users"
@@ -566,6 +579,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_03_000000) do
   add_foreign_key "notifications", "users"
   add_foreign_key "portfolios", "households"
   add_foreign_key "portfolios", "users"
+  add_foreign_key "push_subscriptions", "users"
   add_foreign_key "recurring_expenses", "households"
   add_foreign_key "recurring_expenses", "users"
   add_foreign_key "sessions", "users", name: "sessions_user_id_fkey"

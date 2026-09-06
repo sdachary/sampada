@@ -6,7 +6,7 @@ class NotificationService
   def notify_debt_milestone(debt, milestone)
     NotificationMailer.debt_milestone(@user, debt, milestone).deliver_later
     create_in_app_notification('debt_milestone', "#{milestone} for #{debt.name}")
-    send_push(title: milestone, body: "#{debt.name}", url: '/debts')
+    send_push(title: milestone, body: debt.name.to_s, url: '/debts')
   end
 
   def notify_sip_reminder(sip)
