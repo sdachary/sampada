@@ -171,7 +171,10 @@ export default function Landing() {
       </section>
 
       <footer style={{ padding: '20px 0', borderTop: '1px solid var(--line-soft)', fontSize: 12, color: 'var(--ink-faint)', textAlign: 'center' }}>
-        Sampada &mdash; financial clarity
+        Sampada &mdash; financial clarity &middot;{' '}
+        <a href="/privacy.html" style={{ color: 'var(--ink-faint)' }}>Privacy</a>{' '}
+        &middot;{' '}
+        <a href="/terms.html" style={{ color: 'var(--ink-faint)' }}>Terms</a>
       </footer>
     </div>
   )
