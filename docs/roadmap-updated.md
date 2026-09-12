@@ -93,13 +93,25 @@
 - **API endpoints** — CRUD households, invite/remove members, family dashboard
 - Household-level aggregated net worth calculation
 
+### v2.4 — Onboarding & Insurance (Aug 2026)
+- **Insurance tracker** — health/term-life/vehicle policies with premium/coverage/renewal tracking
+- **Onboarding tour** — skippable 3-number money snapshot, checklist, plain-language glossary
+- **Trip settlement math** — simplified greedy/normalized split settlement
+- Compact side-nav with icon-based navigation
+- Spec suite 311 green
+
+### v2.5 — Quick-Log & Offline Readiness (Aug 2026)
+- **Quick-log expense entry** — one-tap bottom-sheet quick add on the dashboard
+- **Offline read-only indicator** — PWA readiness groundwork
+- Rails 7.2 → **8.1.3.1** upgrade; CI green
+
 ## 🔜 Upcoming
 
-### v2.4 — Mobile Companion
-- PWA with offline support
-- Push notifications (EMI reminders, rebalance alerts)
-- Quick-log for expenses
-- Biometric auth
+### Next (uncommitted backlog, no locked date)
+- **PWA polish** — full offline support beyond the read-only indicator (shipped v2.5), true offline queueing
+- **Biometric auth** — platform biometrics on supported devices
+
+> **Push notifications were considered and declined (Won't Do, 2026-09-12).** Email reminders already cover EMI/due-date notifications; the feature is not in the roadmap. The `push_subscriptions` routes/VAPID remain in code but are not planned — do not resurrect without a product requirement.
 
 ## 🧠 Philosophy
 

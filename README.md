@@ -6,10 +6,10 @@
 **A free-forever, hosted personal finance web app that takes you from debt → zero → wealth.**
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
-[![Ruby on Rails](https://img.shields.io/badge/Ruby%20on%20Rails-7.2-CC0000?logo=rubyonrails&logoColor=white)](https://rubyonrails.org/)
+[![Ruby on Rails](https://img.shields.io/badge/Ruby%20on%20Rails-8.1-CC0000?logo=rubyonrails&logoColor=white)](https://rubyonrails.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![Hosted](https://img.shields.io/badge/Hosted%20SaaS-free%20forever-2fa39a)](https://sampada.pages.dev)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](docs/CONTRIBUTING.md)
 
 [Features](#what-is-sampada) · [Why Sampada](#why-sampada-vs-other-finance-apps) · [Architecture](#architecture) · [Contributing](#contributing)
 
@@ -49,7 +49,7 @@ The app never blocks you from doing whatever you want with your money — but de
 - 🛡️ **DPDP compliance** — granular consent, data export, erasure requests, grievance redressal
 
 <details>
-<summary><b>Release history (v0.1 → v2.3)</b></summary>
+<summary><b>Release history (v0.1 → v2.5)</b></summary>
 
 | Version | Milestone |
 |---|---|
@@ -65,6 +65,7 @@ The app never blocks you from doing whatever you want with your money — but de
 | v2.2 | Reporting & Export — CSV/JSON, annual reports, goal charts |
 | v2.3 | Collaboration & Sharing — households, member roles, family dashboard |
 | v2.4 | Onboarding tour, Insurance tracker, trip settlement math, Recharts, spec suite 311 green |
+| v2.5 | Quick-log expense entry, offline read-only indicator |
 | Phase 5 | Optimization — modular AI namespace, standardized API responses, 100% schema sync |
 
 </details>
@@ -195,7 +196,8 @@ Full plan: [`docs/roadmap-updated.md`](docs/roadmap-updated.md)
 - ✅ v2.3 — Collaboration & sharing
 - ✅ v2.4 — Onboarding tour, Insurance tracker, correctness fixes
 - ✅ Phase 5 — Optimization & refactoring
-- 🔜 **v2.5** — PWA, offline support, push notifications
+- ✅ v2.5 — Quick-log expense entry, offline read-only indicator
+- ❌ Push notifications — **Won't Do** (2026-09-12): email reminders already cover due-date/EMI reminders
 
 ---
 
@@ -213,7 +215,7 @@ Full plan: [`docs/roadmap-updated.md`](docs/roadmap-updated.md)
 
 ## Contributing
 
-Read [`CONTRIBUTING.md`](CONTRIBUTING.md) before opening a PR.
+Read [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) before opening a PR.
 
 The short version: contributions should serve the philosophy — debt first, then wealth. Features that undermine that priority won't be merged, regardless of technical quality.
 

@@ -2,7 +2,7 @@
 
 > **Deadline**: May 14, 2027 (18 months from Rules notification). Build for sooner — MeitY proposed compressing to 12 months.
 > **Penalty**: Up to ₹250 crore per contravention.
-> **Sampada status**: Non-profit SaaS, India-only, Google OAuth, self-hosted PG in India.
+> **Sampada status**: Non-profit SaaS, India-only, Better-Auth (email/password; Google/GitHub OAuth not provisioned), self-hosted PG in India.
 
 ## Compliance Summary
 

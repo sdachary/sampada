@@ -9,7 +9,7 @@ Sampada follows one rule: **debt first, then wealth.** Every contribution should
 1. Fork the repo
 2. Create a feature branch (`git checkout -b feat/my-feature`)
 3. Make your changes
-4. Run tests (`bin/rails test`)
+4. Run tests (`bundle exec rspec`)
 5. Run RuboCop (`bundle exec rubocop`)
 6. Open a PR
 
@@ -41,9 +41,9 @@ decrypted into `.env` at deploy time by `deploy.sh`.
 
 ## Code Standards
 
-- Ruby 3.3+, Rails 7.2+
+- Ruby 3.3+, Rails 8.1+ (API-only)
 - RSpec for tests (with FactoryBot and SimpleCov)
-- ViewComponents + Tailwind CSS for UI
+- React 19 SPA (`frontend/`) with hand-rolled CSS — no ViewComponents, no Tailwind
 - RuboCop with sampada config (see `.rubocop.yml`)
 - No external bank sync — all data is user-entered
 

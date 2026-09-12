@@ -2,18 +2,20 @@
 
 ## Overview
 
-Sampada is a Rails 7.2 application with a Tailwind CSS + Hotwire frontend. It follows a debt-first financial philosophy: **Negative → Zero → Positive**.
+Sampada is a **Rails 8.1 (API-only) backend** + **React 19 SPA frontend**. Rails serves `/api/v1/*`, `/sidekiq` and `/up`; all UI is the Vite-built SPA in `frontend/` deployed to Cloudflare Pages. It follows a debt-first financial philosophy: **Negative → Zero → Positive**.
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
-| Framework | Rails 7.2 (API + server-rendered views) |
-| Database | PostgreSQL (via sqlite3 in dev) |
-| Frontend | Tailwind CSS + Stimulus + Turbo |
-| Background | Sidekiq (Redis) + Sidekiq-Cron |
-| Auth | BCrypt/Argon2 |
-| AI | OpenAI-compatible API (OpenRouter, Ollama, Claude) |
+| Framework | Rails 8.1.3.1 — **API-only** (no server-rendered views, no Stimulus) |
+| Database | PostgreSQL 16 |
+| Frontend | React 19 + Vite SPA (`frontend/`), hand-rolled CSS (no Tailwind), recharts + lucide-react |
+| Background | Sidekiq (Redis) + Sidekiq-Cron (host-networked on oradb) |
+| Auth | Better-Auth shared identity service — JWT verified per request |
+| Authorization | Pundit policies |
+| Rate limiting | Rack::Attack |
+| AI | OpenAI-compatible API (OpenRouter, Ollama, Claude) via `Ai::Provider` |
 | Market Data | Yahoo Finance (free, no API key) |
 | Exchange Rates | Yahoo Finance → cached in DB, refreshed every 6h |
 | Format Support | CSV, JSON exports |
@@ -24,160 +26,105 @@ Sampada is a Rails 7.2 application with a Tailwind CSS + Hotwire frontend. It fo
 ```
 sampada/
 ├── app/
-│   ├── controllers/      # Rails controllers + API::V1 namespace
-│   │   └── api/          # v2.0+: exports, reports, households, budgets, transactions
-│   ├── javascript/       # Stimulus controllers (chat, stats, clipboard, conversations)
-│   ├── jobs/             # ActiveJob base classes
-│   ├── mailers/          # ActionMailer classes + notification templates
-│   ├── models/           # 20+ ActiveRecord models
-│   ├── services/         # Business logic services
-│   │   ├── providers/    # Yahoo Finance adapter (v2.0: exchange/currency detection)
-│   ├── views/            # ERB templates
-│   └── workers/          # Sidekiq workers (v2.0: ImportMarketData, ExchangeRateSync)
+│   ├── controllers/       # Namespaced API controllers (app/controllers/api/v1)
+│   ├── jobs/              # Sidekiq jobs (import, FX sync, backups, reminders)
+│   ├── mailers/           # ActionMailer classes + notification templates
+│   ├── models/            # 30+ ActiveRecord models
+│   ├── services/          # Business logic services
+│   │   └── providers/     # Yahoo Finance adapter, market data
+│   └── views/             # Mailer views only (no HTML views)
 ├── config/
-│   ├── initializers/     # v2.0+: sidekiq_schedule.rb (cron jobs)
-│   └── sidekiq.yml       # v2.0+: market_data, maintenance queues
+│   ├── initializers/      # sidekiq_schedule.rb (cron), rack_attack.rb, cors.rb, auth.rb
+│   └── sidekiq.yml
 ├── db/
-│   ├── migrate/          # Squashed + 4 new migrations (v2.0-v2.3)
-│   └── schema.rb         # Current database schema
-├── lib/                  # Money, AiResponse, Semver, SystemDetector
-├── docs/                 # Architecture + roadmap docs
-└── spec/                 # RSpec tests (v2.0-v2.3: 17 new spec files)
+│   ├── migrate/           # Fresh migrations (sequence reset after Rails 8.1 upgrade)
+│   └── schema.rb          # Current database schema (generated — do not hand-edit)
+├── frontend/              # React 19 SPA (Vite) — NOT under app/
+│   ├── src/               # pages/ components/ lib/ i18n/
+│   ├── public/            # _headers (CSP/HSTS), sw.js, manifest, legal pages
+│   ├── wrangler.toml      # Cloudflare Pages config
+│   └── vite.config.js     # dev proxy → http://localhost:3002
+├── lib/                   # Money, AiResponse, Semver, SystemDetector
+├── docs/                  # Architecture, roadmap, operations docs
+└── spec/                  # RSpec test suite (mirrors app/)
 ```
 
-## Models (21 total)
+## Models
 
-### Core Financial
-- `User` — settings, preferences, currency, household memberships
-- `Debt` — loans, credit cards, EMIs (v2.0: currency_code)
-- `DebtPayoff` — avalanche/snowball strategies
-- `InsurancePolicy` — health/term-life/vehicle policies (premium, coverage, renewal)
-- `Portfolio` — investment portfolios (v2.0: currency_code)
-- `Investment` — individual securities (v2.0: currency_code, exchange, yahoo_symbol)
-- `DividendSip` — recurring investment plans
-- `RecurringExpense` — regular bills/subscriptions (v2.0: currency_code)
-- `Journey` — financial phase tracking (v2.0: currency_code)
-- `NetWorthSnapshot` — point-in-time net worth (v2.0: currency_code, currency-aware aggregation)
-
-### v2.0 — Multi-Currency
-- `Currency` — 32 currencies with symbols, decimal places, active/inactive
-- `ExchangeRate` — cached FX rates with 24h TTL, auto-inversion
-
-### v2.1 — Advanced AI
-- `BudgetCategory` — 16 default categories with icons, colors, sorting
-- `Transaction` — expense/income/tracking with categories, merchants, recurring flags, anomaly detection
-- `Budget` — monthly spending limits per category, usage/on-track tracking
-
-### v2.3 — Collaboration
-- `Household` — multi-user groups with shared currency
-- `HouseholdMembership` — roles (owner/admin/member/viewer), invite status
-
-### Supporting
-- `Conversation`, `Message` — AI chat
-- `Setting` — key-value user settings
-- `Notification` — in-app notifications
+- **Core financial**: `User`, `Debt`, `DebtPayoff` (+`DebtPayoffDebt`), `Portfolio`, `Investment`, `DividendSip`, `RecurringExpense`, `InsurancePolicy`, `Journey`, `NetWorthSnapshot`, `Transaction`, `Budget`, `BudgetCategory`
+- **Multi-currency**: `Currency` (32), `ExchangeRate` (cached, 6h refresh, auto-inversion)
+- **Collaboration**: `Household`, `HouseholdMembership` (owner/admin/member/viewer), `Trip` (+`TripMember`, `TripExpense`, `TripSettlement`, `TripCategory`)
+- **AI chat**: `Conversation`, `Message`
+- **DPDP / compliance**: `ConsentRecord`, `DeletionRequest`, `Grievance`
+- **Supporting**: `Setting`, `Notification`, `PushSubscription`, `ApiCredential` (encrypted), `ActiveStorage*`
 
 ## Key Services
 
-### v0.x — Core Financial
-- `DebtPayoffService` — Avalanche/Snowball payoff strategies
-- `DividendSipService` — SIP allocation recommendations
-- `DividendScreenerService` — v2.0: market-aware screening (IN/US/UK/JP/CA)
-- `PortfolioService` — MPT optimization (expected return, volatility, Sharpe ratio)
-- `WealthJourneyTracker` — v2.0: currency-aware debt/SIP/net-worth aggregation
-- `RecurringExpenseService` — event generation for calendar
+- `DebtPayoffService` — avalanche/snowball strategies
+- `DividendSipService` + `DividendScreenerService` — dividend SIP planning / AI suggestions
+- `PortfolioService` — MPT optimization (expected return, volatility, Sharpe)
+- `WealthJourneyTracker` — currency-aware debt/SIP/net-worth aggregation
+- `RecurringExpenseService` — EMI/subscription calendar event generation
+- `ExchangeRateService` + `Providers::YahooFinanceAdapter` — FX sync/conversion
+- `CashFlowForecastService` — 12-month projection, financial health scoring
+- `AnomalyDetectionService` — 3-sigma outliers, spending surges, budget breaches
+- `Ai::AdviceService` + `Ai::CommandParser` — NL transactions/budgets, categorisation, forecasting
+- `ExportService`, `AnnualReportService`, `GoalChartService` — reporting & export
+- `HouseholdDashboardService` — aggregated net worth, per-member summaries
+- `Trip::Settlement` — simplified debt settlement math
 
-### v2.0 — Multi-Currency
-- `ExchangeRateService` — fetch, cache, convert; plugs into Yahoo Finance
-- `Providers::YahooFinanceAdapter` — v2.0: exchange/currency detection, `EXCHANGE_COUNTRY_MAP`, `CURRENCY_MAP`
+## Background Jobs (app/jobs, Sidekiq)
 
-### v2.1 — Advanced AI
-- `CashFlowForecastService` — 12-month financial projection, runway calculation, health scoring
-- `AnomalyDetectionService` — 3-sigma outlier detection, spending surges, budget breaches
-- `AiService` — v2.1: NL transaction/budget creation, categorization, anomaly/forecast/export commands
-
-### v2.2 — Reporting
-- `ExportService` — CSV/JSON for debts, portfolios, transactions, net worth
-- `AnnualReportService` — yearly report with monthly/category/net-worth analysis
-- `GoalChartService` — debt-free projection, 30-year wealth growth, budget charts, income vs expenses
-
-### v2.3 — Collaboration
-- `HouseholdDashboardService` — aggregated net worth, member finances, shared asset summary
-
-## Background Jobs (v2.0)
-
-| Worker | Schedule | Purpose |
-|--------|----------|---------|
-| `ImportMarketDataWorker` | Weekdays after market close | Refresh all investment prices and dividends |
-| `ExchangeRateSyncWorker` | Every 6 hours | Sync all currency exchange rates via Yahoo Finance |
-| `SecurityHealthCheckJob` | Daily 2AM | Detect stale investments, queue imports |
-| `SyncCleanerJob` | Every hour | Trigger rate sync if rates are stale |
-| `DataCleanerJob` | Daily 3AM | Purge expired associations and exports |
+| Job | Schedule (sidekiq_schedule.rb) | Purpose |
+|-----|-------------------------------|---------|
+| `ImportMarketDataJob` | Weekdays 21:30 | Refresh investment prices/dividends |
+| `ExchangeRateSyncJob` | Every 6h | Sync all exchange rates |
+| `SecurityHealthCheckJob` | Daily 02:00 | Detect stale investments, queue imports |
+| `SyncCleanerJob` | Hourly | Trigger rate sync if rates stale |
+| `ExpenseReminderCheckJob` | Daily 09:00 | Due-date checks for recurring expenses |
+| `DatabaseBackupJob` | Daily 03:00 | `pg_dump` (custom, compressed), 7-day local retention |
+| `NetWorthSnapshotJob` | Daily 04:00 | Periodic net-worth snapshots |
+| `CheckDeletionsJob` / `ProcessDeletionJob` | — | DPDP erasure workflow (48h cancel window) |
+| `AiResponseJob` | — | Async AI model responses |
 
 ## Data Flow
 
 ```
-User → Rails Controller → Service Object → Model → PostgreSQL
-                                ↕
-                        Market Data Provider
-                        (Yahoo Finance API — quotes, dividends, FX)
-                                ↕
-                        Sidekiq Workers
-                        (ImportMarketData, ExchangeRateSync, HealthCheck)
+React SPA → /api/v1/* → Rails Controller → Service Object → Model → PostgreSQL
+                                       ↕
+                       Market Data Provider (Yahoo Finance — quotes, dividends, FX)
+                                       ↕
+                       Sidekiq Jobs (import, FX sync, backups, reminders)
 ```
 
 ## API Endpoints
 
-### Core (v0.x)
-- `GET/POST/PUT/DELETE /api/debts` — Debt CRUD
-- `GET /api/debt_payoffs` — Payoff plan list
-- `GET /api/portfolios` — Portfolio list with investments
-- `GET/POST/PUT/DELETE /api/investments` — Investment CRUD
-- `GET/POST/PUT/DELETE /api/dividend_sips` — SIP CRUD
-- `GET /api/journey` — Current financial journey
-- `GET /api/net_worth_snapshots` — Net worth history
-- `GET/POST/PUT/DELETE /api/recurring_expenses` — Recurring expense CRUD
-- `GET/PUT /api/notifications` — Notifications
+Rails serves no pages — the full surface is `/api/v1/*` under `config/routes.rb`:
 
-### v2.0 — Multi-Currency
-- Currency and exchange rate data available through all existing endpoints (currency_code, currency_symbol in JSON)
+- **Auth**: `GET /api/v1/auth/me`, `PATCH /api/v1/auth/profile`
+- **DPDP**: `POST /api/v1/dpdp/{consent,erasure,cancel-deletion,full-export,grievance}`, `GET /api/v1/dpdp/consent`
+- **Financial**: `debts` (+`simulate`), `payoff_plans`, `insurance_policies`, `portfolios` (+`rebalance`, `prices`), `investments`, `goals`, `dividend_sips` (+`suggest`), `journey` (+`progress`, `net_worth`), `net_worth_snapshots`, `recurring_expenses` (+`calendar`)
+- **Tracking**: `transactions` (+`monthly_totals`, `bulk_create`), `budgets` (+`overview`), `budget_categories` (+`seed`), `dashboard` (+`projection`), `reports/*`
+- **Collaboration**: `households` (+`members`, `invite`, `dashboard`), `trips` + nested membership/expenses/settlements
+- **AI chat**: `conversations` + nested `messages`
+- **Misc**: `ai_settings`, `notifications` (+`mark_all_read`), `push_subscriptions` (+`vapid_public_key`), `api_credentials`, `onboarding/*`, `exports/*`
+- **Ops**: `GET /up`, `/sidekiq`
 
-### v2.1 — Advanced AI
-- `GET/POST/PUT/DELETE /api/budget_categories` — Category CRUD + seed
-- `GET/POST/PUT/DELETE /api/transactions` — Transaction CRUD + monthly_totals
-- `GET/POST/PUT/DELETE /api/budgets` — Budget CRUD + overview
-- NL commands through AI chat (`/api/conversations/:id/messages`)
+## Auth & Security
 
-### v2.2 — Reporting
-- `GET /api/exports/debts|portfolios|transactions|net_worth` — CSV/JSON downloads
-- `GET /api/reports/annual|cash_flow_forecast|anomalies|goal_charts` — JSON reports
-
-### v2.3 — Collaboration
-- `GET/POST/PUT/DELETE /api/households` — Household CRUD
-- `GET /api/households/:id/members` — List members
-- `POST /api/households/:id/invite` — Invite user
-- `DELETE /api/households/:id/leave` — Leave household
-- `GET /api/households/:id/dashboard` — Family dashboard
-
-### v2.4 — Onboarding & Insurance (all under `/api/v1/`)
-- `GET/POST/PUT/DELETE /api/v1/insurance_policies` — Insurance policy CRUD
-- `GET /api/v1/onboarding/snapshot` — money in/out, total owed, checklist state
-- `POST /api/v1/onboarding/complete` — set `User#onboarded`
-- `POST /api/v1/debts/:id/simulate` — debt payoff simulation (moved from DebtPayoffsController)
-- `GET /api/v1/trips/:id` — includes `suggested_settlements` in cents
+- `Api::BaseController` includes `BetterAuthVerification` — every request resolves the session token through the shared Better-Auth service (`BETTER_AUTH_VERIFY_URL`, default `http://localhost:4000/api/auth/verify`), `BETTER_AUTH_APP_ID=sampada`, 300s cache.
+- Authorization is per-resource via Pundit policies. Rate limiting via Rack::Attack. Sensitive columns encrypted with Active Record `encrypts` (keys via env — not Rails credentials).
+- Frontend headers (CSP, HSTS, XFO, nosniff) served via `frontend/public/_headers` on Cloudflare Pages. Known gap: edge→origin HTTPS (see `SAMPADA_UAT_TRACKER.md` SEC-03).
 
 ## Configuration
 
-Key environment variables (see `.env.example`):
-- `SECURITIES_PROVIDER`: Market data backend (default: `yahoo_finance`)
-- `EXCHANGE_RATE_PROVIDER`: Exchange rate backend (default: `yahoo_finance`)
-- `OPENAI_*`: AI assistant configuration
-- `SMTP_*`: Email delivery settings
+Key environment variables (full set in `.env.example`): Auth (`BETTER_AUTH_*`), encryption (`ACTIVE_RECORD_ENCRYPTION_*`), DB/Redis (`DATABASE_URL`/`DB_HOST`/`DB_PORT`/`POSTGRES_USER`/`POSTGRES_DB`, `REDIS_HOST`), server (`PORT=3002`, `RAILS_MAX_THREADS`, `WEB_CONCURRENCY`), CORS (`CORS_ORIGINS`), backup (`DATABASE_BACKUP_ENABLED`), market data (`SECURITIES_PROVIDER`, `EXCHANGE_RATE_PROVIDER`, both `yahoo_finance`), AI + SMTP settings. Google/GitHub OAuth keys (`GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`) exist as placeholders only — OAuth is not provisioned.
 
 ## Deployment (oradb)
 
-- `docker-compose.yml` runs `app` + `sidekiq`, **both `network_mode: host`**. Sidekiq MUST be host-networked too — otherwise it can't reach PG/Redis at `127.0.0.1` (as `.env` sets) and crash-loops forever.
-- `.env` needs `REDIS_HOST=127.0.0.1` — oradb's Redis binds localhost only.
-- Dockerfile uses **jemalloc** (`LD_PRELOAD` + `MALLOC_CONF` background_thread/metadata_thp) for all Ruby processes.
-- Memory baseline: app ~23 MiB, sidekiq ~78 MiB (1 GB VM, both host-networked).
-- Deploy: `git push && ssh oradb "cd /opt/sampada && git pull && docker compose build app && docker compose up -d"`.
+- `docker-compose.yml` runs `app` + `sidekiq`, **both `network_mode: host`** — required to reach PG/Redis/Better-Auth on the shared VM (defaults `DB_HOST`/`REDIS_HOST` → `10.0.1.46`).
+- Secrets via sops (`secrets.enc.env`, `.sops.yaml`), decrypted into `.env` by `deploy.sh`.
+- Dockerfile uses **jemalloc** (`LD_PRELOAD` + `MALLOC_CONF`) for all Ruby processes.
+- Memory baseline: app ~23 MiB, sidekiq ~78 MiB (1 GB VM).
+- Frontend deploys separately to Cloudflare Pages (`sampada.pages.dev`, `wrangler.toml`), API set via `VITE_API_URL`.
+- See `docs/DEPLOYMENT.md` for the full runbook.

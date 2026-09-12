@@ -2,6 +2,8 @@
 
 **Last updated:** June 3, 2026
 
+> **Note:** The live, user-facing policy is `frontend/public/privacy.html` (AcharyaLab DPDP Act 2023 template — served at `/privacy.html` by Cloudflare Pages). This Markdown copy tracks the same facts for the repo; keep the two in sync.
+
 ## 1. Information We Collect
 
 ### 1.1 Information You Provide
@@ -28,17 +30,17 @@ We use the following third-party services:
 
 | Service | Purpose | Data Shared |
 |---------|---------|-------------|
-| Supabase Inc. | Database, authentication, storage | Account data, usage data |
+| Better-Auth (AcharyaLab shared service) | Authentication (email/password, JWT) | Account data |
 | Cloudflare Inc. | CDN, DNS, DDoS protection | IP address, request metadata |
 | N/A (no payments integrated) | Payment processing | Payment details (PCI-DSS compliant) |
-| PostgreSQL | Database storage | All user data
+| PostgreSQL | Database storage (self-hosted) | All user data
 
 Each third-party service has its own privacy policy governing the use of your data.
 
 ## 4. Data Storage & Security
-- Data is stored on Supabase servers (Google Cloud, multi-region)
-- We implement encryption in transit (TLS 1.3) and at rest
-- Access controls and RLS policies restrict data access
+- Data is stored in a self-hosted PostgreSQL 16 database on servers in India
+- We implement encryption in transit (HTTPS at the edge) and at rest (Active Record encryption)
+- Access controls and application-level authorization (Pundit policies) restrict data access
 - Backups are performed daily with 7-day retention
 
 ## 5. Data Retention

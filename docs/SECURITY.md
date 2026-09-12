@@ -22,12 +22,12 @@ We take security seriously. If you discover a security vulnerability, please rep
 - **30 days:** Fix deployed (or rationale for extended timeline)
 
 ## Security Practices
-- All traffic encrypted with TLS 1.3
-- Authentication via Supabase with PKCE flow
-- Row-Level Security (RLS) enforces data isolation
-- Rate limiting on auth and API endpoints
-- Regular dependency updates
-- Content Security Policy headers enforced
+- HTTPS at the Cloudflare edge (HSTS via `_headers`); **edge→origin is plaintext HTTP on nip.io** — known gap, verified in `SAMPADA_UAT_TRACKER.md` (SEC-03)
+- Authentication via the shared **Better-Auth** service (email/password; JWT verified per request)
+- **Pundit policies** enforce per-user data isolation at the application layer
+- Rate limiting on auth and API endpoints (Rack::Attack)
+- Regular dependency updates, Brakeman + bundler-audit + gitleaks in CI
+- Content Security Policy headers enforced (Cloudflare Pages `_headers`)
 - No hardcoded secrets in client-side code
 
 ## Bug Bounty

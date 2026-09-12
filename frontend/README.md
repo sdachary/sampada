@@ -1,16 +1,41 @@
-# React + Vite
+# Sampada Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+React 19 + Vite SPA for Sampada — the user interface companion to the Rails 8.1 API-only backend. See `../docs/ARCHITECTURE.md` and `../DESIGN.md` (design system) for full context.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **React 19**, **Vite 8** (`vite.config.js` proxies `/api` → `http://localhost:3002` in dev)
+- **Hand-rolled CSS** — design tokens from `../DESIGN.md`, nothing pre-made (no Tailwind, no component library)
+- **recharts** — charts (dashboard, goal projections); **lucide-react** — icons
+- **Cloudflare Pages** — deployment via `wrangler.toml` (`sampada.pages.dev`); security headers in `public/_headers`
+- **PWA** — service worker (`public/sw.js`), manifest, offline read-only indicator
 
-## React Compiler
+## Layout
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```
+frontend/
+├── src/
+│   ├── pages/        # route pages (Dashboard, Debts, Portfolio, Trips, …)
+│   ├── components/   # shared components
+│   ├── lib/          # api.js (VITE_API_URL), chart utils, i18n
+│   └── App.jsx       # router
+├── public/           # _headers, sw.js, manifest, icons, legal pages (privacy/terms)
+├── wrangler.toml     # Pages build config
+└── vite.config.js
+```
 
-## Expanding the Oxlint configuration
+## Develop
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+```bash
+npm install      # use the installed Vite version; no lockfile churn
+npm run dev      # http://localhost:5173, API proxied to localhost:3002
+VITE_API_URL=... # set only when not using the local dev proxy; see .env.example
+```
+
+## Deploy
+
+Build (`npm run build` → `dist/`) and push the `frontend/` directory with Cloudflare Pages; the backend URL goes in `VITE_API_URL` at build time.
+
+## Legal pages
+
+`public/privacy.html` and `public/terms.html` are the AcharyaLab-standard DPDP legal pages shipped in the SPA build (linked from the landing footer). Keep them byte-consistent with the AcharyaLab template and in sync with `../docs/PRIVACY_POLICY.md`.
