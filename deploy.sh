@@ -29,10 +29,14 @@ rm -f /tmp/.env.secrets
 echo "==> Rebuilding image (if Gemfile changed)..."
 docker compose build app 2>&1 | tail -3
 
-echo "==> Running migrations..."
-docker compose exec -T app bundle exec rails db:migrate 2>&1 | tail -3
-
+# Order matters: the app code is baked into the image (Dockerfile COPY . .), so
+# `exec` against the still-running old container would run the OLD db/migrate and
+# silently skip a migration added since the last deploy. Converge first, then
+# migrate with the new image in place.
 echo "==> Converging services (recreates only when config/env changed)..."
 docker compose up -d
+
+echo "==> Running migrations..."
+docker compose exec -T app bundle exec rails db:migrate 2>&1 | tail -3
 
 echo "==> Done."
