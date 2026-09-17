@@ -22,6 +22,7 @@ export default function Register() {
   const { user, register } = useAuth()
   const navigate = useNavigate()
   const [form, setForm] = useState({ email: '', password: '', password_confirmation: '', first_name: '', last_name: '' })
+  const [website, setWebsite] = useState('')
   const [showPw, setShowPw] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -40,7 +41,7 @@ export default function Register() {
     setSubmitting(true)
     setError('')
     try {
-      await register(form)
+      await register({ ...form, website })
       setRegistered(true)
     } catch (err) {
       setError(err.message)
@@ -107,6 +108,11 @@ export default function Register() {
       foot={<><span>Already have one? </span><Link to="/login" style={{ color: 'var(--coral)' }}>Sign in</Link></>}
     >
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <input
+          type="text" name="website" value={website} onChange={e => setWebsite(e.target.value)}
+          tabIndex={-1} autoComplete="off" aria-hidden="true"
+          style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, opacity: 0 }}
+        />
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
           <input type="text" placeholder="First name" autoComplete="given-name" value={form.first_name} onChange={set('first_name')} className="input" />
           <input type="text" placeholder="Last name" autoComplete="family-name" value={form.last_name} onChange={set('last_name')} className="input" />

@@ -1,13 +1,21 @@
 module Api
   class DpdpController < Api::BaseController
     def consent
-      record = current_user.consent_records.create!(
-        feature: params[:feature],
-        granted: params[:granted],
-        ip_address: request.remote_ip,
-        user_agent: request.user_agent,
-        granted_at: Time.current
-      )
+      record = nil
+      ConsentRecord.transaction do
+        # Withdrawal has to actually take effect: close the open grant(s), or the
+        # `active` scope (granted AND never revoked) keeps reporting the feature as
+        # consented forever, making revocation a silent no-op.
+        revoke_active_grants if params[:granted] == false
+
+        record = current_user.consent_records.create!(
+          feature: params[:feature],
+          granted: params[:granted],
+          ip_address: request.remote_ip,
+          user_agent: request.user_agent,
+          granted_at: Time.current
+        )
+      end
 
       render json: { success: true, consent: record }
     end
@@ -34,6 +42,24 @@ module Api
         message: 'Deletion request submitted. You have 48 hours to cancel.',
         cancel_token: request_record.cancel_token,
         scheduled_for: request_record.scheduled_for
+      }
+    end
+
+    # The 48 hour cooling-off window must survive a page reload: the cancel
+    # token is otherwise only ever seen in the POST response that created it.
+    def deletion_requests
+      records = current_user.deletion_requests.pending.order(created_at: :desc)
+
+      render json: {
+        deletion_requests: records.map do |r|
+          {
+            id: r.id,
+            status: r.status,
+            cancel_token: r.cancel_token,
+            scheduled_for: r.scheduled_for,
+            created_at: r.created_at
+          }
+        end
       }
     end
 
@@ -88,8 +114,8 @@ module Api
 
     def grievance
       record = current_user.grievances.create!(
-        name: params[:name] || "#{current_user.first_name} #{current_user.last_name}",
-        email: params[:email] || current_user.email,
+        name: grievance_name,
+        email: params[:email].presence || current_user.email,
         phone: params[:phone],
         grievance_type: params[:grievance_type],
         description: params[:description],
@@ -106,6 +132,24 @@ module Api
       }
     rescue ActiveRecord::RecordInvalid => e
       render json: { error: e.message }, status: :unprocessable_content
+    end
+
+    private
+
+    # Filing a grievance must never fail for want of a name: prefer an explicit
+    # one, then the account name, then the email. (The old fallback interpolated
+    # nil names into " ", which `presence` treats as blank and rejected.)
+    def grievance_name
+      account_name = [current_user.first_name, current_user.last_name].compact_blank.join(' ')
+      params[:name].presence || account_name.presence || current_user.email
+    end
+
+    # A revocation lands as a new row (consent history is append-only); the grant
+    # rows it supersedes are closed in place so `active` stops returning them.
+    def revoke_active_grants
+      current_user.consent_records.active
+                  .where(feature: params[:feature])
+                  .update_all(revoked_at: Time.current, updated_at: Time.current)
     end
   end
 end

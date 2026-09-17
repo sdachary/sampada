@@ -48,6 +48,50 @@ function cookiesFrom(res) {
   return setCookies.filter(Boolean)
 }
 
+// Honeypot. The auth forms carry a `website` field hidden off-screen (see
+// src/pages/Register.jsx); a human never sees it, a form-filling bot does.
+// A filled value is swallowed here, server-side, with a response a bot can't
+// distinguish from success — no account, no password attempt, no mail sent.
+// Server-side is the only place it can be enforced: the browser has no secret
+// to check against, and the worker is the single choke point both the form and
+// any direct API caller must pass.
+export const HONEYPOT_PATHS = [
+  '/api/auth/sign-up/email',
+  '/api/auth/sign-in/email',
+  '/api/auth/request-password-reset',
+]
+
+export function honeypotTriggered(reqPath, bodyText) {
+  if (!HONEYPOT_PATHS.includes(reqPath) || !bodyText) return false
+  try {
+    const parsed = JSON.parse(bodyText)
+    return typeof parsed?.website === 'string' && parsed.website.trim() !== ''
+  } catch {
+    return false
+  }
+}
+
+// Shaped per endpoint so a swallowed request is indistinguishable from the
+// real success response.
+const HONEYPOT_SUCCESS = {
+  '/api/auth/sign-up/email': { user: null, session: null, token: null },
+  '/api/auth/sign-in/email': { user: null, session: null, token: null },
+  '/api/auth/request-password-reset': { status: true },
+}
+
+function honeypotResponse(reqPath, rid, allowOrigin) {
+  return new Response(JSON.stringify(HONEYPOT_SUCCESS[reqPath] ?? { status: true }), {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': allowOrigin,
+      'Vary': 'Origin',
+      'X-Request-Id': rid,
+      ...securityHeaders,
+    },
+  })
+}
+
 export async function onRequest(context) {
   const { request, env } = context
   const url = new URL(request.url)
@@ -74,6 +118,14 @@ export async function onRequest(context) {
     })
   }
 
+  // Honeypot, before anything is forwarded or any account is touched.
+  let rawBody = null
+  if (request.method !== 'GET' && request.method !== 'HEAD') {
+    const jsonBody = HONEYPOT_PATHS.includes(reqPath) && (request.headers.get('content-type') ?? '').includes('json')
+    rawBody = jsonBody ? await request.text() : await request.arrayBuffer()
+  }
+  if (honeypotTriggered(reqPath, rawBody)) return honeypotResponse(reqPath, rid, allowOrigin)
+
   // Better-Auth proxy
   if (reqPath.startsWith('/api/auth/')) {
     try {
@@ -87,7 +139,7 @@ export async function onRequest(context) {
       const response = await fetch(proxyUrl, {
         method: request.method,
         headers: modifiedHeaders,
-        body: request.method === 'GET' || request.method === 'HEAD' ? null : await request.arrayBuffer(),
+        body: rawBody,
         redirect: 'follow',
       })
 
@@ -177,7 +229,8 @@ export async function onRequest(context) {
       const response = await fetch(proxyUrl, {
         method: request.method,
         headers: modifiedHeaders,
-        body: request.method === 'GET' || request.method === 'HEAD' ? null : await request.arrayBuffer(),
+        // Already buffered above — the request stream can only be read once.
+        body: rawBody,
         redirect: 'follow',
       })
 

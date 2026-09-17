@@ -16,6 +16,7 @@ Rails.application.routes.draw do
     post 'dpdp/consent', to: 'dpdp#consent'
     get 'dpdp/consent', to: 'dpdp#consent_status'
     post 'dpdp/erasure', to: 'dpdp#erasure'
+    get 'dpdp/deletion-requests', to: 'dpdp#deletion_requests'
     post 'dpdp/cancel-deletion', to: 'dpdp#cancel_deletion'
     post 'dpdp/full-export', to: 'dpdp#full_export'
     post 'dpdp/grievance', to: 'dpdp#grievance'
@@ -65,7 +66,7 @@ Rails.application.routes.draw do
     resources :notifications, only: %i[index update] do
       collection { post :mark_all_read }
     end
-    resources :push_subscriptions, only: %i[create destroy] do
+    resources :push_subscriptions, only: %i[index create destroy] do
       collection { get :vapid_public_key }
     end
     get 'dashboard', to: 'dashboard#show'

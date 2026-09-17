@@ -2,6 +2,13 @@
 
 module Api
   class PushSubscriptionsController < Api::BaseController
+    # Endpoint list for the browser to match its own subscription against when
+    # unsubscribing. Scoped to current_user; only ids and endpoints are exposed.
+    def index
+      subscriptions = current_user.push_subscriptions.select(:id, :endpoint)
+      render_success({ data: subscriptions })
+    end
+
     def create
       subscription = current_user.push_subscriptions.find_or_initialize_by(
         endpoint: params[:endpoint]

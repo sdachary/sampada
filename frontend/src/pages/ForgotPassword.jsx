@@ -5,6 +5,7 @@ import AuthLayout from './AuthLayout'
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('')
+  const [website, setWebsite] = useState('')
   const [sent, setSent] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -14,7 +15,7 @@ export default function ForgotPassword() {
     setSubmitting(true)
     setError('')
     try {
-      await auth.forgotPassword(email)
+      await auth.forgotPassword(email, website)
       setSent(true)
     } catch (err) {
       setError(err.message)
@@ -36,6 +37,11 @@ export default function ForgotPassword() {
       foot={<Link to="/login" style={{ color: 'var(--coral)' }}>Back to sign in</Link>}
     >
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <input
+          type="text" name="website" value={website} onChange={e => setWebsite(e.target.value)}
+          tabIndex={-1} autoComplete="off" aria-hidden="true"
+          style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, opacity: 0 }}
+        />
         <input type="email" placeholder="Email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} className="input" required />
         <button type="submit" disabled={submitting} className="btn btn-primary" style={{ justifyContent: 'center', marginTop: 6 }}>
           {submitting ? 'Sending…' : 'Send reset link'}

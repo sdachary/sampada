@@ -8,6 +8,7 @@ export default function Login() {
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [website, setWebsite] = useState('')
   const [showPw, setShowPw] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -19,7 +20,7 @@ export default function Login() {
     setSubmitting(true)
     setError('')
     try {
-      await login(email, password)
+      await login(email, password, website)
       navigate('/dashboard')
     } catch (err) {
       setError(err.message)
@@ -35,6 +36,11 @@ export default function Login() {
       foot={<><span>No account? </span><Link to="/register" style={{ color: 'var(--coral)' }}>Register</Link></>}
     >
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <input
+          type="text" name="website" value={website} onChange={e => setWebsite(e.target.value)}
+          tabIndex={-1} autoComplete="off" aria-hidden="true"
+          style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, opacity: 0 }}
+        />
         <input type="email" placeholder="Email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} className="input" required />
         <div style={{ position: 'relative' }}>
           <input type={showPw ? 'text' : 'password'} placeholder="Password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} className="input" required style={{ width: '100%' }} />

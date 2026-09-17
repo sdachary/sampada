@@ -1,12 +1,8 @@
-const VAPID_PUBLIC_KEY = null;
+import { api } from './api';
 
 async function getVapidKey() {
-  if (VAPID_PUBLIC_KEY) return VAPID_PUBLIC_KEY;
-  const res = await fetch('/api/v1/push_subscriptions/vapid_public_key', {
-    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-  });
-  const data = await res.json();
-  return data.data?.public_key;
+  const data = await api.request('/api/v1/push_subscriptions/vapid_public_key');
+  return data.public_key;
 }
 
 function urlBase64ToUint8Array(base64String) {
@@ -39,12 +35,8 @@ export async function subscribeToPush(registration) {
   });
 
   const sub = subscription.toJSON();
-  await fetch('/api/v1/push_subscriptions', {
+  await api.request('/api/v1/push_subscriptions', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
-    },
     body: JSON.stringify({
       endpoint: sub.endpoint,
       keys: sub.keys,
@@ -59,19 +51,16 @@ export async function unsubscribeFromPush(registration) {
   const subscription = await registration.pushManager.getSubscription();
   if (!subscription) return;
 
-  await subscription.unsubscribe();
+  // Drop the server row first: unsubscribing locally first would orphan the row
+  // if this lookup failed, leaving a subscription the push service rejects (410).
+  const data = await api.request('/api/v1/push_subscriptions');
 
-  const endpoints = await fetch('/api/v1/push_subscriptions', {
-    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-  }).then((r) => r.json());
-
-  const match = endpoints.data?.find((s) => s.endpoint === subscription.endpoint);
+  const match = data.data?.find((s) => s.endpoint === subscription.endpoint);
   if (match?.id) {
-    await fetch(`/api/v1/push_subscriptions/${match.id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-    });
+    await api.request(`/api/v1/push_subscriptions/${match.id}`, { method: 'DELETE' });
   }
+
+  await subscription.unsubscribe();
 }
 
 export async function isPushSupported() {

@@ -29,8 +29,8 @@
       '<button id="acharylab-cookie-reject" style="background:transparent;color:#c9c4b8;border:1px solid #333;' +
       'border-radius:6px;padding:7px 14px;font-size:13px;cursor:pointer">' + CONFIG.REJECT + '</button>') +
     (CONFIG.POLICIES ?
-      '<a href="/privacy" style="color:#c9c4b8;align-self:center;margin-left:auto;text-decoration:underline">Privacy</a>' +
-      '<a href="/terms" style="color:#c9c4b8;align-self:center;text-decoration:underline">Terms</a>' : '') +
+      '<a href="/privacy.html" style="color:#c9c4b8;align-self:center;margin-left:auto;text-decoration:underline">Privacy</a>' +
+      '<a href="/terms.html" style="color:#c9c4b8;align-self:center;text-decoration:underline">Terms</a>' : '') +
     '</div></div>';
 
   window.initCookieBanner = function (opts) {

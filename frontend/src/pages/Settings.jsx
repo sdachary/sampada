@@ -114,11 +114,7 @@ export default function Settings() {
 
   const handleExport = async () => {
     try {
-      const token = localStorage.getItem('token')
-      const res = await fetch('/api/v1/dpdp/full-export', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const res = await api.raw('/api/v1/dpdp/full-export', { method: 'POST' })
       const blob = await res.blob()
       const a = document.createElement('a')
       a.href = URL.createObjectURL(blob)

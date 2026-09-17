@@ -13,16 +13,11 @@ export default function Exports() {
   const doExport = async (type, format) => {
     setStatus(`Exporting ${type} as ${format}...`)
     try {
-      const url = `/api/v1/exports/${type}?format=${format}`
-      const token = localStorage.getItem('token')
-      const res = await fetch(url, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      if (!res.ok) throw new Error('Export failed')
+      const res = await api.raw(`/api/v1/exports/${type}?format=${format}`)
       const blob = await res.blob()
       const a = document.createElement('a')
       a.href = URL.createObjectURL(blob)
-      a.download = `kubera-${type}-${new Date().toISOString().slice(0, 10)}.${format}`
+      a.download = `sampada-${type}-${new Date().toISOString().slice(0, 10)}.${format}`
       a.click()
       URL.revokeObjectURL(a.href)
       setStatus(`${type}.${format} downloaded`)

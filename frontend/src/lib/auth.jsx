@@ -31,8 +31,8 @@ export function AuthProvider({ children }) {
     }
   }
 
-  const login = async (email, password) => {
-    const res = await auth.login({ email, password })
+  const login = async (email, password, website = '') => {
+    const res = await auth.login({ email, password, website })
     // Session carried by httpOnly cookie via the same-origin /api/auth proxy —
     // no token in localStorage (XSS-safe). The worker injects it as Bearer for /api/v1/*.
     await checkAuth()
@@ -54,8 +54,8 @@ export function AuthProvider({ children }) {
     setUser(u => (u ? { ...u, onboarded: value } : u))
   }
 
-  const forgotPassword = async (email) => {
-    return auth.forgotPassword(email)
+  const forgotPassword = async (email, website = '') => {
+    return auth.forgotPassword(email, website)
   }
 
   const resetPassword = async (token, password) => {
