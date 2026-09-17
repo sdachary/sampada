@@ -158,7 +158,7 @@ RSpec.describe 'DPDP API', type: :request do
       json = response.parsed_body
       expect(json['exported_at']).to be_present
       expect(json['user']['id']).to eq(user.id)
-      expect(json['debts'].map { |d| d['name'] }).to eq(['Mine'])
+      expect(json['debts'].pluck('name')).to eq(['Mine'])
     end
 
     it 'includes consent, deletion and grievance history' do
