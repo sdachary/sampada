@@ -16,12 +16,12 @@ const securityHeaders = {
   'Referrer-Policy': 'strict-origin-when-cross-origin',
 }
 
-// Fallbacks are plaintext HTTP origins only used for local/dev testing.
+// Fallbacks are local/dev-only origins.
 // They are NEVER reached in production: they require ALLOW_INSECURE_ORIGIN === 'true'
 // (a flag that must not be set in the deployed Cloudflare Pages project). With the
 // flag absent, a missing ORADB_URL / API_URL fails closed with a 502 instead of
 // silently degrading the transport to plaintext HTTP over the public internet.
-const ORADB_FALLBACK = 'http://acharylab.140.245.227.176.nip.io'
+const ORADB_FALLBACK = 'https://api.vayalabs.in'
 const API_FALLBACK = 'http://sampada.140.245.227.176.nip.io'
 
 function originFor(env, primaryKey, fallback) {
