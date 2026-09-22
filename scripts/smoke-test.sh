@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set +H 2>/dev/null  # disable bash ! history expansion
-API="${API:-http://acharylab.140.245.227.176.nip.io}"
+API="${API:-https://api.vayalabs.in}"
 FRONTEND="${FRONTEND:-https://sampada.pages.dev}"
 EMAIL="${EMAIL:-demo@sampada.app}"
 PASS="${PASS:-demo123!}"
