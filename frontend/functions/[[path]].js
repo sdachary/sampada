@@ -22,7 +22,7 @@ const securityHeaders = {
 // flag absent, a missing ORADB_URL / API_URL fails closed with a 502 instead of
 // silently degrading the transport to plaintext HTTP over the public internet.
 const ORADB_FALLBACK = 'https://api.vayalabs.in'
-const API_FALLBACK = 'http://sampada.140.245.227.176.nip.io'
+const API_FALLBACK = 'https://api.vayalabs.in'
 
 function originFor(env, primaryKey, fallback) {
   if (env[primaryKey]) return env[primaryKey]
