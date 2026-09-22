@@ -4,7 +4,7 @@
  *
  * Better-Auth cookies are httpOnly + SameSite=lax and oradb has no HTTPS,
  * so a cross-origin call can't hold the session. This worker makes the
- * browser talk to /api/auth on ITS OWN origin (sampada.pages.dev) and
+ * browser talk to /api/auth on ITS OWN origin (sampada.vayalabs.in) and
  * forwards Set-Cookie headers so the cookie sticks.
  */
 

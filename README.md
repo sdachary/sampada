@@ -8,7 +8,7 @@
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
 [![Ruby on Rails](https://img.shields.io/badge/Ruby%20on%20Rails-8.1-CC0000?logo=rubyonrails&logoColor=white)](https://rubyonrails.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
-[![Hosted](https://img.shields.io/badge/Hosted%20SaaS-free%20forever-2fa39a)](https://sampada.pages.dev)
+[![Hosted](https://img.shields.io/badge/Hosted%20SaaS-free%20forever-2fa39a)](https://sampada.vayalabs.in)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](docs/CONTRIBUTING.md)
 
 [Features](#what-is-sampada) · [Why Sampada](#why-sampada-vs-other-finance-apps) · [Architecture](#architecture) · [Contributing](#contributing)
@@ -120,7 +120,7 @@ The app never blocks you from doing whatever you want with your money — but de
 ## Getting Started
 
 ### For Users
-Sign up at [https://sampada.pages.dev](https://sampada.pages.dev) — no installation needed.
+Sign up at [https://sampada.vayalabs.in](https://sampada.vayalabs.in) — no installation needed.
 
 ### For Developers
 

@@ -126,5 +126,5 @@ Key environment variables (full set in `.env.example`): Auth (`BETTER_AUTH_*`), 
 - Secrets via sops (`secrets.enc.env`, `.sops.yaml`), decrypted into `.env` by `deploy.sh`.
 - Dockerfile uses **jemalloc** (`LD_PRELOAD` + `MALLOC_CONF`) for all Ruby processes.
 - Memory baseline: app ~23 MiB, sidekiq ~78 MiB (1 GB VM).
-- Frontend deploys separately to Cloudflare Pages (`sampada.pages.dev`, `wrangler.toml`), API set via `VITE_API_URL`.
+- Frontend deploys separately to Cloudflare Pages (`sampada.vayalabs.in`, `wrangler.toml`), API set via `VITE_API_URL`.
 - See `docs/DEPLOYMENT.md` for the full runbook.

@@ -14,7 +14,7 @@
 | Frontend | React 19 + Vite SPA (`frontend/`) | react ^19.2, vite ^8 |
 | Database | PostgreSQL | 16 |
 | Background | Sidekiq + Redis | — |
-| Deploy | oradb VM (140.245.227.176, `sampada.140.245.227.176.nip.io`, :3002) + Cloudflare Pages frontend (`sampada.pages.dev`) | — |
+| Deploy | oradb VM (140.245.227.176, `sampada.140.245.227.176.nip.io`, :3002) + Cloudflare Pages frontend (`sampada.vayalabs.in`) | — |
 | Auth | Better-Auth (shared identity service, JWT verification) | app_id `sampada` |
 
 ---
@@ -84,7 +84,7 @@ See `.env.example` for the full annotated set. Required: `SECRET_KEY_BASE`, `POS
 - **DB/Redis**: `DATABASE_URL` or `DB_HOST`/`DB_PORT`/`POSTGRES_USER`/`POSTGRES_DB`; `REDIS_HOST` (compose default `10.0.1.46`), `REDIS_URL` derived
 - **Server**: `PORT=3002`, `RAILS_MAX_THREADS=3`, `WEB_CONCURRENCY=1`, `RAILS_FORCE_SSL` / `RAILS_ASSUME_SSL`
 - **Encryption**: `ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY` / `_DETERMINISTIC_KEY` / `_KEY_DERIVATION_SALT` (set independently for prod; never rely on the `SECRET_KEY_BASE` derivation — SEC-05). Rotation runbook: `docs/DEPLOYMENT.md`
-- **CORS**: `CORS_ORIGINS=http://localhost:5173,https://sampada.pages.dev`
+- **CORS**: `CORS_ORIGINS=http://localhost:5173,https://sampada.vayalabs.in`
 - **Backup**: `DATABASE_BACKUP_ENABLED`, optional `DATABASE_BACKUP_S3_*`
 - **Secrets**: live in `secrets.enc.env` (sops, `.sops.yaml`) — decrypted into `.env` at deploy by `deploy.sh`. Never add to Rails credentials (`config/credentials.yml.enc` is removed).
 
@@ -120,7 +120,7 @@ See `.env.example` for the full annotated set. Required: `SECRET_KEY_BASE`, `POS
 ## Deployment
 
 - Supported path: `docker-compose.yml` + `deploy.sh` + sops. App + sidekiq both `network_mode: host` (needed to reach PG/Redis/Better-Auth on the shared VM). Build on laptop/or quiet window (1 GiB VM thrashes on build). Deploy on oradb: `git push && ssh oradb "cd /opt/sampada && sudo -u ubuntu bash deploy.sh"`. See `docs/DEPLOYMENT.md`.
-- Frontend: `frontend/` build → Cloudflare Pages (`sampada.pages.dev`), API via `VITE_API_URL` (default dev proxy → `http://localhost:3002`).
+- Frontend: `frontend/` build → Cloudflare Pages (`sampada.vayalabs.in`), API via `VITE_API_URL` (default dev proxy → `http://localhost:3002`).
 
 ---
 

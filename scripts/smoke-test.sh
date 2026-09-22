@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set +H 2>/dev/null  # disable bash ! history expansion
 API="${API:-https://api.vayalabs.in}"
-FRONTEND="${FRONTEND:-https://sampada.pages.dev}"
+FRONTEND="${FRONTEND:-https://sampada.vayalabs.in}"
 EMAIL="${EMAIL:-demo@sampada.app}"
 PASS="${PASS:-demo123!}"
 TMP=$(mktemp)

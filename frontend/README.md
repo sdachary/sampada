@@ -7,7 +7,7 @@ React 19 + Vite SPA for Sampada — the user interface companion to the Rails 8.
 - **React 19**, **Vite 8** (`vite.config.js` proxies `/api` → `http://localhost:3002` in dev)
 - **Hand-rolled CSS** — design tokens from `../DESIGN.md`, nothing pre-made (no Tailwind, no component library)
 - **recharts** — charts (dashboard, goal projections); **lucide-react** — icons
-- **Cloudflare Pages** — deployment via `wrangler.toml` (`sampada.pages.dev`); security headers in `public/_headers`
+- **Cloudflare Pages** — deployment via `wrangler.toml` (`sampada.vayalabs.in`); security headers in `public/_headers`
 - **PWA** — service worker (`public/sw.js`), manifest, offline read-only indicator
 
 ## Layout
