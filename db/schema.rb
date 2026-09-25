@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_17_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_25_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -438,11 +438,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_000000) do
     t.text "notes"
     t.boolean "recurring", default: false
     t.string "recurring_frequency"
+    t.uuid "recurring_expense_id"
     t.date "transaction_date", null: false
     t.string "transaction_type", default: "expense"
     t.datetime "updated_at", null: false
     t.uuid "user_id", null: false
     t.index ["household_id"], name: "index_transactions_on_household_id"
+    t.index ["recurring_expense_id", "transaction_date"], name: "index_transactions_on_recurring_expense_due", unique: true, where: "(recurring_expense_id IS NOT NULL)"
     t.index ["user_id", "budget_category_id"], name: "index_transactions_on_user_id_and_budget_category_id"
     t.index ["user_id", "transaction_date"], name: "index_transactions_on_user_id_and_transaction_date"
     t.index ["user_id", "transaction_type"], name: "index_transactions_on_user_id_and_transaction_type"
@@ -578,6 +580,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_000000) do
   add_foreign_key "tenants", "users"
   add_foreign_key "transactions", "budget_categories"
   add_foreign_key "transactions", "households"
+  add_foreign_key "transactions", "recurring_expenses"
   add_foreign_key "transactions", "users"
   add_foreign_key "trip_categories", "trips"
   add_foreign_key "trip_expenses", "trip_categories"

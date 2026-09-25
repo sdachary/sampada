@@ -19,9 +19,9 @@ function AddExpenseForm({ tripId, members, categories, onDone }) {
         <option value="">Category (optional)</option>
         {categories.map(c => <option key={c.id} value={c.id} style={{ color: c.color }}>{c.name}</option>)}
       </select>
-      <div style={{ display: 'flex', gap: 8 }}>
-        <button type="submit" className="btn btn-primary" disabled={saving} style={{ fontSize: 12.5, padding: '7px 16px' }}>{saving ? 'Saving...' : 'Add'}</button>
-        <button type="button" className="btn btn-ghost" onClick={onDone} style={{ fontSize: 12.5, padding: '7px 16px' }}>Cancel</button>
+      <div className="flex-g8" >
+        <button type="submit" className="btn btn-primary btn-sm-ghost" disabled={saving} >{saving ? 'Saving...' : 'Add'}</button>
+        <button type="button" className="btn btn-ghost btn-sm-ghost" onClick={onDone} >Cancel</button>
       </div>
     </form>
   )
@@ -52,7 +52,7 @@ function TripDetail({ tripId, onBack }) {
     load()
   }
 
-  if (loading) return <div style={{ padding: 20 }}><div className="skeleton" style={{ height: 200 }} /></div>
+  if (loading) return <div style={{ padding: 20 }}><div className="skeleton h-200"  /></div>
   if (!trip) return <div className="empty-state"><p>Trip not found</p></div>
 
   const myId = trip.members[0]?.id // current user is first member
@@ -66,25 +66,25 @@ function TripDetail({ tripId, onBack }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
         <div>
           <h1 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', marginBottom: 2 }}>{trip.name}</h1>
-          <p style={{ fontSize: 13, color: 'var(--ink-mute)' }}>
+          <p className="text-13-muted" >
             {trip.destination && <>{trip.destination} · </>}
             {trip.start_date && <>{trip.start_date}{trip.end_date ? ` - ${trip.end_date}` : ''} · </>}
             {trip.members?.length || 0} members
-            <span className="tag" style={{ marginLeft: 8 }}>{trip.status}</span>
+            <span className="tag ml-8" >{trip.status}</span>
           </p>
         </div>
         <p className="fin" style={{ fontFamily: 'var(--sans)', fontSize: 22, fontWeight: 600 }}>₹{(+trip.total_spent || 0).toLocaleString('en-IN')}</p>
       </div>
 
       {/* members */}
-      <div className="card" style={{ padding: 16, marginBottom: 12 }}>
-        <p style={{ fontSize: 11, color: 'var(--ink-faint)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>Members</p>
+      <div className="card card-pad-16-mb12" >
+        <p className="label-caps mb-8" >Members</p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
           {trip.members?.map(m => (
-            <span key={m.id} className="tag" style={{ padding: '4px 12px', fontSize: 12.5 }}>{m.name} {trip.balances?.[m.id] > 0 ? <span style={{ color: '#2d7d6a' }}>(+₹{toRupees(trip.balances[m.id]).toFixed(0)})</span> : trip.balances?.[m.id] < 0 ? <span style={{ color: 'var(--coral)' }}>(-₹{Math.abs(toRupees(trip.balances[m.id])).toFixed(0)})</span> : ''}</span>
+            <span key={m.id} className="tag" style={{ padding: '4px 12px', fontSize: 12.5 }}>{m.name} {trip.balances?.[m.id] > 0 ? <span style={{ color: '#2d7d6a' }}>(+₹{toRupees(trip.balances[m.id]).toFixed(0)})</span> : trip.balances?.[m.id] < 0 ? <span className="text-coral" >(-₹{Math.abs(toRupees(trip.balances[m.id])).toFixed(0)})</span> : ''}</span>
           ))}
         </div>
-        <div style={{ display: 'flex', gap: 6 }}>
+        <div className="flex-g6" >
           <input className="input" placeholder="Name" value={newMember} onChange={e => setNewMember(e.target.value)} style={{ flex: 1, padding: '6px 10px', fontSize: 12.5 }} />
           <input className="input" placeholder="Email (opt)" value={newMemberEmail} onChange={e => setNewMemberEmail(e.target.value)} style={{ flex: 1, padding: '6px 10px', fontSize: 12.5 }} />
           <button onClick={addMember} className="btn btn-ghost" style={{ fontSize: 12, padding: '6px 12px' }}>Add</button>
@@ -97,8 +97,8 @@ function TripDetail({ tripId, onBack }) {
 
       {/* settlements */}
       {owed.length > 0 && (
-        <div className="card" style={{ padding: 16, marginBottom: 12 }}>
-          <p style={{ fontSize: 11, color: 'var(--ink-faint)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>Settlements needed</p>
+        <div className="card card-pad-16-mb12" >
+          <p className="label-caps mb-8" >Settlements needed</p>
           {owed.map(([id, amount]) => {
             const from = owes.find(([fid]) => fid !== id)
             if (!from) return null
@@ -114,8 +114,8 @@ function TripDetail({ tripId, onBack }) {
 
       {/* suggested settlements (simplify debts) */}
       {(trip.suggested_settlements?.length || 0) > 0 && (
-        <div className="card" style={{ padding: 16, marginBottom: 12 }}>
-          <p style={{ fontSize: 11, color: 'var(--ink-faint)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>Suggested settlements · fewest transfers</p>
+        <div className="card card-pad-16-mb12" >
+          <p className="label-caps mb-8" >Suggested settlements · fewest transfers</p>
           {trip.suggested_settlements.map((s, i) => {
             const fromName = trip.members?.find(m => m.id === s.from)?.name || '?'
             const toName = trip.members?.find(m => m.id === s.to)?.name || '?'
@@ -133,14 +133,14 @@ function TripDetail({ tripId, onBack }) {
       )}
 
       {/* expenses */}
-      <p style={{ fontSize: 11, color: 'var(--ink-faint)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>Expenses</p>
+      <p className="label-caps mb-8" >Expenses</p>
       {trip.expenses?.length === 0 && <p style={{ fontSize: 13, color: 'var(--ink-mute)', padding: 12 }}>No expenses yet. Add your first one!</p>}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         {trip.expenses?.map(e => (
           <div key={e.id} className="card" style={{ padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
-              <p style={{ fontSize: 13, fontWeight: 500 }}>{e.description}</p>
-              <p style={{ fontSize: 11.5, color: 'var(--ink-mute)' }}>{e.payer} · {e.category_name || 'Uncategorized'} · {e.expense_date}</p>
+              <p className="h-500-13" >{e.description}</p>
+              <p className="text-11-5-muted" >{e.payer} · {e.category_name || 'Uncategorized'} · {e.expense_date}</p>
             </div>
             <p className="fin" style={{ fontFamily: 'var(--sans)', fontSize: 15, fontWeight: 600 }}>₹{(+e.amount).toLocaleString('en-IN')}</p>
           </div>
@@ -174,10 +174,10 @@ export default function Trips() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+      <div className="spread-mb16" >
         <div>
-          <p className="page-num" style={{ marginBottom: 4 }}>00<em>5</em> / 016</p>
-          <h1 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em' }}>Trip Mode</h1>
+          <p className="page-num mb-4" >00<em>5</em> / 016</p>
+          <h1 className="page-title-no-mb" >Trip Mode</h1>
         </div>
         <button onClick={() => setShowCreate(!showCreate)} className="btn btn-primary" style={{ fontSize: 12.5, padding: '7px 16px' }}>+ New trip</button>
       </div>
@@ -197,36 +197,36 @@ export default function Trips() {
             <option value="custom">Custom</option>
           </select>
           <input className="input" type="number" placeholder="Budget (optional)" value={form.total_budget} onChange={e => setForm({...form, total_budget: e.target.value})} />
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button type="submit" className="btn btn-primary" style={{ fontSize: 12.5, padding: '7px 16px' }}>Create</button>
+          <div className="flex-g8" >
+            <button type="submit" className="btn btn-primary btn-sm-ghost" >Create</button>
             <button type="button" className="btn btn-ghost" onClick={() => setShowCreate(false)} style={{ fontSize: 12.5, padding: '7px 16px' }}>Cancel</button>
           </div>
         </form>
       )}
 
       {loading ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div className="col-g10" >
           {[1,2].map(i => <div key={i} className="skeleton" style={{ height: 80 }} />)}
         </div>
       ) : trips.length === 0 ? (
         <div className="empty-state">
           <span className="emoji">◈</span>
           <p>No trips yet</p>
-          <p style={{ fontSize: 12, color: 'var(--ink-faint)' }}>Create a trip to track shared expenses with friends and family — like Splitwise, built in.</p>
+          <p className="text-12-faint" >Create a trip to track shared expenses with friends and family — like Splitwise, built in.</p>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div className="col-g8" >
           {trips.map(t => (
             <div key={t.id} className="card" style={{ padding: '14px 18px', cursor: 'pointer' }} onClick={() => setSelectedId(t.id)}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div className="spread" >
                 <div>
-                  <p style={{ fontWeight: 600, fontSize: 14, marginBottom: 2 }}>{t.name}</p>
-                  <p style={{ fontSize: 12, color: 'var(--ink-mute)' }}>
+                  <p className="row-600-14" >{t.name}</p>
+                  <p className="text-12-muted" >
                     {t.destination}{t.destination && t.start_date ? ' · ' : ''}{t.start_date ? `${t.start_date}${t.end_date ? ` - ${t.end_date}` : ''}` : ''}
                     <span className="tag" style={{ marginLeft: 6 }}>{t.group_type}</span>
                   </p>
                 </div>
-                <span style={{ fontSize: 12, color: 'var(--ink-faint)' }}>→</span>
+                <span className="text-12-faint" >→</span>
               </div>
             </div>
           ))}

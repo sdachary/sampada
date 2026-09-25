@@ -44,8 +44,8 @@ export default function AuthLayout({ variant = 'form', icon, title, subtitle, er
             </>
           ) : (
             <>
-              <h1 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', marginBottom: 4 }}>{title}</h1>
-              <p style={{ fontSize: 13.5, color: 'var(--ink-mute)', marginBottom: 24 }}>{subtitle}</p>
+              <h1 className="page-title" >{title}</h1>
+              <p className="text-13-5-muted-lg" >{subtitle}</p>
               {error && <p style={{ fontSize: 13, color: 'var(--coral)', marginBottom: 16 }}>{error}</p>}
               {children}
             </>

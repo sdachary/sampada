@@ -60,14 +60,14 @@ export default function Landing() {
         </span>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           <ThemeToggle />
-          <Link to="/login" style={{ fontSize: 13.5, color: 'var(--ink-mute)' }}>Sign in</Link>
+          <Link className="text-13-5-muted" to="/login" >Sign in</Link>
           <Link to="/register" className="btn btn-primary" style={{ padding: '8px 18px', fontSize: 13 }}>Get started</Link>
         </div>
       </nav>
 
       {/* 1. Hero */}
       <section style={{ padding: '80px 0 56px', textAlign: 'center' }} data-reveal>
-        <p className="page-num" style={{ marginBottom: 12 }}>00<em>1</em> / 005</p>
+        <p className="page-num mb-12" >00<em>1</em> / 005</p>
         <h1 className="landing-hero-h1" style={{ fontSize: 44, fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.15, marginBottom: 16 }}>
           Zero is better than <em style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', color: 'var(--coral)' }}>negative</em>.
         </h1>
@@ -91,7 +91,7 @@ export default function Landing() {
         ].map((s, i) => (
           <div key={s.label}
             style={{ padding: '32px 20px', textAlign: 'center', background: i === 1 ? 'var(--paper-card)' : 'transparent', borderLeft: i > 0 ? '1px solid var(--line)' : 'none' }}>
-            <div style={{ fontSize: 10.5, color: 'var(--ink-faint)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Stage {i + 1}</div>
+            <div className="label-caps mb-4" >Stage {i + 1}</div>
             <div style={{ fontFamily: 'var(--sans)', fontSize: 22, fontWeight: 600, letterSpacing: '-0.02em', color: s.color, marginBottom: 6 }}>{s.label}</div>
             <div style={{ height: 3, width: s.pct, background: s.color, borderRadius: 2, margin: '0 auto 10px' }} />
             <p style={{ fontSize: 13, color: 'var(--ink-mute)', lineHeight: 1.5, maxWidth: 200, margin: '0 auto' }}>{s.desc}</p>
@@ -113,7 +113,7 @@ export default function Landing() {
             const Icon = f.icon
             return (
               <div key={f.title} className="card" style={{ padding: '22px 22px' }} data-reveal>
-                <Icon size={20} color="var(--coral)" strokeWidth={1.75} style={{ marginBottom: 12 }} />
+                <Icon className="mb-12" size={20} color="var(--coral)" strokeWidth={1.75}  />
                 <h3 style={{ fontFamily: 'var(--sans)', fontSize: 16, fontWeight: 600, letterSpacing: '-0.01em', marginBottom: 6 }}>{f.title}</h3>
                 <p style={{ fontSize: 13.5, color: 'var(--ink-mute)', lineHeight: 1.55 }}>{f.body}</p>
               </div>
@@ -142,9 +142,9 @@ export default function Landing() {
               {COMPARE_ROWS.map(([label, sampada, ynab, mint]) => (
                 <tr key={label}>
                   <td style={{ padding: '9px 14px', borderTop: '1px solid var(--line-soft)', color: 'var(--ink-soft)' }}>{label}</td>
-                  <td style={{ padding: '9px 14px', borderTop: '1px solid var(--line-soft)', textAlign: 'center' }}><CompareCell value={sampada} /></td>
-                  <td style={{ padding: '9px 14px', borderTop: '1px solid var(--line-soft)', textAlign: 'center' }}><CompareCell value={ynab} /></td>
-                  <td style={{ padding: '9px 14px', borderTop: '1px solid var(--line-soft)', textAlign: 'center' }}><CompareCell value={mint} /></td>
+                  <td className="modal-foot" ><CompareCell value={sampada} /></td>
+                  <td className="modal-foot" ><CompareCell value={ynab} /></td>
+                  <td className="modal-foot" ><CompareCell value={mint} /></td>
                 </tr>
               ))}
             </tbody>
@@ -154,19 +154,19 @@ export default function Landing() {
 
       {/* 5. Hosted SaaS */}
       <section style={{ padding: '20px 0 60px', textAlign: 'center' }} data-reveal>
-        <p className="page-num" style={{ marginBottom: 12 }}>00<em>4</em> / 005</p>
+        <p className="page-num mb-12" >00<em>4</em> / 005</p>
         <h2 style={{ fontSize: 22, fontWeight: 600, letterSpacing: '-0.025em', marginBottom: 10 }}>Hosted. Free. Forever.</h2>
         <p style={{ fontSize: 14, color: 'var(--ink-mute)', maxWidth: 420, margin: '0 auto 24px', lineHeight: 1.6 }}>
-          No installation needed. Sign up at <a href="https://sampada.vayalabs.in" target="_blank" rel="noreferrer" style={{ color: 'var(--coral)' }}>sampada.vayalabs.in</a> and start in seconds.
+          No installation needed. Sign up at <a className="text-coral" href="https://sampada.vayalabs.in" target="_blank" rel="noreferrer" >sampada.vayalabs.in</a> and start in seconds.
         </p>
         <p style={{ fontSize: 12.5, marginTop: 14 }}>
-          <a href="https://github.com/sdachary/sampada" target="_blank" rel="noreferrer" style={{ color: 'var(--ink-mute)' }}>View source on GitHub \u2192</a>
+          <a className="text-mute" href="https://github.com/sdachary/sampada" target="_blank" rel="noreferrer" >View source on GitHub \u2192</a>
         </p>
       </section>
 
       {/* 6. CTA */}
       <section style={{ padding: '50px 0 70px', textAlign: 'center', borderTop: '1px solid var(--line-soft)' }} data-reveal>
-        <p className="page-num" style={{ marginBottom: 12 }}>00<em>5</em> / 005</p>
+        <p className="page-num mb-12" >00<em>5</em> / 005</p>
         <h2 style={{ fontSize: 22, fontWeight: 600, letterSpacing: '-0.025em', marginBottom: 10 }}>
           Start your journey.
         </h2>
@@ -176,9 +176,9 @@ export default function Landing() {
 
       <footer style={{ padding: '20px 0', borderTop: '1px solid var(--line-soft)', fontSize: 12, color: 'var(--ink-faint)', textAlign: 'center' }}>
         Sampada &mdash; financial clarity &middot;{' '}
-        <a href="/privacy.html" style={{ color: 'var(--ink-faint)' }}>Privacy</a>{' '}
+        <a className="text-faint" href="/privacy.html" >Privacy</a>{' '}
         &middot;{' '}
-        <a href="/terms.html" style={{ color: 'var(--ink-faint)' }}>Terms</a>
+        <a className="text-faint" href="/terms.html" >Terms</a>
       </footer>
     </div>
   )

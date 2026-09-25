@@ -33,16 +33,16 @@ export default function Login() {
       title="Welcome back"
       subtitle="Sign in to your account"
       error={error}
-      foot={<><span>No account? </span><Link to="/register" style={{ color: 'var(--coral)' }}>Register</Link></>}
+      foot={<><span>No account? </span><Link className="text-coral" to="/register" >Register</Link></>}
     >
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <form className="col-g14" onSubmit={handleSubmit} >
         <input
           type="text" name="website" value={website} onChange={e => setWebsite(e.target.value)}
           tabIndex={-1} autoComplete="off" aria-hidden="true"
           style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, opacity: 0 }}
         />
         <input type="email" placeholder="Email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} className="input" required />
-        <div style={{ position: 'relative' }}>
+        <div className="pos-rel" >
           <input type={showPw ? 'text' : 'password'} placeholder="Password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} className="input" required style={{ width: '100%' }} />
           <button type="button" onClick={() => setShowPw(!showPw)} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: 'var(--ink-mute)', padding: 4 }} aria-label={showPw ? 'Hide password' : 'Show password'}>
             {showPw ? '◔' : '◑'}
@@ -51,7 +51,7 @@ export default function Login() {
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: -4 }}>
           <Link to="/forgot-password" style={{ fontSize: 12.5, color: 'var(--ink-mute)' }}>Forgot password?</Link>
         </div>
-        <button type="submit" disabled={submitting} className="btn btn-primary" style={{ justifyContent: 'center', marginTop: 6 }}>
+        <button type="submit" disabled={submitting} className="btn btn-primary center-h" >
           {submitting ? 'Signing in…' : 'Sign in'}
         </button>
       </form>

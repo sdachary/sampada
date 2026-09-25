@@ -50,7 +50,7 @@ export default function PayoffSimulator() {
     if (selectedId && debts.length > 0 && !baseline && !simulating) simulate()
   }, [debts, selectedId])
 
-  if (loading) return <div><div className="skeleton" style={{ height: 200 }} /></div>
+  if (loading) return <div><div className="skeleton h-200"  /></div>
 
   const selected = debts.find(d => d.id === +selectedId)
   const base = baseline
@@ -61,9 +61,9 @@ export default function PayoffSimulator() {
 
   return (
     <div>
-      <p className="page-num" style={{ marginBottom: 4 }}>00<em>5</em> / 016</p>
-      <h1 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', marginBottom: 4 }}>Payoff Simulator</h1>
-      <p style={{ fontSize: 13.5, color: 'var(--ink-mute)', marginBottom: 24 }}>See how extra payments affect your debt-free date.</p>
+      <p className="page-num mb-4" >00<em>5</em> / 016</p>
+      <h1 className="page-title" >Payoff Simulator</h1>
+      <p className="text-13-5-muted-lg" >See how extra payments affect your debt-free date.</p>
 
       {debts.length === 0 ? (
         <div className="empty-state">
@@ -73,8 +73,8 @@ export default function PayoffSimulator() {
         </div>
       ) : (
         <div>
-          <div style={{ marginBottom: 16 }}>
-            <Field label="Select Debt" style={{ marginBottom: 6 }}>
+          <div className="mb-16" >
+            <Field className="mb-6" label="Select Debt" >
               <select value={selectedId} onChange={e => { setSelectedId(e.target.value); setBaseline(null); setResult(null) }}
                 className="input" style={{ maxWidth: 360, padding: '9px 12px' }}>
                 <option value="">Choose a debt…</option>
@@ -85,28 +85,28 @@ export default function PayoffSimulator() {
             </Field>
             <input type="text" value={search} onChange={e => setSearch(e.target.value)}
               placeholder="Search debts…" className="input" style={{ maxWidth: 360, padding: '9px 12px', fontSize: 14 }} />
-            {search && filtered.length === 0 && <p style={{ fontSize: 11, color: 'var(--ink-faint)', marginTop: 4 }}>No debts match "{search}"</p>}
+            {search && filtered.length === 0 && <p className="text-11-faint mt-4" >No debts match "{search}"</p>}
           </div>
 
           {selected && (
-            <div className="card" style={{ padding: '14px 18px', marginBottom: 16 }}>
-              <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 4 }}>{selected.name}</p>
-              <p style={{ fontSize: 11.5, color: 'var(--ink-mute)' }}>
+            <div className="card card-pad-mb16" >
+              <p className="h-600-12 mb-4" >{selected.name}</p>
+              <p className="text-11-5-muted" >
                 ₹{(+selected.amount || 0).toLocaleString('en-IN')} · {selected.interest_rate}% APR · EMI: ₹{(+selected.emi_amount || 0).toLocaleString('en-IN')}/mo
               </p>
             </div>
           )}
 
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
-            <Field label="Extra Monthly (₹)" style={{ display: 'inline-block' }}>
+            <Field className="inline-block" label="Extra Monthly (₹)" >
               <input type="number" value={extraPayment} onChange={e => setExtraPayment(e.target.value)}
                 className="input" style={{ maxWidth: 160, padding: '9px 12px' }} placeholder="0" min="0" />
             </Field>
-            <Field label="Lump Sum (₹)" style={{ display: 'inline-block' }}>
+            <Field className="inline-block" label="Lump Sum (₹)" >
               <input type="number" value={lumpSum} onChange={e => setLumpSum(e.target.value)}
                 className="input" style={{ maxWidth: 160, padding: '9px 12px' }} placeholder="0" min="0" />
             </Field>
-            <Field label="Annual Extra (₹)" style={{ display: 'inline-block' }}>
+            <Field className="inline-block" label="Annual Extra (₹)" >
               <input type="number" value={annualExtra} onChange={e => setAnnualExtra(e.target.value)}
                 className="input" style={{ maxWidth: 160, padding: '9px 12px' }} placeholder="0" min="0" />
             </Field>
@@ -118,22 +118,22 @@ export default function PayoffSimulator() {
 
           {res && base && (
             <div style={{ marginTop: 20 }}>
-              <div className="card" style={{ padding: '16px 18px', marginBottom: 12 }}>
+              <div className="card card-pad-lg" >
                 <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 12 }}>Comparison</p>
                 <div style={{ display: 'flex', gap: 12, marginBottom: 14, flexWrap: 'wrap' }}>
                   <div style={{ flex: '1 1 140px' }}>
-                    <p style={{ fontSize: 10, color: 'var(--ink-faint)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>Current plan</p>
+                    <p className="label-caps-sm mb-3" >Current plan</p>
                     <p className="fin" style={{ fontSize: 24, fontWeight: 700, color: 'var(--coral)' }}>{base.months} mo</p>
-                    <p className="fin" style={{ fontSize: 12, color: 'var(--ink-mute)' }}>₹{(+base.total_interest).toLocaleString('en-IN')} interest</p>
+                    <p className="fin text-12-muted" >₹{(+base.total_interest).toLocaleString('en-IN')} interest</p>
                   </div>
                   <div style={{ flex: '1 1 140px' }}>
-                    <p style={{ fontSize: 10, color: 'var(--ink-faint)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>Accelerated</p>
+                    <p className="label-caps-sm mb-3" >Accelerated</p>
                     <p className="fin" style={{ fontSize: 24, fontWeight: 700, color: 'var(--emerald)' }}>{res.months} mo</p>
-                    <p className="fin" style={{ fontSize: 12, color: 'var(--ink-mute)' }}>₹{(+res.total_interest).toLocaleString('en-IN')} interest</p>
+                    <p className="fin text-12-muted" >₹{(+res.total_interest).toLocaleString('en-IN')} interest</p>
                   </div>
                 </div>
                 <div className="card" style={{ padding: '16px 18px', background: 'var(--surface-2)', marginBottom: 12 }}>
-                  <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 8 }}>Balance over time</p>
+                  <p className="h-600-12 mb-8" >Balance over time</p>
                   <Chart data={base.schedule.map((s, i) => ({ ...s, baseline: s.balance, accelerated: accelerated.schedule[i]?.balance ?? null }))}
                     xKey="month" series={[
                       { key: 'baseline', name: 'Current', color: 'var(--coral)' },
@@ -164,25 +164,25 @@ export default function PayoffSimulator() {
 
               {res.schedule && (
                 <div className="card" style={{ padding: '16px 18px', marginBottom: 12, overflowX: 'auto' }}>
-                  <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 8 }}>Monthly schedule</p>
+                  <p className="h-600-12 mb-8" >Monthly schedule</p>
                   <table style={{ width: '100%', fontSize: 11, borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ color: 'var(--ink-faint)', textTransform: 'uppercase', fontSize: 9, letterSpacing: '0.05em' }}>
                         <th style={{ textAlign: 'left', padding: '4px 8px' }}>Month</th>
-                        <th style={{ textAlign: 'right', padding: '4px 8px' }}>Payment</th>
-                        <th style={{ textAlign: 'right', padding: '4px 8px' }}>Interest</th>
-                        <th style={{ textAlign: 'right', padding: '4px 8px' }}>Principal</th>
-                        <th style={{ textAlign: 'right', padding: '4px 8px' }}>Balance</th>
+                        <th className="table-cell-num" >Payment</th>
+                        <th className="table-cell-num" >Interest</th>
+                        <th className="table-cell-num" >Principal</th>
+                        <th className="table-cell-num" >Balance</th>
                       </tr>
                     </thead>
                     <tbody>
                       {res.schedule.slice(0, 60).map(s => (
                         <tr key={s.month}>
                           <td style={{ padding: '3px 8px', color: 'var(--ink-mute)' }}>{s.month}</td>
-                          <td style={{ padding: '3px 8px', textAlign: 'right' }}>₹{s.payment.toLocaleString('en-IN')}</td>
-                          <td style={{ padding: '3px 8px', textAlign: 'right' }}>₹{s.interest.toLocaleString('en-IN')}</td>
-                          <td style={{ padding: '3px 8px', textAlign: 'right' }}>₹{s.principal.toLocaleString('en-IN')}</td>
-                          <td style={{ padding: '3px 8px', textAlign: 'right' }}>₹{s.balance.toLocaleString('en-IN')}</td>
+                          <td className="table-cell-num-sm" >₹{s.payment.toLocaleString('en-IN')}</td>
+                          <td className="table-cell-num-sm" >₹{s.interest.toLocaleString('en-IN')}</td>
+                          <td className="table-cell-num-sm" >₹{s.principal.toLocaleString('en-IN')}</td>
+                          <td className="table-cell-num-sm" >₹{s.balance.toLocaleString('en-IN')}</td>
                         </tr>
                       ))}
                       {res.schedule.length > 60 && (
@@ -194,15 +194,15 @@ export default function PayoffSimulator() {
               )}
 
               <div className="card" style={{ padding: '16px 18px', borderTop: '2px solid var(--success)' }}>
-                <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 8, letterSpacing: '-0.01em' }}>You save</p>
+                <p className="h-600-12 mb-8" >You save</p>
                 <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
                   <div>
-                    <p style={{ fontSize: 10, color: 'var(--ink-faint)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Time</p>
-                    <p className="fin" style={{ fontSize: 22, fontWeight: 700, color: 'var(--emerald)' }}>{monthsSaved} months</p>
+                    <p className="label-caps-sm" >Time</p>
+                    <p className="fin amt-22-in" >{monthsSaved} months</p>
                   </div>
                   <div>
-                    <p style={{ fontSize: 10, color: 'var(--ink-faint)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Interest</p>
-                    <p className="fin" style={{ fontSize: 22, fontWeight: 700, color: 'var(--emerald)' }}>₹{interestSaved.toLocaleString('en-IN')}</p>
+                    <p className="label-caps-sm" >Interest</p>
+                    <p className="fin amt-22-in" >₹{interestSaved.toLocaleString('en-IN')}</p>
                   </div>
                 </div>
               </div>

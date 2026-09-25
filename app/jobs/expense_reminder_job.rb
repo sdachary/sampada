@@ -14,6 +14,7 @@ class ExpenseReminderJob < ApplicationJob
       return unless expense&.active?
 
       NotificationService.new(expense.user).notify_sip_reminder(expense)
+      expense.log_due_transaction!
       schedule_next(expense)
     end
   end

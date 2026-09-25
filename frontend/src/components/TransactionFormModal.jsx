@@ -65,15 +65,15 @@ export default function TransactionFormModal({ transaction, onClose, onSave }) {
   }
 
   return (
-    <Modal open title={isEdit ? 'Edit Transaction' : 'Add Transaction'} onClose={onClose} style={{ maxWidth: 480 }}>
-      {error && <div style={{ background: 'var(--coral-bg)', color: 'var(--coral)', padding: '10px 14px', borderRadius: 8, fontSize: 13, marginBottom: 16 }}>{error}</div>}
+    <Modal className="max-w-480" open title={isEdit ? 'Edit Transaction' : 'Add Transaction'} onClose={onClose} >
+      {error && <div className="alert-inline" >{error}</div>}
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <form className="col-g14" onSubmit={handleSubmit} >
         <Field label="Description *">
           <input required className="input" value={form.description} onChange={set('description')} placeholder="e.g. Grocery run" />
         </Field>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div className="grid-2" >
           <Field label="Amount (₹) *">
             <input required type="number" min="0" step="0.01" className="input" value={form.amount} onChange={set('amount')} placeholder="0" />
           </Field>
@@ -84,7 +84,7 @@ export default function TransactionFormModal({ transaction, onClose, onSave }) {
           </Field>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div className="grid-2" >
           <Field label="Date *">
             <input required type="date" className="input" value={form.transaction_date} onChange={set('transaction_date')} />
           </Field>
@@ -108,11 +108,11 @@ export default function TransactionFormModal({ transaction, onClose, onSave }) {
         </Field>
 
         <Field label="Notes">
-          <textarea className="input" rows="2" value={form.notes} onChange={set('notes')} placeholder="Optional notes..." style={{ resize: 'vertical' }} />
+          <textarea className="input resize-v" rows="2" value={form.notes} onChange={set('notes')} placeholder="Optional notes..."  />
         </Field>
 
-        <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
-          <button type="submit" disabled={saving} className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }}>
+        <div className="flex-g10-mt8" >
+          <button type="submit" disabled={saving} className="btn btn-primary flex-1-center" >
             {saving ? 'Saving…' : isEdit ? 'Update Transaction' : 'Add Transaction'}
           </button>
           {isEdit && (

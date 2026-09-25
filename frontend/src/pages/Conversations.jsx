@@ -61,10 +61,10 @@ export default function Conversations() {
 
   if (selected) return (
     <div>
-      <p className="page-num" style={{ marginBottom: 4 }}>00<em>14</em> / 016</p>
+      <p className="page-num mb-4" >00<em>14</em> / 016</p>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
         <button onClick={() => { setSelected(null); setMessages([]) }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, padding: 0, color: 'var(--ink-soft)' }}>←</button>
-        <h1 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em' }}>{selected.title}</h1>
+        <h1 className="page-title-no-mb" >{selected.title}</h1>
       </div>
       {selected.summary && <p style={{ fontSize: 12, color: 'var(--ink-mute)', marginBottom: 16 }}>{selected.summary}</p>}
       {messages.length === 0 ? (
@@ -84,33 +84,33 @@ export default function Conversations() {
       <form onSubmit={sendMessage} style={{ display: 'flex', gap: 8, marginTop: 12 }}>
         <input value={draft} onChange={e => setDraft(e.target.value)} placeholder="Ask Sampada about your finances…"
           className="input" style={{ flex: 1, padding: '9px 12px', fontSize: 13 }} />
-        <button type="submit" disabled={!draft.trim() || sending} className="btn btn-primary" style={{ fontSize: 12.5, padding: '7px 16px' }}>Send</button>
+        <button type="submit" disabled={!draft.trim() || sending} className="btn btn-primary btn-sm-ghost" >Send</button>
       </form>
     </div>
   )
 
-  if (loading) return <div><div className="skeleton" style={{ height: 200 }} /></div>
+  if (loading) return <div><div className="skeleton h-200"  /></div>
 
   return (
     <div>
-      <p className="page-num" style={{ marginBottom: 4 }}>00<em>14</em> / 016</p>
-      <h1 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', marginBottom: 4 }}>Conversations</h1>
-      <p style={{ fontSize: 13.5, color: 'var(--ink-mute)', marginBottom: 16 }}>Chat with household members.</p>
+      <p className="page-num mb-4" >00<em>14</em> / 016</p>
+      <h1 className="page-title" >Conversations</h1>
+      <p className="text-13-5-muted-sm" >Chat with household members.</p>
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
         <input value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="New conversation title…"
           className="input" style={{ flex: 1, padding: '9px 12px', fontSize: 13 }} />
-        <button onClick={createConv} disabled={!newTitle.trim()} className="btn btn-primary" style={{ fontSize: 12.5, padding: '7px 16px' }}>Create</button>
+        <button onClick={createConv} disabled={!newTitle.trim()} className="btn btn-primary btn-sm-ghost" >Create</button>
       </div>
 
       {convs.length === 0 ? (
         <div className="empty-state"><span className="emoji">◉</span><p>No conversations yet</p></div>
       ) : convs.map(c => (
         <div key={c.id} className="card" style={{ padding: '14px 18px', marginBottom: 6, cursor: 'pointer' }} onClick={() => openConv(c.id)}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="spread" >
             <div>
-              <p style={{ fontWeight: 600, fontSize: 14, marginBottom: 2 }}>{c.title}</p>
-              {c.summary && <p style={{ fontSize: 12, color: 'var(--ink-mute)' }}>{c.summary}</p>}
+              <p className="row-600-14" >{c.title}</p>
+              {c.summary && <p className="text-12-muted" >{c.summary}</p>}
             </div>
             <span style={{ fontSize: 16, color: 'var(--ink-faint)' }}>→</span>
           </div>

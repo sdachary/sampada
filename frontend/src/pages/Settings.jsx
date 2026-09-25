@@ -158,9 +158,9 @@ export default function Settings() {
 
   return (
     <div>
-      <p className="page-num" style={{ marginBottom: 4 }}>00<em>17</em> / 016</p>
-      <h1 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', marginBottom: 4 }}>Settings</h1>
-      <p style={{ fontSize: 13.5, color: 'var(--ink-mute)', marginBottom: 16 }}>Account preferences and profile.</p>
+      <p className="page-num mb-4" >00<em>17</em> / 016</p>
+      <h1 className="page-title" >Settings</h1>
+      <p className="text-13-5-muted-sm" >Account preferences and profile.</p>
 
       {msg && (
         <div className="card" style={{ padding: '10px 16px', marginBottom: 12, fontSize: 13, color: msg.startsWith('Error') || msg.includes('fail') ? 'var(--coral)' : '#2d7d6a' }}>
@@ -168,9 +168,9 @@ export default function Settings() {
         </div>
       )}
 
-      <div className="card" style={{ padding: '18px 20px', marginBottom: 12 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <p style={{ fontSize: 12, fontWeight: 600, letterSpacing: '-0.01em' }}>Profile</p>
+      <div className="card card-pad-lg" >
+        <div className="spread-mb12" >
+          <p className="h-600-12" >Profile</p>
           <button onClick={() => setEditing(!editing)} className="btn btn-ghost" style={{ fontSize: 11.5, padding: '5px 12px' }}>
             {editing ? 'Cancel' : 'Edit'}
           </button>
@@ -178,7 +178,7 @@ export default function Settings() {
 
         {editing ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div className="grid-2" >
               <Field label="First Name" labelStyle={{ fontSize: 11 }}>
                 <input className="input" value={form.first_name} onChange={set('first_name')} />
               </Field>
@@ -198,24 +198,24 @@ export default function Settings() {
         ) : (
           <div style={{ display: 'grid', gap: 10 }}>
             <div>
-              <p style={{ fontSize: 11, color: 'var(--ink-mute)', marginBottom: 2 }}>Name</p>
-              <p style={{ fontSize: 14, fontWeight: 500 }}>{user?.first_name} {user?.last_name}</p>
+              <p className="text-11-muted mb-2" >Name</p>
+              <p className="h-500-14" >{user?.first_name} {user?.last_name}</p>
             </div>
             <div>
-              <p style={{ fontSize: 11, color: 'var(--ink-mute)', marginBottom: 2 }}>Email</p>
-              <p style={{ fontSize: 14, fontWeight: 500 }}>{user?.email}</p>
+              <p className="text-11-muted mb-2" >Email</p>
+              <p className="h-500-14" >{user?.email}</p>
             </div>
             <div>
-              <p style={{ fontSize: 11, color: 'var(--ink-mute)', marginBottom: 2 }}>Currency</p>
-              <p style={{ fontSize: 14, fontWeight: 500 }}>{user?.currency || 'INR'}</p>
+              <p className="text-11-muted mb-2" >Currency</p>
+              <p className="h-500-14" >{user?.currency || 'INR'}</p>
             </div>
           </div>
         )}
       </div>
 
-      <div className="card" style={{ padding: '18px 20px', marginBottom: 12 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <p style={{ fontSize: 12, fontWeight: 600, letterSpacing: '-0.01em' }}>
+      <div className="card card-pad-lg" >
+        <div className="spread-mb12" >
+          <p className="h-600-12" >
             AI Assistant <span style={{ fontWeight: 400, color: 'var(--ink-mute)' }}>(powered by your key)</span>
           </p>
           <span style={{ fontSize: 10.5, fontWeight: 600, padding: '3px 8px', borderRadius: 999, background: aiConfigured ? '#e5f2ee' : '#f3e8e3', color: aiConfigured ? '#2d7d6a' : '#a25d43', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
@@ -254,21 +254,21 @@ export default function Settings() {
         {aiError && <p style={{ fontSize: 12, color: 'var(--coral)', marginBottom: 8 }}>{aiError}</p>}
       </div>
 
-      <div className="card" style={{ padding: '18px 20px', marginBottom: 12 }}>
-        <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 8, letterSpacing: '-0.01em' }}>Data & Privacy</p>
+      <div className="card card-pad-lg" >
+        <p className="h-600-12 mb-8" >Data & Privacy</p>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <button onClick={handleExport} className="btn btn-ghost" style={{ fontSize: 12.5, padding: '7px 16px' }}>
+          <button onClick={handleExport} className="btn btn-ghost btn-sm-ghost" >
             Download full export
           </button>
-          <a href="/dashboard/privacy" className="btn btn-ghost" style={{ fontSize: 12.5, padding: '7px 16px' }}>
+          <a href="/dashboard/privacy" className="btn btn-ghost btn-sm-ghost" >
             Privacy controls
           </a>
         </div>
       </div>
 
-      <div className="card" style={{ padding: '18px 20px', marginBottom: 12 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <p style={{ fontSize: 12, fontWeight: 600, letterSpacing: '-0.01em' }}>API Keys</p>
+      <div className="card card-pad-lg" >
+        <div className="spread-mb12" >
+          <p className="h-600-12" >API Keys</p>
           <button onClick={() => setShowAdd(!showAdd)} className="btn btn-ghost" style={{ fontSize: 11.5, padding: '5px 12px' }}>
             {showAdd ? 'Cancel' : 'Add'}
           </button>
@@ -289,12 +289,12 @@ export default function Settings() {
         {credentials.length === 0 ? (
           <p style={{ fontSize: 12.5, color: 'var(--ink-mute)' }}>No API keys configured yet.</p>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div className="col-g8" >
             {credentials.map(c => (
               <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: 'var(--bg)', borderRadius: 6 }}>
                 <div>
-                  <p style={{ fontSize: 13, fontWeight: 500 }}>{c.label || PROVIDERS.find(p => p.value === c.provider)?.label || c.provider}</p>
-                  <p style={{ fontSize: 11, color: 'var(--ink-mute)' }}>{c.provider}</p>
+                  <p className="h-500-13" >{c.label || PROVIDERS.find(p => p.value === c.provider)?.label || c.provider}</p>
+                  <p className="text-11-muted" >{c.provider}</p>
                 </div>
                 <button onClick={() => deleteCredential(c.id)} className="btn" style={{ fontSize: 11, padding: '4px 10px', background: 'transparent', border: '1px solid var(--line)', color: 'var(--coral)' }}>Remove</button>
               </div>
@@ -305,8 +305,8 @@ export default function Settings() {
 
       {pushSupported && (
         <div className="card" style={{ padding: '18px 20px', borderLeft: '3px solid var(--teal)' }}>
-          <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 4 }}>Push Notifications</p>
-          <p style={{ fontSize: 12, color: 'var(--ink-mute)', marginBottom: 8 }}>Get notified about debt reminders and SIP alerts.</p>
+          <p className="h-600-12 mb-4" >Push Notifications</p>
+          <p className="text-12-muted mb-8" >Get notified about debt reminders and SIP alerts.</p>
           <button onClick={togglePush} className="btn" style={{
             fontSize: 12.5, padding: '7px 16px',
             background: pushSubscribed ? 'transparent' : 'var(--teal)',
@@ -320,7 +320,7 @@ export default function Settings() {
 
       <div className="card" style={{ padding: '18px 20px', borderLeft: '3px solid var(--ink-faint)' }}>
         <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 4, letterSpacing: '-0.01em' }}>Logout</p>
-        <p style={{ fontSize: 12, color: 'var(--ink-mute)', marginBottom: 8 }}>Sign out of your account.</p>
+        <p className="text-12-muted mb-8" >Sign out of your account.</p>
         <button onClick={() => { logout(); navigate('/') }}
           className="btn" style={{ fontSize: 12.5, padding: '7px 16px', background: 'transparent', border: '1px solid var(--line)', color: 'var(--coral)' }}>
           Sign out

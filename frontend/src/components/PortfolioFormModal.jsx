@@ -52,14 +52,14 @@ export default function PortfolioFormModal({ portfolio, onClose, onSave }) {
 
   return (
     <Modal open title={isEdit ? 'Edit Portfolio' : 'Add Portfolio'} onClose={onClose} style={{ maxWidth: 460 }}>
-      {error && <div style={{ background: 'var(--coral-bg)', color: 'var(--coral)', padding: '10px 14px', borderRadius: 8, fontSize: 13, marginBottom: 16 }}>{error}</div>}
+      {error && <div className="alert-inline" >{error}</div>}
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <form className="col-g14" onSubmit={handleSubmit} >
         <Field label="Name *">
           <input required className="input" value={form.name} onChange={set('name')} placeholder="e.g. Long-term Equity" />
         </Field>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div className="grid-2" >
           <Field label="Goal">
             <select className="input" value={form.goal} onChange={set('goal')}>
               {GOALS.map(g => <option key={g} value={g}>{g.charAt(0).toUpperCase() + g.slice(1)}</option>)}
@@ -70,8 +70,8 @@ export default function PortfolioFormModal({ portfolio, onClose, onSave }) {
           </Field>
         </div>
 
-        <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
-          <button type="submit" disabled={saving} className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }}>
+        <div className="flex-g10-mt8" >
+          <button type="submit" disabled={saving} className="btn btn-primary flex-1-center" >
             {saving ? 'Saving…' : isEdit ? 'Update Portfolio' : 'Add Portfolio'}
           </button>
           {isEdit && (

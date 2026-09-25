@@ -57,8 +57,8 @@ export default function Transactions() {
 
   if (loading) return (
     <div>
-      <div className="skeleton" style={{ width: 120, height: 22, marginBottom: 6 }} />
-      <div className="skeleton" style={{ width: 200, height: 14, marginBottom: 20 }} />
+      <div className="skeleton skeleton-title"  />
+      <div className="skeleton skeleton-wide"  />
       {[1,2,3].map(i => <div key={i} className="skeleton" style={{ height: 76, marginBottom: 8, borderRadius: 'var(--radius)' }} />)}
     </div>
   )
@@ -69,16 +69,16 @@ export default function Transactions() {
 
   return (
     <div>
-      <p className="page-num" style={{ marginBottom: 4 }}>00<em>6</em> / 016</p>
-      <h1 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', marginBottom: 4 }}>Transactions</h1>
-      <p style={{ fontSize: 13.5, color: 'var(--ink-mute)', marginBottom: 16 }}>Track every rupee in and out.</p>
+      <p className="page-num mb-4" >00<em>6</em> / 016</p>
+      <h1 className="page-title" >Transactions</h1>
+      <p className="text-13-5-muted-sm" >Track every rupee in and out.</p>
 
       <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
         {monthTotals.map(m => (
           <div key={m.month} className="card" style={{ flex: '1 0 160px', padding: '14px 16px' }}>
             <p style={{ fontSize: 11, color: 'var(--ink-mute)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{m.label}</p>
-            <p className="fin" style={{ fontSize: 15, fontWeight: 600, color: 'var(--emerald)' }}>+₹{(+m.income).toLocaleString('en-IN')}</p>
-            <p className="fin" style={{ fontSize: 15, fontWeight: 600, color: 'var(--coral)' }}>-₹{(+m.expenses).toLocaleString('en-IN')}</p>
+            <p className="fin amt-in-15" >+₹{(+m.income).toLocaleString('en-IN')}</p>
+            <p className="fin amt-out-15" >-₹{(+m.expenses).toLocaleString('en-IN')}</p>
             <p className="fin" style={{ fontSize: 13, fontWeight: 500, color: +m.net >= 0 ? 'var(--emerald)' : 'var(--coral)' }}>=₹{(+m.net).toLocaleString('en-IN')}</p>
           </div>
         ))}
@@ -103,7 +103,7 @@ export default function Transactions() {
       {importResult && (
         <div className="card" style={{ padding: '10px 16px', marginBottom: 12, fontSize: 12.5, borderLeft: `3px solid ${importResult.error ? 'var(--coral)' : 'var(--emerald)'}` }}>
           {importResult.error
-            ? <span style={{ color: 'var(--coral)' }}>Import failed: {importResult.error}</span>
+            ? <span className="text-coral" >Import failed: {importResult.error}</span>
             : <span style={{ color: 'var(--ink-soft)' }}>
                 Imported <b>{importResult.imported}</b> transaction{importResult.imported === 1 ? '' : 's'}
                 {importResult.errors?.length > 0 && ` · ${importResult.errors.length} skipped`}
@@ -115,22 +115,22 @@ export default function Transactions() {
         <div className="empty-state">
           <span className="emoji">↗</span>
           <p>No transactions yet</p>
-          <p style={{ fontSize: 12, color: 'var(--ink-faint)' }}>Start tracking your spending to see patterns emerge.</p>
+          <p className="text-12-faint" >Start tracking your spending to see patterns emerge.</p>
           <button onClick={() => openModal(null)} disabled={!isOnline} className="btn btn-primary"
             style={{ marginTop: 12, opacity: isOnline ? 1 : 0.5, cursor: isOnline ? 'pointer' : 'not-allowed' }}>+ Add Transaction</button>
         </div>
       ) : (
         <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
-          <div className="card" style={{ padding: '10px 16px' }}>
-            <p style={{ fontSize: 10, color: 'var(--ink-faint)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Income</p>
-            <p className="fin" style={{ fontSize: 16, fontWeight: 600, color: 'var(--emerald)' }}>₹{totalIncome.toLocaleString('en-IN')}</p>
+          <div className="card card-pad-10-16" >
+            <p className="label-caps-sm" >Total Income</p>
+            <p className="fin amt-in" >₹{totalIncome.toLocaleString('en-IN')}</p>
           </div>
-          <div className="card" style={{ padding: '10px 16px' }}>
-            <p style={{ fontSize: 10, color: 'var(--ink-faint)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Expenses</p>
-            <p className="fin" style={{ fontSize: 16, fontWeight: 600, color: 'var(--coral)' }}>₹{totalExpenses.toLocaleString('en-IN')}</p>
+          <div className="card card-pad-10-16" >
+            <p className="label-caps-sm" >Total Expenses</p>
+            <p className="fin amt-out" >₹{totalExpenses.toLocaleString('en-IN')}</p>
           </div>
-          <div className="card" style={{ padding: '10px 16px' }}>
-            <p style={{ fontSize: 10, color: 'var(--ink-faint)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Net</p>
+          <div className="card card-pad-10-16" >
+            <p className="label-caps-sm" >Net</p>
             <p className="fin" style={{ fontSize: 16, fontWeight: 600, color: totalIncome - totalExpenses >= 0 ? 'var(--emerald)' : 'var(--coral)' }}>₹{(totalIncome - totalExpenses).toLocaleString('en-IN')}</p>
           </div>
         </div>
@@ -139,9 +139,9 @@ export default function Transactions() {
       {txns.map(t => (
         <div key={t.id} className="card" style={{ padding: '14px 18px', marginBottom: 6, borderLeft: `3px solid ${t.transaction_type === 'expense' ? 'var(--coral)' : 'var(--emerald)'}` }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div style={{ flex: 1 }}>
-              <p style={{ fontWeight: 600, fontSize: 14, marginBottom: 2 }}>{t.description}</p>
-              <p style={{ fontSize: 11.5, color: 'var(--ink-mute)' }}>
+            <div className="flex-1" >
+              <p className="row-600-14" >{t.description}</p>
+              <p className="text-11-5-muted" >
                 {t.category_name && <span style={{ color: 'var(--ink-soft)' }}>{t.category_name} · </span>}
                 {t.transaction_date} {t.merchant && <span>· {t.merchant}</span>}
                 {t.recurring && <span className="tag" style={{ marginLeft: 6, fontSize: 9 }}>recurring</span>}

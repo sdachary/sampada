@@ -105,9 +105,9 @@ export default function Privacy() {
 
   return (
     <div>
-      <p className="page-num" style={{ marginBottom: 4 }}>00<em>18</em> / 016</p>
-      <h1 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', marginBottom: 4 }}>Privacy</h1>
-      <p style={{ fontSize: 13.5, color: 'var(--ink-mute)', marginBottom: 16 }}>Your data, your control (DPDP compliance).</p>
+      <p className="page-num mb-4" >00<em>18</em> / 016</p>
+      <h1 className="page-title" >Privacy</h1>
+      <p className="text-13-5-muted-sm" >Your data, your control (DPDP compliance).</p>
 
       {msg && (
         <div className="card" style={{ padding: '10px 16px', marginBottom: 12, fontSize: 13, color: isErr ? 'var(--coral)' : 'var(--emerald)' }}>
@@ -115,10 +115,10 @@ export default function Privacy() {
         </div>
       )}
 
-      <div className="card" style={{ padding: '18px 20px', marginBottom: 12 }}>
+      <div className="card card-pad-lg" >
         <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 10, letterSpacing: '-0.01em' }}>Consent Management</p>
         {features.length === 0 && (
-          <p style={{ fontSize: 12, color: 'var(--ink-mute)' }}>Loading…</p>
+          <p className="text-12-muted" >Loading…</p>
         )}
         {features.map(f => (
           <div key={f} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid var(--line-soft)' }}>
@@ -131,9 +131,9 @@ export default function Privacy() {
         ))}
       </div>
 
-      <div className="card" style={{ padding: '18px 20px', marginBottom: 12 }}>
-        <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 6, letterSpacing: '-0.01em' }}>Data & Erasure</p>
-        <p style={{ fontSize: 12, color: 'var(--ink-mute)', marginBottom: 10 }}>
+      <div className="card card-pad-lg" >
+        <p className="h-600-12 mb-6" >Data & Erasure</p>
+        <p className="text-12-muted mb-10" >
           Request deletion of your account and all associated data. You can download everything first with a full export,
           then cancel within 48 hours.
         </p>
@@ -149,10 +149,10 @@ export default function Privacy() {
 
       {pending.length > 0 && (
         <div className="card" style={{ padding: '14px 18px', marginBottom: 12, borderLeft: '3px solid #d4a017' }}>
-          <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 6 }}>Pending Erasure Requests</p>
+          <p className="h-600-12 mb-6" >Pending Erasure Requests</p>
           {pending.map(e => (
             <div key={e.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, padding: '6px 0', borderBottom: '1px solid var(--line-soft)' }}>
-              <div style={{ fontSize: 11.5, color: 'var(--ink-mute)' }}>
+              <div className="text-11-5-muted" >
                 <p>Deletes on {new Date(e.scheduled_for).toLocaleString()}</p>
                 <p>Reference <code style={{ fontSize: 11, background: 'var(--paper-warm)', padding: '1px 6px', borderRadius: 4 }}>{e.cancel_token}</code></p>
               </div>
@@ -164,18 +164,18 @@ export default function Privacy() {
         </div>
       )}
 
-      <div className="card" style={{ padding: '18px 20px', marginBottom: 12 }}>
-        <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 6, letterSpacing: '-0.01em' }}>Raise a Grievance</p>
-        <p style={{ fontSize: 12, color: 'var(--ink-mute)', marginBottom: 10 }}>
+      <div className="card card-pad-lg" >
+        <p className="h-600-12 mb-6" >Raise a Grievance</p>
+        <p className="text-12-muted mb-10" >
           Anything we got wrong with your data? We respond within 72 hours and resolve within 90 days. You can also write
-          to our Grievance Officer at <a href={`mailto:${DPO_EMAIL}`} style={{ color: 'var(--coral)' }}>{DPO_EMAIL}</a>.
+          to our Grievance Officer at <a className="text-coral" href={`mailto:${DPO_EMAIL}`} >{DPO_EMAIL}</a>.
         </p>
         {reference && (
           <p style={{ fontSize: 12, color: 'var(--emerald)', marginBottom: 10 }}>
             Reference for your last grievance: <strong>{reference}</strong>
           </p>
         )}
-        <form onSubmit={submitGrievance} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <form className="col-g10" onSubmit={submitGrievance} >
           <select className="input" required value={grievance.grievance_type}
             onChange={e => setGrievance(g => ({ ...g, grievance_type: e.target.value }))}>
             <option value="">What is this about?</option>

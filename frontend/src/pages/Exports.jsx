@@ -34,9 +34,9 @@ export default function Exports() {
 
   return (
     <div>
-      <p className="page-num" style={{ marginBottom: 4 }}>00<em>16</em> / 016</p>
-      <h1 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', marginBottom: 4 }}>Exports</h1>
-      <p style={{ fontSize: 13.5, color: 'var(--ink-mute)', marginBottom: 16 }}>Download your data as CSV or JSON.</p>
+      <p className="page-num mb-4" >00<em>16</em> / 016</p>
+      <h1 className="page-title" >Exports</h1>
+      <p className="text-13-5-muted-sm" >Download your data as CSV or JSON.</p>
 
       {status && (
         <div className="card" style={{ padding: '10px 16px', marginBottom: 12, fontSize: 13, color: status.startsWith('Error') ? 'var(--coral)' : 'var(--emerald)' }}>
@@ -50,7 +50,7 @@ export default function Exports() {
             <div>
               <p style={{ fontWeight: 600, fontSize: 14, textTransform: 'capitalize' }}>{type.replace(/_/g, ' ')}</p>
             </div>
-            <div style={{ display: 'flex', gap: 6 }}>
+            <div className="flex-g6" >
               {formats.map(f => (
                 <button key={f} onClick={() => doExport(type, f)}
                   className="btn btn-ghost" style={{ fontSize: 12, padding: '5px 14px', textTransform: 'uppercase' }}>

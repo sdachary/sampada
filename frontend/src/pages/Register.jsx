@@ -87,7 +87,7 @@ export default function Register() {
             Add a Gemini, Grok, or OpenAI-compatible API key to chat with your finances. Skip to start with it disabled.
           </p>
           {aiMsg && <p style={{ fontSize: 12, color: 'var(--coral)', marginBottom: 10 }}>{aiMsg}</p>}
-          <form onSubmit={saveAi} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <form className="col-g10" onSubmit={saveAi} >
             <select className="input" value={ai.provider} onChange={e => setAi(a => ({ ...a, provider: e.target.value }))}>
               <option value="">Select provider…</option>
               <option value="openai">OpenAI</option>
@@ -105,9 +105,9 @@ export default function Register() {
           </form>
         </div>
       )}
-      foot={<><span>Already have one? </span><Link to="/login" style={{ color: 'var(--coral)' }}>Sign in</Link></>}
+      foot={<><span>Already have one? </span><Link className="text-coral" to="/login" >Sign in</Link></>}
     >
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <form className="col-g14" onSubmit={handleSubmit} >
         <input
           type="text" name="website" value={website} onChange={e => setWebsite(e.target.value)}
           tabIndex={-1} autoComplete="off" aria-hidden="true"
@@ -118,8 +118,8 @@ export default function Register() {
           <input type="text" placeholder="Last name" autoComplete="family-name" value={form.last_name} onChange={set('last_name')} className="input" />
         </div>
         <input type="email" placeholder="Email" autoComplete="email" value={form.email} onChange={set('email')} className="input" required />
-        <div style={{ position: 'relative' }}>
-          <input type={showPw ? 'text' : 'password'} placeholder="Password" autoComplete="new-password" minLength={MIN_PASSWORD_LENGTH} value={form.password} onChange={set('password')} className="input" required style={{ width: '100%' }} />
+        <div className="pos-rel" >
+          <input type={showPw ? 'text' : 'password'} placeholder="Password" autoComplete="new-password" minLength={MIN_PASSWORD_LENGTH} value={form.password} onChange={set('password')} className="input w-100" required  />
           <PwToggle show={showPw} setShow={setShowPw} />
         </div>
         {form.password && (
@@ -135,11 +135,11 @@ export default function Register() {
             <p style={{ fontSize: 11.5, color: 'var(--ink-mute)', marginTop: 5 }}>Use at least {MIN_PASSWORD_LENGTH} characters with a mix of uppercase, lowercase, numbers, and symbols.</p>
           </div>
         )}
-        <div style={{ position: 'relative' }}>
-          <input type={showConfirm ? 'text' : 'password'} placeholder="Confirm password" autoComplete="new-password" minLength={MIN_PASSWORD_LENGTH} value={form.password_confirmation} onChange={set('password_confirmation')} className="input" required style={{ width: '100%' }} />
+        <div className="pos-rel" >
+          <input type={showConfirm ? 'text' : 'password'} placeholder="Confirm password" autoComplete="new-password" minLength={MIN_PASSWORD_LENGTH} value={form.password_confirmation} onChange={set('password_confirmation')} className="input w-100" required  />
           <PwToggle show={showConfirm} setShow={setShowConfirm} />
         </div>
-        <button type="submit" disabled={submitting} className="btn btn-primary" style={{ justifyContent: 'center', marginTop: 6 }}>
+        <button type="submit" disabled={submitting} className="btn btn-primary center-h" >
           {submitting ? 'Creating account…' : 'Create account'}
         </button>
       </form>

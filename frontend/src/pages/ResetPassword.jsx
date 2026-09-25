@@ -52,18 +52,18 @@ export default function ResetPassword() {
       title="Set new password"
       subtitle="Enter your new password below."
       error={error}
-      foot={<Link to="/login" style={{ color: 'var(--coral)' }}>Back to sign in</Link>}
+      foot={<Link className="text-coral" to="/login" >Back to sign in</Link>}
     >
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-        <div style={{ position: 'relative' }}>
+      <form className="col-g14" onSubmit={handleSubmit} >
+        <div className="pos-rel" >
           <input type={showPw ? 'text' : 'password'} placeholder="New password" autoComplete="new-password" minLength={8} value={password} onChange={e => setPassword(e.target.value)} className="input" required style={{ width: '100%' }} />
           <PwToggle show={showPw} setShow={setShowPw} />
         </div>
-        <div style={{ position: 'relative' }}>
+        <div className="pos-rel" >
           <input type={showConfirm ? 'text' : 'password'} placeholder="Confirm password" autoComplete="new-password" minLength={8} value={passwordConfirmation} onChange={e => setPasswordConfirmation(e.target.value)} className="input" required style={{ width: '100%' }} />
           <PwToggle show={showConfirm} setShow={setShowConfirm} />
         </div>
-        <button type="submit" disabled={submitting} className="btn btn-primary" style={{ justifyContent: 'center', marginTop: 6 }}>
+        <button type="submit" disabled={submitting} className="btn btn-primary center-h" >
           {submitting ? 'Resetting…' : 'Reset password'}
         </button>
       </form>

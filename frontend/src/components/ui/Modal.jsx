@@ -33,8 +33,8 @@ export default function Modal({ open, onClose, title, children, style }) {
         border: '1px solid var(--line)', boxShadow: '0 24px 80px rgba(21,20,15,0.2)',
         ...style,
       }} onClick={e => e.stopPropagation()}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <h2 style={{ fontSize: 18, fontWeight: 600 }}>{title}</h2>
+        <div className="spread-mb20" >
+          <h2 className="h-600-18" >{title}</h2>
           <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: 'var(--ink-mute)', padding: 4 }}>✕</button>
         </div>
         {children}

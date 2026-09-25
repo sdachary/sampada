@@ -161,12 +161,12 @@ Configure under **Settings → AI Assistant** in the app.
 
 ## Architecture
 
-Sampada is a **Rails 7.2 API-only backend** + **React 19/Vite SPA frontend**, deployed as a hosted SaaS.
+Sampada is a **Rails 8.1 API-only backend** + **React 19/Vite SPA frontend**, deployed as a hosted SaaS.
 
 | Layer | Stack |
 |---|---|
-| **Frontend** | React 19, Vite, Tailwind CSS, React Router, Recharts (charts) |
-| **Backend** | Ruby on Rails 7.2 (API-only), PostgreSQL 16, Redis, Sidekiq |
+| **Frontend** | React 19, Vite, React Router, Recharts (charts) |
+| **Backend** | Ruby on Rails 8.1 (API-only), PostgreSQL 16, Redis, Sidekiq |
 | **Background jobs** | Sidekiq + Sidekiq-Cron (market data, exchange rates, maintenance) |
 | **Auth** | Better-Auth (shared identity service, JWT verification) |
 | **AI** | Modular `Ai::` namespace, pluggable providers (Ollama, OpenRouter, etc.), BYOK |

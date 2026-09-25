@@ -39,18 +39,18 @@ export default function Portfolios() {
 
   return (
     <div>
-      <p className="page-num" style={{ marginBottom: 4 }}>00<em>9</em> / 016</p>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+      <p className="page-num mb-4" >00<em>9</em> / 016</p>
+      <div className="spread-mb16" >
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em' }}>Portfolios</h1>
-          <p style={{ fontSize: 13.5, color: 'var(--ink-mute)' }}>All your investments, one view.</p>
+          <h1 className="page-title-no-mb" >Portfolios</h1>
+          <p className="text-13-5-muted" >All your investments, one view.</p>
         </div>
         <button onClick={() => setModal('new')} className="btn btn-primary" style={{ fontSize: 12.5, padding: '7px 16px' }}>+ Add</button>
       </div>
 
       {portfolios.length > 0 && (
-        <div className="card" style={{ padding: '14px 18px', marginBottom: 16 }}>
-          <span style={{ fontSize: 10, color: 'var(--ink-faint)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Portfolio Value</span>
+        <div className="card card-pad-mb16" >
+          <span className="label-caps-sm" >Total Portfolio Value</span>
           <p className="fin" style={{ fontSize: 22, fontWeight: 600, color: 'var(--emerald)' }}>₹{totalValue.toLocaleString('en-IN')}</p>
           {totalCost > 0 && (
             <p style={{ fontSize: 12, color: totalGain >= 0 ? 'var(--emerald)' : 'var(--coral)', marginTop: 2 }}>
@@ -64,7 +64,7 @@ export default function Portfolios() {
         <div className="empty-state">
           <span className="emoji">◐</span>
           <p>No portfolios yet</p>
-          <p style={{ fontSize: 12, color: 'var(--ink-faint)' }}>Track your mutual funds, stocks, and other investments here.</p>
+          <p className="text-12-faint" >Track your mutual funds, stocks, and other investments here.</p>
           <button onClick={() => setModal('new')} className="btn btn-primary" style={{ marginTop: 12 }}>+ Add Portfolio</button>
         </div>
       ) : portfolios.map(p => {
@@ -76,11 +76,11 @@ export default function Portfolios() {
         const portGain = portValue - portCost
 
         return (
-          <div key={p.id} className="card" style={{ padding: '16px 18px', marginBottom: 12 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+          <div key={p.id} className="card card-pad-lg" >
+            <div className="spread-top-mb8" >
               <div>
-                <p style={{ fontWeight: 600, fontSize: 15, marginBottom: 2 }}>{p.name}</p>
-                <p style={{ fontSize: 11.5, color: 'var(--ink-mute)' }}>
+                <p className="row-600-15" >{p.name}</p>
+                <p className="text-11-5-muted" >
                   {p.goal && <span style={{ textTransform: 'capitalize' }}>{p.goal}</span>}
                   {p.risk_tolerance != null && <span> · risk {p.risk_tolerance}/10</span>}
                 </p>
@@ -89,7 +89,7 @@ export default function Portfolios() {
                 <p className="fin" style={{ fontFamily: 'var(--sans)', fontSize: 18, fontWeight: 600, color: 'var(--emerald)' }}>
                   ₹{(+p.total_value || 0).toLocaleString('en-IN')}
                 </p>
-                <div style={{ display: 'flex', gap: 6 }}>
+                <div className="flex-g6" >
                   <button onClick={() => setModal(p)} style={{ fontSize: 10.5, padding: '2px 8px', background: 'none', border: '1px solid var(--line)', borderRadius: 999, color: 'var(--ink-soft)', cursor: 'pointer' }}>Edit</button>
                   <button onClick={() => { if (confirm(`Delete "${p.name}"?`)) { api.request(`/api/v1/portfolios/${p.id}`, { method: 'DELETE' }).then(fetch).catch(e => alert(e.message)) } }}
                     style={{ fontSize: 10.5, padding: '2px 8px', background: 'none', border: '1px solid var(--line)', borderRadius: 999, color: 'var(--ink-faint)', cursor: 'pointer' }}>Delete</button>
@@ -100,7 +100,7 @@ export default function Portfolios() {
             {sectorNames.length > 0 && (
               <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 }}>
                 {sectorNames.map(s => (
-                  <span key={s} className="tag" style={{ fontSize: 10 }}>{s} {sectors[s]}%</span>
+                  <span key={s} className="tag fs-10" >{s} {sectors[s]}%</span>
                 ))}
               </div>
             )}
@@ -128,7 +128,7 @@ export default function Portfolios() {
                     return (
                       <div key={i.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 8px', borderRadius: 6, background: 'rgba(0,0,0,0.02)', fontSize: 12 }}>
                         <div style={{ minWidth: 0 }}>
-                          <span style={{ fontWeight: 500 }}>{i.symbol}</span>
+                          <span className="fw-500" >{i.symbol}</span>
                           {i.name && <span style={{ color: 'var(--ink-faint)', marginLeft: 4, fontSize: 10 }}>{i.name}</span>}
                         </div>
                         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>

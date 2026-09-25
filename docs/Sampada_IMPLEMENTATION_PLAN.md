@@ -1,6 +1,8 @@
 # Sampada — Implementation Plan
 
-**Generated from an architecture discovery session grounded in the actual `sdachary/sampada` repository (not assumptions), plus the AcharyaLab infrastructure map. This document is the execution guide for Claude Code / Opencode.**
+> **ARCHIVED 2026-09-25.** One-shot execution plan predating the Rails 8.1 API + React SPA split. Live source of truth: `docs/CONTEXT.md`, `docs/CHANGELOG.md`, and the code. Kept for provenance only — do not implement from this.
+
+> ~~**Generated from an architecture discovery session grounded in the actual `sdachary/sampada` repository (not assumptions), plus the AcharyaLab infrastructure map. This document is the execution guide for Claude Code / Opencode.**~~
 
 ---
 

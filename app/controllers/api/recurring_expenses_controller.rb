@@ -46,8 +46,8 @@ module Api
     def expense_json(e)
       cc = e.currency_code.presence || 'INR'
       { id: e.id, name: e.name, amount: e.amount.to_f, frequency: e.frequency,
-        next_due_date: e.next_due_date, next_due_days: nil,
-        monthly_amount: e.amount.to_f, category: e.category,
+        next_due_date: e.next_due_date, next_due_days: e.next_due_days,
+        monthly_amount: e.monthly_amount, category: e.category,
         auto_debit: e.auto_debit, active: e.active, notes: e.notes,
         created_at: e.created_at, currency_code: cc,
         currency_symbol: Currency.symbol_for(cc) }

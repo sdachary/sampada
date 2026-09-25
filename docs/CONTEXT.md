@@ -126,6 +126,7 @@ See `.env.example` for the full annotated set. Required: `SECRET_KEY_BASE`, `POS
 
 ## Session History
 
+- **2026-09-25**: v2.6.0 cleanup pass — recurring expense auto-log on due date (unique backfill + `log_due_transaction!`, idempotent via ExpenseReminderJob), net-worth overview (assets/liabilities in ledger snapshot + Dashboard hero breakdown), budget-health strip on Transactions; README refined; auth forms (PasswordField/Honeypot) + 6 form modals deduped (`useFormModal`); inline-style sweep → 532 elements moved to index.css utility classes; controller `monthly_amount` bug fixed; full backend suite green (413 examples) via podman test env. Docs MASTER_SPEC + IMPLEMENTATION_PLAN archived.
 - **2026-09-12**: Docs sweep — merged `docs/MAP.md` + `docs/CONVENTIONS.md` into this file, dropped kubera-era / superseded docs (`frontend/DESIGN-PLAN.md`, `docs/latency-verification-2026-08-14.md`, `docs/superpowers/specs/2026-05-15-kubera-optimization-design.md`), refreshed README/ARCHITECTURE to Rails 8.1 API-only + React SPA reality.
 - **2026-09-11**: SPA legal pages (DPDP privacy + ToS) + cookie banner added (`frontend/public/`); landing footer links.
 - **2026-09-05 → 09-11**: UAT (SAMPADA_UAT_TRACKER.md) — SEC-01/02/03/04, REL-01 Verified; SEC-05/06 fixed; Rails 7.2 → 8.1.3.1 upgrade (CI green).

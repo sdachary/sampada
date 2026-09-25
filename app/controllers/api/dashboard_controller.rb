@@ -36,7 +36,10 @@ module Api
                        base_currency: base_currency,
                        currency_symbol: Currency.symbol_for(base_currency),
                        recent_snapshots: user.net_worth_snapshots.recent.limit(12).map do |s|
-                         { date: s.snapshot_date, net_worth: s.net_worth.to_f, currency_code: s.currency_code }
+                         { date: s.snapshot_date, net_worth: s.net_worth.to_f,
+                           total_assets: s.total_assets.to_f,
+                           total_liabilities: s.total_liabilities.to_f,
+                           currency_code: s.currency_code }
                        end
                      })
     end

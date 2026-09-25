@@ -307,7 +307,7 @@ export default function Layout() {
           background: 'var(--ink)', color: 'var(--paper)', borderRadius: 12,
           boxShadow: '0 10px 30px rgba(21,20,15,0.25)', maxWidth: 'calc(100vw - 32px)',
         }}>
-          <span style={{ fontSize: 13, fontWeight: 500 }}>Set up Sampada to see your full money picture.</span>
+          <span className="h-500-13" >Set up Sampada to see your full money picture.</span>
           <Link to="/dashboard/onboarding"
             style={{ padding: '6px 14px', borderRadius: 999, background: 'var(--coral)', color: '#fff', fontSize: 13, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>
             Finish setting up

@@ -70,9 +70,9 @@ export default function PayoffPlanModal({ plan, onClose, onSave }) {
 
   return (
     <Modal open title={isEdit ? 'Edit Plan' : 'New Payoff Plan'} onClose={onClose} style={{ maxWidth: 520 }}>
-      {error && <div style={{ background: 'var(--coral-bg)', color: 'var(--coral)', padding: '10px 14px', borderRadius: 8, fontSize: 13, marginBottom: 16 }}>{error}</div>}
+      {error && <div className="alert-inline" >{error}</div>}
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <form className="col-g14" onSubmit={handleSubmit} >
         <Field label="Plan Name *">
           <input required className="input" value={form.name} onChange={set('name')} placeholder="e.g. Get Debt Free 2027" />
         </Field>
@@ -89,7 +89,7 @@ export default function PayoffPlanModal({ plan, onClose, onSave }) {
         </Field>
 
         <Field label="Select Debts">
-          {debts.length === 0 && <p style={{ fontSize: 12, color: 'var(--ink-faint)' }}>No debts found. Add debts first.</p>}
+          {debts.length === 0 && <p className="text-12-faint" >No debts found. Add debts first.</p>}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 200, overflowY: 'auto' }}>
             {debts.map(d => (
               <label key={d.id} style={{
@@ -99,7 +99,7 @@ export default function PayoffPlanModal({ plan, onClose, onSave }) {
                 border: `1px solid ${form.debt_ids.includes(d.id) ? 'var(--coral)' : 'var(--line-soft)'}`,
               }}>
                 <input type="checkbox" checked={form.debt_ids.includes(d.id)} onChange={() => toggleDebt(d.id)} style={{ accentColor: 'var(--coral)' }} />
-                <span style={{ flex: 1 }}>{d.name}</span>
+                <span className="flex-1" >{d.name}</span>
                 <span className="fin" style={{ color: 'var(--ink-mute)', fontSize: 12 }}>₹{(+d.amount || 0).toLocaleString('en-IN')} @ {d.interest_rate}%</span>
               </label>
             ))}
@@ -112,8 +112,8 @@ export default function PayoffPlanModal({ plan, onClose, onSave }) {
           </div>
         )}
 
-        <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
-          <button type="submit" disabled={saving || form.debt_ids.length === 0} className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }}>
+        <div className="flex-g10-mt8" >
+          <button type="submit" disabled={saving || form.debt_ids.length === 0} className="btn btn-primary flex-1-center" >
             {saving ? 'Saving…' : isEdit ? 'Update Plan' : 'Create Plan'}
           </button>
           {isEdit && (

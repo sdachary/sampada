@@ -87,7 +87,7 @@ export default function DebtDetail() {
       <div className="skeleton" style={{ width: 200, height: 24, marginBottom: 8 }} />
       <div className="skeleton" style={{ width: 140, height: 14, marginBottom: 20 }} />
       <div className="skeleton" style={{ height: 200, marginBottom: 10 }} />
-      <div className="skeleton" style={{ height: 200 }} />
+      <div className="skeleton h-200"  />
     </div>
   )
 
@@ -95,7 +95,7 @@ export default function DebtDetail() {
     <div className="empty-state">
       <span className="emoji">○</span>
       <p>Debt not found</p>
-      <Link to="/dashboard/debts" className="btn btn-ghost" style={{ marginTop: 12 }}>Back to debts</Link>
+      <Link to="/dashboard/debts" className="btn btn-ghost mt-12" >Back to debts</Link>
     </div>
   )
 
@@ -122,7 +122,7 @@ export default function DebtDetail() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+      <div className="spread-mb20" >
         <Link to="/dashboard/debts" style={{ fontSize: 12.5, color: 'var(--ink-mute)', display: 'flex', alignItems: 'center', gap: 4 }}>
           ← Back to Debts
         </Link>
@@ -135,11 +135,11 @@ export default function DebtDetail() {
       </div>
 
       {/* header */}
-      <div className="card" style={{ padding: '20px 24px', marginBottom: 16 }}>
+      <div className="card card-pad-lg card-pad-mb16" >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
           <div>
             <h1 style={{ fontSize: 22, fontWeight: 600, letterSpacing: '-0.02em', marginBottom: 4 }}>{debt.name}</h1>
-            <p style={{ fontSize: 13, color: 'var(--ink-mute)' }}>
+            <p className="text-13-muted" >
               {debt.category ? debt.category.charAt(0).toUpperCase() + debt.category.slice(1) : 'Loan'}
               {debt.interest_rate ? ` · ${debt.interest_rate}% APR` : ''}
               {debt.currency_symbol ? ` · ${debt.currency_code || 'INR'}` : ''}
@@ -151,9 +151,9 @@ export default function DebtDetail() {
         </div>
 
         <div style={{ display: 'flex', gap: 24, marginBottom: 12, flexWrap: 'wrap' }}>
-          <div><span style={{ fontSize: 10, color: 'var(--ink-faint)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total</span><p className="fin" style={{ fontSize: 20, fontWeight: 700 }}>{debt.currency_symbol}₹{debt.amount.toLocaleString('en-IN', INTL)}</p></div>
-          <div><span style={{ fontSize: 10, color: 'var(--ink-faint)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Paid</span><p className="fin" style={{ fontSize: 20, fontWeight: 700, color: 'var(--emerald)' }}>{debt.currency_symbol}₹{debt.paid_amount.toLocaleString('en-IN', INTL)}</p></div>
-          <div><span style={{ fontSize: 10, color: 'var(--ink-faint)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Remaining</span><p className="fin" style={{ fontSize: 20, fontWeight: 700, color: 'var(--coral)' }}>{debt.currency_symbol}₹{Math.round(remaining).toLocaleString('en-IN', INTL)}</p></div>
+          <div><span className="label-caps-sm" >Total</span><p className="fin" style={{ fontSize: 20, fontWeight: 700 }}>{debt.currency_symbol}₹{debt.amount.toLocaleString('en-IN', INTL)}</p></div>
+          <div><span className="label-caps-sm" >Paid</span><p className="fin" style={{ fontSize: 20, fontWeight: 700, color: 'var(--emerald)' }}>{debt.currency_symbol}₹{debt.paid_amount.toLocaleString('en-IN', INTL)}</p></div>
+          <div><span className="label-caps-sm" >Remaining</span><p className="fin" style={{ fontSize: 20, fontWeight: 700, color: 'var(--coral)' }}>{debt.currency_symbol}₹{Math.round(remaining).toLocaleString('en-IN', INTL)}</p></div>
         </div>
 
         <div className="progress" style={{ marginBottom: 6, height: 8, borderRadius: 4 }}>
@@ -166,8 +166,8 @@ export default function DebtDetail() {
       </div>
 
       {/* detail fields */}
-      <div className="card" style={{ padding: '20px 24px', marginBottom: 16 }}>
-        <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 14 }}>Details <span style={{ fontWeight: 400, color: 'var(--ink-faint)' }}>— click to edit</span></p>
+      <div className="card card-pad-lg card-pad-mb16" >
+        <p className="h-600-12 mb-14" >Details <span style={{ fontWeight: 400, color: 'var(--ink-faint)' }}>— click to edit</span></p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 16 }}>
           <InlineField label="Amount" value={debt.amount} type="number" currency onSave={v => patch({ amount: v })} />
           <InlineField label="EMI (₹/mo)" value={debt.emi_amount} type="number" currency onSave={v => patch({ emi_amount: v || null })} />
@@ -179,19 +179,19 @@ export default function DebtDetail() {
           <InlineField label="Due Date" value={debt.due_date} type="date" onSave={v => patch({ due_date: v || null })} />
         </div>
 
-        <div style={{ marginTop: 16 }}>
+        <div className="mt-16" >
           <InlineField label="Notes" value={debt.notes} type="text" onSave={v => patch({ notes: v || null })} />
         </div>
       </div>
 
       {/* payment timeline */}
       <div className="card" style={{ padding: '20px 24px' }}>
-        <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 14 }}>Payment Timeline</p>
+        <p className="h-600-12 mb-14" >Payment Timeline</p>
         {timeline.length === 0 ? (
           <div className="empty-state" style={{ padding: '24px 16px' }}>
             <span className="emoji">○</span>
             <p>No payment history yet</p>
-            <p style={{ fontSize: 12, color: 'var(--ink-faint)' }}>Update the paid amount to track your progress.</p>
+            <p className="text-12-faint" >Update the paid amount to track your progress.</p>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>

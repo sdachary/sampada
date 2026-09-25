@@ -73,18 +73,18 @@ export default function Onboarding() {
       )}
 
       {/* checklist */}
-      <div style={{ marginBottom: 28 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 12 }}>Set up checklist ({done.loans && done.investments && done.insurance && done.budget ? '4/4' : `${CHECKLIST_ITEMS.filter(i => done[i.key]).length}/4`})</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div className="mb-28" >
+        <div className="h-600-13 mb-12" >Set up checklist ({done.loans && done.investments && done.insurance && done.budget ? '4/4' : `${CHECKLIST_ITEMS.filter(i => done[i.key]).length}/4`})</div>
+        <div className="col-g8" >
           {CHECKLIST_ITEMS.map(item => {
             const isDone = !!done[item.key]
             const isInsurance = item.key === 'insurance'
             const content = (
               <>
-                <span style={{ fontSize: 18 }}>{item.icon}</span>
-                <span style={{ flex: 1 }}>
+                <span className="fs-18" >{item.icon}</span>
+                <span className="flex-1" >
                   <span style={{ fontSize: 14, fontWeight: 500, display: 'block' }}>{item.title}</span>
-                  <span style={{ fontSize: 12, color: 'var(--ink-mute)' }}>{isDone ? 'Done' : item.desc}</span>
+                  <span className="text-12-muted" >{isDone ? 'Done' : item.desc}</span>
                 </span>
                 {isDone && <span style={{ color: 'var(--coral)', fontSize: 14 }}>✓</span>}
               </>
@@ -105,8 +105,8 @@ export default function Onboarding() {
       </div>
 
       {/* glossary */}
-      <div style={{ marginBottom: 28 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 12 }}>Money terms, in plain language</div>
+      <div className="mb-28" >
+        <div className="h-600-13 mb-12" >Money terms, in plain language</div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           {Object.entries(glossary).map(([key, g]) => (
             <button key={key} onClick={() => setGlossaryTerm(key)}
@@ -117,7 +117,7 @@ export default function Onboarding() {
         </div>
         {glossaryTerm && (
           <div style={{ background: 'var(--paper-card)', border: '1px solid var(--line)', borderRadius: 10, padding: '14px 18px', marginTop: 10 }}>
-            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink)' }}>{glossary[glossaryTerm].plain}</div>
+            <div className="h-600-14" >{glossary[glossaryTerm].plain}</div>
             <div style={{ fontSize: 13, color: 'var(--ink-mute)', marginTop: 4 }}>e.g. {glossary[glossaryTerm].example}</div>
           </div>
         )}
@@ -125,7 +125,7 @@ export default function Onboarding() {
 
       {/* actions */}
       <div style={{ display: 'flex', gap: 10 }}>
-        <button onClick={finish} className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }}>
+        <button onClick={finish} className="btn btn-primary flex-1-center" >
           {remaining.length === 0 ? 'Finish setup' : 'Mark setup complete'}
         </button>
         <button onClick={finish}

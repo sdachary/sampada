@@ -1,6 +1,8 @@
 # Sampada Portal — Master Spec (Architecture + Implementation + Roadmap)
 
-> **Single source of truth.** This file consolidates and supersedes the earlier separate documents (architecture note, implementation brief, roadmap/spec). Hand this whole file to opencode or Claude Code with "implement phase by phase" — it contains the *why*, the *what stack*, the *exact tasks*, and the *what's next*, in one place.
+> **ARCHIVED 2026-09-25.** Historical planning spec predating the Rails 8.1 API + React SPA split. Live sources of truth: `docs/CONTEXT.md` (stack/architecture/decisions), `docs/CHANGELOG.md` (feature history), `docs/frontend-decision.md` (SPA decision), `SAMPADA_UAT_TRACKER.md` (findings), and the code itself. Kept for provenance only — do not implement from this.
+
+> ~~**Single source of truth.** This file consolidates and supersedes the earlier separate documents (architecture note, implementation brief, roadmap/spec). Hand this whole file to opencode or Claude Code with "implement phase by phase" — it contains the *why*, the *what stack*, the *exact tasks*, and the *what's next*, in one place.~~
 
 ---
 

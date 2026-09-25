@@ -110,7 +110,7 @@ export default function QuickLogSheet({ open, onClose, onSaved, online }) {
         borderRadius: '16px 16px 0 0', padding: '20px 20px calc(20px + env(safe-area-inset-bottom))',
         boxShadow: '0 -8px 30px rgba(21,20,15,0.2)', maxWidth: 480, margin: '0 auto',
       }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <div className="spread-mb16" >
           <p style={{ fontSize: 15, fontWeight: 600, letterSpacing: '-0.01em' }}>Quick log</p>
           <button type="button" onClick={onClose} aria-label="Close"
             style={{ background: 'none', border: 'none', color: 'var(--ink-faint)', cursor: 'pointer', padding: 4 }}>
@@ -134,7 +134,7 @@ export default function QuickLogSheet({ open, onClose, onSaved, online }) {
               placeholder="₹500 lunch, earned 50000 salary…"
               style={{ fontSize: 17, fontWeight: 500 }}
             />
-            <p style={{ fontSize: 11, color: 'var(--ink-faint)', marginTop: 4 }}>
+            <p className="text-11-faint mt-4" >
               Type naturally — amount and description are detected
             </p>
           </div>
@@ -142,20 +142,20 @@ export default function QuickLogSheet({ open, onClose, onSaved, online }) {
           {/* Editable fields — pre-filled from NL input */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 8 }}>
             <div>
-              <p style={{ fontSize: 11, color: 'var(--ink-mute)', marginBottom: 4, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Amount (₹)</p>
+              <p className="label-caps-sm mb-4" >Amount (₹)</p>
               <input type="number" min="0" step="0.01" className="input" value={amount} onChange={(e) => setAmount(e.target.value)}
                 placeholder="0" required style={{ fontSize: 18, fontWeight: 600 }} />
             </div>
             <div>
-              <p style={{ fontSize: 11, color: 'var(--ink-mute)', marginBottom: 4, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Description</p>
+              <p className="label-caps-sm mb-4" >Description</p>
               <input className="input" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="e.g. Grocery run" required />
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: 8 }}>
-            <div style={{ flex: 1 }}>
-              <p style={{ fontSize: 11, color: 'var(--ink-mute)', marginBottom: 4, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Type</p>
-              <div style={{ display: 'flex', gap: 6 }}>
+          <div className="flex-g8" >
+            <div className="flex-1" >
+              <p className="label-caps-sm mb-4" >Type</p>
+              <div className="flex-g6" >
                 {TYPES.map(t => (
                   <button key={t} type="button" onClick={() => setTransactionType(t)}
                     style={{
@@ -168,8 +168,8 @@ export default function QuickLogSheet({ open, onClose, onSaved, online }) {
                 ))}
               </div>
             </div>
-            <div style={{ flex: 1 }}>
-              <p style={{ fontSize: 11, color: 'var(--ink-mute)', marginBottom: 4, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Category</p>
+            <div className="flex-1" >
+              <p className="label-caps-sm mb-4" >Category</p>
               <select className="input" value={categoryId} onChange={(e) => setCategoryId(e.target.value)} style={{ fontSize: 12 }}>
                 <option value="">None</option>
                 {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}

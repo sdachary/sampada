@@ -25,18 +25,18 @@ export default function PayoffPlans() {
 
   if (loading) return (
     <div>
-      <div className="skeleton" style={{ width: 120, height: 22, marginBottom: 6 }} />
-      <div className="skeleton" style={{ width: 200, height: 14, marginBottom: 20 }} />
+      <div className="skeleton skeleton-title"  />
+      <div className="skeleton skeleton-wide"  />
       {[1,2].map(i => <div key={i} className="skeleton" style={{ height: 120, marginBottom: 10 }} />)}
     </div>
   )
 
   return (
     <div>
-      <p className="page-num" style={{ marginBottom: 4 }}>00<em>5</em> / 016</p>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+      <p className="page-num mb-4" >00<em>5</em> / 016</p>
+      <div className="spread-mb20" >
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em' }}>Payoff Plans</h1>
+          <h1 className="page-title-no-mb" >Payoff Plans</h1>
           <p style={{ fontSize: 13, color: 'var(--ink-mute)', marginTop: 2 }}>Create and manage your debt payoff strategies</p>
         </div>
         <button onClick={() => setModal('new')} className="btn btn-primary" style={{ fontSize: 12.5, padding: '7px 16px' }}>+ New Plan</button>
@@ -46,18 +46,18 @@ export default function PayoffPlans() {
         <div className="empty-state">
           <span className="emoji">◎</span>
           <p>No payoff plans yet</p>
-          <p style={{ fontSize: 12, color: 'var(--ink-faint)' }}>Create a plan to see how avalanche or snowball strategies can save you money.</p>
+          <p className="text-12-faint" >Create a plan to see how avalanche or snowball strategies can save you money.</p>
           <button onClick={() => setModal('new')} className="btn btn-primary" style={{ marginTop: 12 }}>+ Create Plan</button>
         </div>
       )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div className="col-g10" >
         {plans.map(p => (
           <div key={p.id} className="card" style={{ padding: '18px 20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
               <div>
-                <p style={{ fontWeight: 600, fontSize: 14, marginBottom: 2 }}>{p.name}</p>
-                <p style={{ fontSize: 12, color: 'var(--ink-mute)' }}>
+                <p className="row-600-14" >{p.name}</p>
+                <p className="text-12-muted" >
                   {p.strategy === 'avalanche' ? 'Avalanche' : 'Snowball'} ·
                   {p.debts?.length || 0} debt{p.debts?.length !== 1 ? 's' : ''} ·
                   Extra {formatAmount(p.extra_payment)}/mo
@@ -76,20 +76,20 @@ export default function PayoffPlans() {
             {p.debt_free_date && (
               <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', marginBottom: 8 }}>
                 <div>
-                  <span style={{ fontSize: 10, color: 'var(--ink-faint)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Debt Free</span>
-                  <p className="fin" style={{ fontSize: 15, fontWeight: 600 }}>{new Date(p.debt_free_date).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}</p>
+                  <span className="label-caps-sm" >Debt Free</span>
+                  <p className="fin h-600-15" >{new Date(p.debt_free_date).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}</p>
                 </div>
                 <div>
-                  <span style={{ fontSize: 10, color: 'var(--ink-faint)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Interest Paid</span>
-                  <p className="fin" style={{ fontSize: 15, fontWeight: 600, color: 'var(--coral)' }}>{p.total_interest_paid != null ? formatAmount(p.total_interest_paid) : '—'}</p>
+                  <span className="label-caps-sm" >Interest Paid</span>
+                  <p className="fin amt-out-15" >{p.total_interest_paid != null ? formatAmount(p.total_interest_paid) : '—'}</p>
                 </div>
                 <div>
-                  <span style={{ fontSize: 10, color: 'var(--ink-faint)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Interest Saved</span>
-                  <p className="fin" style={{ fontSize: 15, fontWeight: 600, color: 'var(--emerald)' }}>{p.total_interest_saved != null ? formatAmount(p.total_interest_saved) : '—'}</p>
+                  <span className="label-caps-sm" >Interest Saved</span>
+                  <p className="fin amt-in-15" >{p.total_interest_saved != null ? formatAmount(p.total_interest_saved) : '—'}</p>
                 </div>
                 <div>
-                  <span style={{ fontSize: 10, color: 'var(--ink-faint)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Months Saved</span>
-                  <p className="fin" style={{ fontSize: 15, fontWeight: 600, color: 'var(--emerald)' }}>{p.months_saved || 0}</p>
+                  <span className="label-caps-sm" >Months Saved</span>
+                  <p className="fin amt-in-15" >{p.months_saved || 0}</p>
                 </div>
               </div>
             )}

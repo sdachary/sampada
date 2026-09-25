@@ -11,7 +11,7 @@ export default function Field({ label, error, children, labelStyle, style }) {
   return (
     <div style={style}>
       <Label htmlFor={id} style={labelStyle}>{label}</Label>
-      <div style={{ position: 'relative' }}>
+      <div className="pos-rel" >
         {wrapped}
       </div>
       {error && <p style={{ fontSize: 11, color: 'var(--coral)', marginTop: 2 }}>{error}</p>}

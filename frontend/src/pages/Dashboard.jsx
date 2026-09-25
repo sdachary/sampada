@@ -89,7 +89,7 @@ export default function Dashboard() {
 
   return (
     <div>
-      <p className="page-num" style={{ marginBottom: 4 }}>00<em>1</em> / 016</p>
+      <p className="page-num mb-4" >00<em>1</em> / 016</p>
 
       {/* hero net worth */}
       <div className="card" style={{ padding: '28px 26px', marginBottom: 20 }}>
@@ -103,7 +103,7 @@ export default function Dashboard() {
           </p>
         )}
         {debt > 0 && (
-          <div style={{ marginTop: 12 }}>
+          <div className="mt-12" >
             <div className="progress" style={{ maxWidth: 300 }}>
               <div className="progress-fill green" style={{ width: `${pct}%` }} />
             </div>
@@ -122,8 +122,8 @@ export default function Dashboard() {
 
       {/* net worth area chart */}
       {snapshots.length > 1 && (
-        <div className="card" style={{ padding: '16px 16px 8px', marginBottom: 20 }}>
-          <p style={{ fontSize: 10.5, color: 'var(--ink-faint)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Net worth trend</p>
+        <div className="card card-pad-top" >
+          <p className="label-caps mb-4" >Net worth trend</p>
           <Chart data={snapshots} xKey="date" xFormatter={(d) => (d || '').slice(5)}
             series={[{ key: 'net_worth', name: 'Net worth', color: 'var(--coral)', area: true }]} />
         </div>
@@ -131,8 +131,8 @@ export default function Dashboard() {
 
       {/* projection chart */}
       {projection?.projection?.length > 1 && (
-        <div className="card" style={{ padding: '16px 16px 8px', marginBottom: 20 }}>
-          <p style={{ fontSize: 10.5, color: 'var(--ink-faint)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>60-month projection</p>
+        <div className="card card-pad-top" >
+          <p className="label-caps mb-4" >60-month projection</p>
           <Chart data={projection.projection} xKey="month" xFormatter={(m) => `${m || ''}m`}
             series={[
               { key: 'debt', name: 'Debt', color: 'var(--coral)' },
@@ -143,7 +143,7 @@ export default function Dashboard() {
       )}
 
       {/* snapshot */}
-      <div className="card" style={{ padding: '14px 18px', marginBottom: 16 }}>
+      <div className="card card-pad-mb16" >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <p style={{ fontSize: 10.5, color: 'var(--ink-faint)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Share snapshot</p>
           <label style={{ fontSize: 11, color: 'var(--ink-mute)', display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
@@ -152,13 +152,13 @@ export default function Dashboard() {
           </label>
         </div>
         <p style={{ fontSize: 12, color: 'var(--ink-mute)', margin: '6px 0 10px' }}>Download a styled SVG card of your net worth snapshot.</p>
-        <button onClick={downloadSnapshot} className="btn btn-ghost" style={{ fontSize: 12.5, padding: '7px 16px' }}>Download snapshot</button>
+        <button onClick={downloadSnapshot} className="btn btn-ghost btn-sm-ghost" >Download snapshot</button>
       </div>
 
       {/* quick actions */}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
-        <Link to="/dashboard/transactions" className="btn btn-ghost" style={{ fontSize: 12.5, padding: '7px 16px' }}>+ Add transaction</Link>
-        <Link to="/dashboard/debts" className="btn btn-ghost" style={{ fontSize: 12.5, padding: '7px 16px' }}>+ Log payment</Link>
+        <Link to="/dashboard/transactions" className="btn btn-ghost btn-sm-ghost" >+ Add transaction</Link>
+        <Link to="/dashboard/debts" className="btn btn-ghost btn-sm-ghost" >+ Log payment</Link>
         {data?.unread_notifications > 0 && (
           <span className="tag coral" style={{ marginLeft: 'auto' }}>
             <span className="pulse" style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--coral)', display: 'inline-block' }} />

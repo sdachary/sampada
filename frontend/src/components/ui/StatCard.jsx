@@ -1,7 +1,7 @@
 export default function StatCard({ label, value, subtext, color, tooltip, style }) {
   return (
     <div className="card" style={{ padding: '18px 20px', ...style }}>
-      <p style={{ fontSize: 10.5, color: 'var(--ink-faint)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>
+      <p className="label-caps mb-4" >
         {label}
         {tooltip && <span title={tooltip} style={{ cursor: 'help', marginLeft: 4, fontSize: 11, color: 'var(--ink-faint)' }}>ⓘ</span>}
       </p>

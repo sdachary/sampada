@@ -34,16 +34,16 @@ export default function ForgotPassword() {
       title="Reset password"
       subtitle="Enter your email and we'll send you a link."
       error={error}
-      foot={<Link to="/login" style={{ color: 'var(--coral)' }}>Back to sign in</Link>}
+      foot={<Link className="text-coral" to="/login" >Back to sign in</Link>}
     >
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <form className="col-g14" onSubmit={handleSubmit} >
         <input
           type="text" name="website" value={website} onChange={e => setWebsite(e.target.value)}
           tabIndex={-1} autoComplete="off" aria-hidden="true"
           style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, opacity: 0 }}
         />
         <input type="email" placeholder="Email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} className="input" required />
-        <button type="submit" disabled={submitting} className="btn btn-primary" style={{ justifyContent: 'center', marginTop: 6 }}>
+        <button type="submit" disabled={submitting} className="btn btn-primary center-h" >
           {submitting ? 'Sending…' : 'Send reset link'}
         </button>
       </form>
