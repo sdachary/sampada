@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
+import ThemeToggle from '../components/ThemeToggle'
 import {
   TrendingDown, PiggyBank, RefreshCw, MessageSquare,
   AlertTriangle, Globe, Users, Cpu, Terminal, Check, X,
@@ -58,6 +59,7 @@ export default function Landing() {
           <img src="/brand-mark.png" alt="" width={22} height={22} style={{ borderRadius: 6 }} />Sampada
         </span>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          <ThemeToggle />
           <Link to="/login" style={{ fontSize: 13.5, color: 'var(--ink-mute)' }}>Sign in</Link>
           <Link to="/register" className="btn btn-primary" style={{ padding: '8px 18px', fontSize: 13 }}>Get started</Link>
         </div>

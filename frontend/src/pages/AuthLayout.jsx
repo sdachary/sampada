@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import ThemeToggle from '../components/ThemeToggle'
 
 const shellStyle = {
   minHeight: '100vh',
@@ -24,6 +25,9 @@ export default function AuthLayout({ variant = 'form', icon, title, subtitle, er
   const success = variant === 'success'
   return (
     <div style={shellStyle}>
+      <div style={{ position: 'fixed', top: 16, right: 16 }}>
+        <ThemeToggle />
+      </div>
       <div style={{ width: '100%', maxWidth: 360, textAlign: success ? 'center' : undefined }}>
         {!success && (
           <div style={{ textAlign: 'center', marginBottom: 32 }}>
