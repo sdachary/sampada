@@ -185,7 +185,15 @@ export async function onRequest(context) {
 
       // Force clear Better-Auth cookies on sign-out
       if (reqPath === '/api/auth/sign-out') {
-        ;['better-auth.session_token', 'sampada-better-auth'].forEach((name) =>
+        ;[
+          'better-auth.session_token',
+          'better-auth.session_data',
+          'better-auth.dont_remember',
+          '__Secure-better-auth.session_token',
+          '__Secure-better-auth.session_data',
+          '__Secure-better-auth.dont_remember',
+          'sampada-better-auth',
+        ].forEach((name) =>
           headers.append('Set-Cookie', `${name}=; Path=/; Max-Age=0; SameSite=Lax; Secure`),
         )
       }
