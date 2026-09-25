@@ -1,6 +1,5 @@
 import { useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../lib/auth'
+import { Link } from 'react-router-dom'
 import ThemeToggle from '../components/ThemeToggle'
 import {
   TrendingDown, PiggyBank, RefreshCw, MessageSquare,
@@ -46,11 +45,7 @@ function CompareCell({ value }) {
 }
 
 export default function Landing() {
-  const { user } = useAuth()
-  const navigate = useNavigate()
   useReveal()
-
-  if (user) { navigate('/dashboard', { replace: true }); return null }
 
   return (
     <div style={{ maxWidth: 960, margin: '0 auto', padding: '0 24px' }}>

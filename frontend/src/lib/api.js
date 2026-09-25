@@ -55,7 +55,7 @@ export const auth = {
     body: JSON.stringify({ email: data.email, password: data.password, website: data.website || '' }),
   }),
 
-  logout: () => betterAuthRequest('/sign-out', { method: 'POST' }),
+  logout: () => betterAuthRequest('/sign-out', { method: 'POST', body: '{}' }),
 
   me: () => betterAuthRequest('/get-session'),
 
