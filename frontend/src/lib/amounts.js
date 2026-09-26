@@ -36,3 +36,9 @@ export function inWords(amount) {
 export function echoAmount(amount, symbol) {
   return `${symbol || '₹'}${amount.toLocaleString('en-IN')} — ${inWords(amount)}`
 }
+
+// ponytail: single money/percent formatting for all pages (replaces dozens
+// of inline toLocaleString chains).
+export function fmtINR(value) {
+  return '₹' + (Number(value) || 0).toLocaleString('en-IN')
+}

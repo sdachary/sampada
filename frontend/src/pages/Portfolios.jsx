@@ -1,18 +1,13 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { api } from '../lib/api'
+import { useResource } from '../lib/useResource'
 import PortfolioFormModal from '../components/PortfolioFormModal'
+import { fmtINR } from '../lib/amounts'
 
 export default function Portfolios() {
-  const [portfolios, setPortfolios] = useState([])
+  const { items: portfolios, loading, modal, setModal, closeModal, saved, remove } = useResource('/api/v1/portfolios')
   const [prices, setPrices] = useState({})
-  const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
-  const [modal, setModal] = useState(null)
-
-  const fetch = () => {
-    api.request('/api/v1/portfolios').then(d => setPortfolios(Array.isArray(d) ? d : [])).catch(() => {}).finally(() => setLoading(false))
-  }
-  useEffect(() => { fetch() }, [])
 
   const totalValue = portfolios.reduce((s, p) => s + (+p.total_value || 0), 0)
   const totalCost = portfolios.reduce((s, p) => s + (p.investments || []).reduce((ss, i) => ss + (+i.cost_basis || 0), 0), 0)
@@ -51,10 +46,10 @@ export default function Portfolios() {
       {portfolios.length > 0 && (
         <div className="card card-pad-mb16" >
           <span className="label-caps-sm" >Total Portfolio Value</span>
-          <p className="fin" style={{ fontSize: 22, fontWeight: 600, color: 'var(--emerald)' }}>₹{totalValue.toLocaleString('en-IN')}</p>
+          <p className="fin" style={{ fontSize: 22, fontWeight: 600, color: 'var(--emerald)' }}>{fmtINR(totalValue)}</p>
           {totalCost > 0 && (
             <p style={{ fontSize: 12, color: totalGain >= 0 ? 'var(--emerald)' : 'var(--coral)', marginTop: 2 }}>
-              {totalGain >= 0 ? '▲' : '▼'} ₹{Math.abs(totalGain).toLocaleString('en-IN')} ({((totalGain / totalCost) * 100).toFixed(1)}%)
+              {totalGain >= 0 ? '▲' : '▼'} {fmtINR(Math.abs(totalGain))} ({((totalGain / totalCost) * 100).toFixed(1)}%)
             </p>
           )}
         </div>
@@ -87,11 +82,11 @@ export default function Portfolios() {
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
                 <p className="fin" style={{ fontFamily: 'var(--sans)', fontSize: 18, fontWeight: 600, color: 'var(--emerald)' }}>
-                  ₹{(+p.total_value || 0).toLocaleString('en-IN')}
+                  {fmtINR(+p.total_value || 0)}
                 </p>
                 <div className="flex-g6" >
                   <button onClick={() => setModal(p)} style={{ fontSize: 10.5, padding: '2px 8px', background: 'none', border: '1px solid var(--line)', borderRadius: 999, color: 'var(--ink-soft)', cursor: 'pointer' }}>Edit</button>
-                  <button onClick={() => { if (confirm(`Delete "${p.name}"?`)) { api.request(`/api/v1/portfolios/${p.id}`, { method: 'DELETE' }).then(fetch).catch(e => alert(e.message)) } }}
+                  <button onClick={() => remove(p)}
                     style={{ fontSize: 10.5, padding: '2px 8px', background: 'none', border: '1px solid var(--line)', borderRadius: 999, color: 'var(--ink-faint)', cursor: 'pointer' }}>Delete</button>
                 </div>
               </div>
@@ -154,8 +149,8 @@ export default function Portfolios() {
       {modal && (
         <PortfolioFormModal
           portfolio={modal === 'new' ? null : modal}
-          onClose={() => setModal(null)}
-          onSave={() => { setModal(null); fetch() }}
+          onClose={closeModal}
+          onSave={saved}
         />
       )}
     </div>

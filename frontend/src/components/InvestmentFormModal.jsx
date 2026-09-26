@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
 import { Modal, Field, ConfirmDialog } from './ui'
+import { useModalForm } from '../lib/useModalForm'
 
 const TYPES = ['stock', 'etf', 'mutual_fund', 'bond', 'gold', 'crypto', 'other']
 
 export default function InvestmentFormModal({ investment, onClose, onSave }) {
   const isEdit = !!investment
   const [portfolios, setPortfolios] = useState([])
-  const [form, setForm] = useState({
+  const { form, set, saving, error, handleSubmit } = useModalForm({
     portfolio_id: investment?.portfolio_id || '',
     symbol: investment?.symbol || '',
     name: investment?.name || '',
@@ -17,41 +18,17 @@ export default function InvestmentFormModal({ investment, onClose, onSave }) {
     buy_price: investment?.buy_price || '',
     sector: investment?.sector || '',
     notes: investment?.notes || '',
+  }, {
+    basePath: '/api/v1/investments',
+    id: investment?.id,
+    toBody: (b) => ({
+      ...b,
+      portfolio_id: b.portfolio_id,
+      shares: parseFloat(b.shares) || 0,
+      buy_price: parseFloat(b.buy_price) || 0,
+    }),
+    onSave,
   })
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState(null)
-  const [confirming, setConfirming] = useState(false)
-
-  useEffect(() => {
-    api.request('/api/v1/portfolios').then(d => setPortfolios(Array.isArray(d) ? d : [])).catch(() => {})
-  }, [])
-
-  const set = (key) => (e) => setForm(f => ({ ...f, [key]: e.target.value }))
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setSaving(true)
-    setError(null)
-    try {
-      const body = {
-        ...form,
-        portfolio_id: form.portfolio_id,
-        shares: parseFloat(form.shares) || 0,
-        buy_price: parseFloat(form.buy_price) || 0,
-      }
-      if (isEdit) {
-        await api.request(`/api/v1/investments/${investment.id}`, { method: 'PATCH', body: JSON.stringify(body) })
-      } else {
-        await api.request('/api/v1/investments', { method: 'POST', body: JSON.stringify(body) })
-      }
-      onSave()
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setSaving(false)
-    }
-  }
-
   const handleDelete = async () => {
     setSaving(true)
     try {

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
+import { fmtINR } from '../lib/amounts'
 
 function CalendarHeatmap() {
   const [txns, setTxns] = useState([])
@@ -131,11 +132,11 @@ export default function Reports() {
             <p className="label-caps-sm mb-4" >{annual.year} Summary</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginTop: 8 }}>
               <div><span className="text-11-muted" >Income</span>
-                <p className="fin amt-in-15" >₹{(+annual.summary?.total_income || 0).toLocaleString('en-IN')}</p></div>
+                <p className="fin amt-in-15" >{fmtINR(+annual.summary?.total_income || 0)}</p></div>
               <div><span className="text-11-muted" >Expenses</span>
-                <p className="fin amt-out-15" >₹{(+annual.summary?.total_expenses || 0).toLocaleString('en-IN')}</p></div>
+                <p className="fin amt-out-15" >{fmtINR(+annual.summary?.total_expenses || 0)}</p></div>
               <div><span className="text-11-muted" >Net Savings</span>
-                <p className="fin h-600-15" >₹{(+annual.summary?.net_savings || 0).toLocaleString('en-IN')}</p></div>
+                <p className="fin h-600-15" >{fmtINR(+annual.summary?.net_savings || 0)}</p></div>
               <div><span className="text-11-muted" >Savings Rate</span>
                 <p className="h-600-15" >{(+annual.summary?.savings_rate || 0).toFixed(1)}%</p></div>
             </div>
@@ -146,7 +147,7 @@ export default function Reports() {
               {annual.net_worth_trajectory.slice(0, 12).map((pt, i) => (
                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, padding: '3px 0', borderBottom: '1px solid var(--line-soft)' }}>
                   <span className="text-mute" >{pt.date}</span>
-                  <span className="fin fw-500" >₹{(+pt.net_worth || 0).toLocaleString('en-IN')}</span>
+                  <span className="fin fw-500" >{fmtINR(+pt.net_worth || 0)}</span>
                 </div>
               ))}
             </div>
@@ -157,7 +158,7 @@ export default function Reports() {
               {annual.categories.map((c, i) => (
                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, padding: '4px 0', borderBottom: '1px solid var(--line-soft)' }}>
                   <span>{c.category}</span>
-                  <span className="fin">₹{(+c.total || 0).toLocaleString('en-IN')} ({(+c.percentage || 0).toFixed(1)}%)</span>
+                  <span className="fin">{fmtINR(+c.total || 0)} ({(+c.percentage || 0).toFixed(1)}%)</span>
                 </div>
               ))}
             </div>
@@ -176,11 +177,11 @@ export default function Reports() {
             </span>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 10, marginTop: 8 }}>
               <div><span className="text-11-muted" >Monthly Income</span>
-                <p className="fin" style={{ fontSize: 14, fontWeight: 600, color: 'var(--emerald)' }}>₹{(+forecast.summary?.monthly_income || 0).toLocaleString('en-IN')}</p></div>
+                <p className="fin" style={{ fontSize: 14, fontWeight: 600, color: 'var(--emerald)' }}>{fmtINR(+forecast.summary?.monthly_income || 0)}</p></div>
               <div><span className="text-11-muted" >Monthly Expenses</span>
-                <p className="fin" style={{ fontSize: 14, fontWeight: 600, color: 'var(--coral)' }}>₹{(+forecast.summary?.monthly_expenses || 0).toLocaleString('en-IN')}</p></div>
+                <p className="fin" style={{ fontSize: 14, fontWeight: 600, color: 'var(--coral)' }}>{fmtINR(+forecast.summary?.monthly_expenses || 0)}</p></div>
               <div><span className="text-11-muted" >Net Monthly</span>
-                <p className="fin h-600-14" >₹{(+forecast.summary?.net_monthly || 0).toLocaleString('en-IN')}</p></div>
+                <p className="fin h-600-14" >{fmtINR(+forecast.summary?.net_monthly || 0)}</p></div>
               <div><span className="text-11-muted" >Runway</span>
                 <p className="h-600-14" >{forecast.summary?.runway_months} months</p></div>
             </div>
@@ -192,7 +193,7 @@ export default function Reports() {
                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, padding: '4px 0', borderBottom: '1px solid var(--line-soft)' }}>
                   <span className="text-mute" >{f.label}</span>
                   <span className="fin" style={{ color: (+f.net_cash_flow || 0) >= 0 ? 'var(--emerald)' : 'var(--coral)' }}>
-                    ₹{(+f.net_cash_flow || 0).toLocaleString('en-IN')}
+                    {fmtINR(+f.net_cash_flow || 0)}
                   </span>
                 </div>
               ))}
@@ -232,8 +233,8 @@ export default function Reports() {
                 <div className="progress-fill green" style={{ width: `${Math.min(+goalCharts.debt_free_progress.progress_pct || 0, 100)}%` }} />
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--ink-mute)' }}>
-                <span>₹{(+goalCharts.debt_free_progress.paid_so_far || 0).toLocaleString('en-IN')} paid</span>
-                <span>₹{(+goalCharts.debt_free_progress.remaining || 0).toLocaleString('en-IN')} left</span>
+                <span>{fmtINR(+goalCharts.debt_free_progress.paid_so_far || 0)} paid</span>
+                <span>{fmtINR(+goalCharts.debt_free_progress.remaining || 0)} left</span>
               </div>
             </div>
           )}

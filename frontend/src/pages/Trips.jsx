@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
+import { fmtINR } from '../lib/amounts'
 
 function AddExpenseForm({ tripId, members, categories, onDone }) {
   const [form, setForm] = useState({ trip_member_id: '', trip_category_id: '', amount: '', description: '', expense_date: new Date().toISOString().split('T')[0], split_type: 'equal' })
@@ -73,7 +74,7 @@ function TripDetail({ tripId, onBack }) {
             <span className="tag ml-8" >{trip.status}</span>
           </p>
         </div>
-        <p className="fin" style={{ fontFamily: 'var(--sans)', fontSize: 22, fontWeight: 600 }}>₹{(+trip.total_spent || 0).toLocaleString('en-IN')}</p>
+        <p className="fin" style={{ fontFamily: 'var(--sans)', fontSize: 22, fontWeight: 600 }}>{fmtINR(+trip.total_spent || 0)}</p>
       </div>
 
       {/* members */}
@@ -142,7 +143,7 @@ function TripDetail({ tripId, onBack }) {
               <p className="h-500-13" >{e.description}</p>
               <p className="text-11-5-muted" >{e.payer} · {e.category_name || 'Uncategorized'} · {e.expense_date}</p>
             </div>
-            <p className="fin" style={{ fontFamily: 'var(--sans)', fontSize: 15, fontWeight: 600 }}>₹{(+e.amount).toLocaleString('en-IN')}</p>
+            <p className="fin" style={{ fontFamily: 'var(--sans)', fontSize: 15, fontWeight: 600 }}>{fmtINR(+e.amount)}</p>
           </div>
         ))}
       </div>

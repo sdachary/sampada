@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
 import TransactionFormModal from '../components/TransactionFormModal'
 import useOnline from '../lib/useOnline'
+import { fmtINR } from '../lib/amounts'
 
 export default function Transactions() {
   const { isOnline } = useOnline()
@@ -77,9 +78,9 @@ export default function Transactions() {
         {monthTotals.map(m => (
           <div key={m.month} className="card" style={{ flex: '1 0 160px', padding: '14px 16px' }}>
             <p style={{ fontSize: 11, color: 'var(--ink-mute)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{m.label}</p>
-            <p className="fin amt-in-15" >+₹{(+m.income).toLocaleString('en-IN')}</p>
-            <p className="fin amt-out-15" >-₹{(+m.expenses).toLocaleString('en-IN')}</p>
-            <p className="fin" style={{ fontSize: 13, fontWeight: 500, color: +m.net >= 0 ? 'var(--emerald)' : 'var(--coral)' }}>=₹{(+m.net).toLocaleString('en-IN')}</p>
+            <p className="fin amt-in-15" >+{fmtINR(+m.income)}</p>
+            <p className="fin amt-out-15" >-{fmtINR(+m.expenses)}</p>
+            <p className="fin" style={{ fontSize: 13, fontWeight: 500, color: +m.net >= 0 ? 'var(--emerald)' : 'var(--coral)' }}>={fmtINR(+m.net)}</p>
           </div>
         ))}
       </div>
@@ -123,15 +124,15 @@ export default function Transactions() {
         <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
           <div className="card card-pad-10-16" >
             <p className="label-caps-sm" >Total Income</p>
-            <p className="fin amt-in" >₹{totalIncome.toLocaleString('en-IN')}</p>
+            <p className="fin amt-in" >{fmtINR(totalIncome)}</p>
           </div>
           <div className="card card-pad-10-16" >
             <p className="label-caps-sm" >Total Expenses</p>
-            <p className="fin amt-out" >₹{totalExpenses.toLocaleString('en-IN')}</p>
+            <p className="fin amt-out" >{fmtINR(totalExpenses)}</p>
           </div>
           <div className="card card-pad-10-16" >
             <p className="label-caps-sm" >Net</p>
-            <p className="fin" style={{ fontSize: 16, fontWeight: 600, color: totalIncome - totalExpenses >= 0 ? 'var(--emerald)' : 'var(--coral)' }}>₹{(totalIncome - totalExpenses).toLocaleString('en-IN')}</p>
+            <p className="fin" style={{ fontSize: 16, fontWeight: 600, color: totalIncome - totalExpenses >= 0 ? 'var(--emerald)' : 'var(--coral)' }}>{fmtINR(totalIncome - totalExpenses)}</p>
           </div>
         </div>
       )}
@@ -148,7 +149,7 @@ export default function Transactions() {
               </p>
             </div>
             <p className="fin" style={{ fontFamily: 'var(--sans)', fontSize: 17, fontWeight: 600, color: t.transaction_type === 'expense' ? 'var(--coral)' : 'var(--emerald)', whiteSpace: 'nowrap', marginLeft: 12 }}>
-              {t.transaction_type === 'expense' ? '-' : '+'}₹{(+t.amount).toLocaleString('en-IN')}
+              {t.transaction_type === 'expense' ? '-' : '+'}{fmtINR(+t.amount)}
             </p>
           </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>

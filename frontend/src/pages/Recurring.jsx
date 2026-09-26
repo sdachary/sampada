@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
+import { fmtINR } from '../lib/amounts'
 
 function daysText(days) {
   if (days === null || days === undefined) return ''
@@ -36,7 +37,7 @@ export default function Recurring() {
         <div className="card card-pad-mb16" >
           <div className="flex-g20-wrap" >
             <div><span className="label-caps-sm" >Monthly Total</span>
-              <p className="fin amt-out" >₹{totalMonthly.toLocaleString('en-IN')}</p></div>
+              <p className="fin amt-out" >{fmtINR(totalMonthly)}</p></div>
             <div><span className="label-caps-sm" >Active</span>
               <p className="amt-in" >{activeCount}/{expenses.length}</p></div>
           </div>
@@ -59,7 +60,7 @@ export default function Recurring() {
                 {e.auto_debit && <span> · auto-debit</span>}
               </p>
             </div>
-            <p className="fin" style={{ fontFamily: 'var(--sans)', fontSize: 17, fontWeight: 600 }}>₹{(+e.amount).toLocaleString('en-IN')}</p>
+            <p className="fin" style={{ fontFamily: 'var(--sans)', fontSize: 17, fontWeight: 600 }}>{fmtINR(+e.amount)}</p>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 11.5 }}>
             <span className="tag" style={{ background: e.active ? 'var(--emerald)' : 'var(--line)', color: e.active ? '#fff' : 'var(--ink-mute)' }}>

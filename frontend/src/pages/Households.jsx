@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
+import { fmtINR } from '../lib/amounts'
 
 export default function Households() {
   const [households, setHouseholds] = useState([])
@@ -33,8 +34,8 @@ export default function Households() {
       {detail.net_worth && (
         <div className="card card-pad-mb12" >
           <p className="label-caps-sm mb-4" >Household Net Worth</p>
-          <p className="fin h-600-20" >{detail.currency_symbol}₹{(+detail.net_worth.net_worth || 0).toLocaleString('en-IN')}</p>
-          <p className="text-11-muted" >Assets: ₹{(+detail.net_worth.total_assets || 0).toLocaleString('en-IN')} · Liabilities: ₹{(+detail.net_worth.total_liabilities || 0).toLocaleString('en-IN')}</p>
+          <p className="fin h-600-20" >{detail.currency_symbol}{fmtINR(+detail.net_worth.net_worth || 0)}</p>
+          <p className="text-11-muted" >Assets: {fmtINR(+detail.net_worth.total_assets || 0)} · Liabilities: {fmtINR(+detail.net_worth.total_liabilities || 0)}</p>
         </div>
       )}
 
@@ -51,9 +52,9 @@ export default function Households() {
                 <span className="tag" style={{ fontSize: 10, textTransform: 'capitalize' }}>{m.role}</span>
               </div>
               <div style={{ display: 'flex', gap: 12, marginTop: 6, fontSize: 11, color: 'var(--ink-mute)' }}>
-                <span>Debt: ₹{(+m.total_debt || 0).toLocaleString('en-IN')}</span>
-                <span>Invest: ₹{(+m.total_investments || 0).toLocaleString('en-IN')}</span>
-                <span>Expenses: ₹{(+m.monthly_expenses || 0).toLocaleString('en-IN')}/mo</span>
+                <span>Debt: {fmtINR(+m.total_debt || 0)}</span>
+                <span>Invest: {fmtINR(+m.total_investments || 0)}</span>
+                <span>Expenses: {fmtINR(+m.monthly_expenses || 0)}/mo</span>
               </div>
             </div>
           ))}

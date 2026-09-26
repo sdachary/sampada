@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { api } from '../lib/api'
+import { useResource } from '../lib/useResource'
 import DebtFormModal from '../components/DebtFormModal'
+import { fmtINR } from '../lib/amounts'
 
 function DebtCard({ debt, onEdit, onDelete }) {
   const navigate = useNavigate()
@@ -14,7 +14,7 @@ function DebtCard({ debt, onEdit, onDelete }) {
           <p className="row-600-14" >{debt.name}</p>
           <p className="text-12-muted" >{debt.category || 'Loan'} · {debt.interest_rate}% APR</p>
         </div>
-        <p className="fin" style={{ fontFamily: 'var(--sans)', fontSize: 18, fontWeight: 600, color: 'var(--coral)' }}>₹{(+debt.amount).toLocaleString('en-IN')}</p>
+        <p className="fin" style={{ fontFamily: 'var(--sans)', fontSize: 18, fontWeight: 600, color: 'var(--coral)' }}>{fmtINR(+debt.amount)}</p>
       </div>
       <div className="progress mb-4" >
         <div className="progress-fill" style={{ width: `${Math.min(pct, 100)}%` }} />
@@ -22,7 +22,7 @@ function DebtCard({ debt, onEdit, onDelete }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5, color: 'var(--ink-faint)', marginBottom: 10 }}>
         <span>{pct}% paid off</span>
         <span>
-          {debt.emi_amount && <span className="fin">EMI: ₹{(+debt.emi_amount).toLocaleString('en-IN')}/mo</span>}
+          {debt.emi_amount && <span className="fin">EMI: {fmtINR(+debt.emi_amount)}/mo</span>}
           {debt.status !== 'active' && <span className="tag ml-8" >{debt.status.replace('_', ' ')}</span>}
         </span>
       </div>
@@ -35,27 +35,8 @@ function DebtCard({ debt, onEdit, onDelete }) {
 }
 
 export default function Debts() {
-  const [debts, setDebts] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [modal, setModal] = useState(null)
-  const [total, setTotal] = useState(0)
-
-  const fetch = useCallback(async () => {
-    try {
-      const d = await api.request('/api/v1/debts')
-      setDebts(d)
-      setTotal(d.reduce((s, x) => s + (+x.amount || 0), 0))
-    } catch {} finally { setLoading(false) }
-  }, [])
-
-  useEffect(() => { fetch() }, [fetch])
-
-  const handleDelete = (debt) => {
-    if (!confirm(`Delete "${debt.name}"?`)) return
-    api.request(`/api/v1/debts/${debt.id}`, { method: 'DELETE' })
-      .then(fetch)
-      .catch(e => alert(e.message))
-  }
+  const { items: debts, loading, modal, setModal, closeModal, saved, remove } = useResource('/api/v1/debts')
+  const total = debts.reduce((s, x) => s + (+x.amount || 0), 0)
 
   if (loading) return (
     <div>
@@ -71,7 +52,7 @@ export default function Debts() {
       <div className="spread-mb20" >
         <div>
           <h1 className="page-title-no-mb" >Debts</h1>
-          {total > 0 && <p className="fin" style={{ fontSize: 13, color: 'var(--ink-mute)', marginTop: 2 }}>Total: ₹{total.toLocaleString('en-IN')}</p>}
+          {total > 0 && <p className="fin" style={{ fontSize: 13, color: 'var(--ink-mute)', marginTop: 2 }}>Total: {fmtINR(total)}</p>}
         </div>
         <div className="flex-g8" >
           <button onClick={() => setModal('new')} className="btn btn-primary" style={{ fontSize: 12.5, padding: '7px 16px' }}>+ Add</button>
@@ -94,7 +75,7 @@ export default function Debts() {
             key={d.id}
             debt={d}
             onEdit={(debt) => setModal(debt)}
-            onDelete={handleDelete}
+            onDelete={remove}
           />
         ))}
       </div>
@@ -102,8 +83,8 @@ export default function Debts() {
       {modal && (
         <DebtFormModal
           debt={modal === 'new' ? null : modal}
-          onClose={() => setModal(null)}
-          onSave={() => { setModal(null); fetch() }}
+          onClose={closeModal}
+          onSave={saved}
         />
       )}
     </div>

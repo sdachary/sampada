@@ -1,6 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
-import { Link } from 'react-router-dom'
-import { api } from '../lib/api'
+import { useResource } from '../lib/useResource'
 import PayoffPlanModal from '../components/PayoffPlanModal'
 
 const INTL = { style: 'decimal', minimumFractionDigits: 0, maximumFractionDigits: 0 }
@@ -10,18 +8,7 @@ function formatAmount(v) {
 }
 
 export default function PayoffPlans() {
-  const [plans, setPlans] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [modal, setModal] = useState(null)
-
-  const fetch = useCallback(async () => {
-    try {
-      const d = await api.request('/api/v1/payoff_plans')
-      setPlans(Array.isArray(d) ? d : [])
-    } catch {} finally { setLoading(false) }
-  }, [])
-
-  useEffect(() => { fetch() }, [fetch])
+  const { items: plans, loading, modal, setModal, closeModal, saved } = useResource('/api/v1/payoff_plans')
 
   if (loading) return (
     <div>
@@ -111,8 +98,8 @@ export default function PayoffPlans() {
       {modal && (
         <PayoffPlanModal
           plan={modal === 'new' ? null : modal}
-          onClose={() => setModal(null)}
-          onSave={() => { setModal(null); fetch() }}
+          onClose={closeModal}
+          onSave={saved}
         />
       )}
     </div>

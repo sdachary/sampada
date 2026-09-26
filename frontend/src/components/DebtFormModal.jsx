@@ -1,13 +1,13 @@
 import { useState } from 'react'
-import { api } from '../lib/api'
 import { Modal, Field, ConfirmDialog } from './ui'
+import { useModalForm } from '../lib/useModalForm'
 
 const CATEGORIES = ['credit_card', 'loan', 'personal', 'mortgage', 'education', 'other']
 const STATUSES = ['active', 'paid_default', 'paid_off', 'frozen']
 
 export default function DebtFormModal({ debt, onClose, onSave }) {
   const isEdit = !!debt
-  const [form, setForm] = useState({
+  const { form, set, saving, error, handleSubmit } = useModalForm({
     name: debt?.name || '',
     category: debt?.category || 'loan',
     amount: debt?.amount || '',
@@ -17,37 +17,19 @@ export default function DebtFormModal({ debt, onClose, onSave }) {
     paid_amount: debt?.paid_amount || '',
     started_at: debt?.started_at || '',
     notes: debt?.notes || '',
+  }, {
+    basePath: '/api/v1/debts',
+    id: debt?.id,
+    toBody: (b) => ({
+      ...b,
+      amount: parseFloat(b.amount) || 0,
+      interest_rate: b.interest_rate ? parseFloat(b.interest_rate) : null,
+      emi_amount: b.emi_amount ? parseFloat(b.emi_amount) : null,
+      paid_amount: parseFloat(b.paid_amount) || 0,
+    }),
+    onSave,
   })
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState(null)
   const [confirming, setConfirming] = useState(false)
-
-  const set = (key) => (e) => setForm(f => ({ ...f, [key]: e.target.value }))
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setSaving(true)
-    setError(null)
-    try {
-      const body = {
-        ...form,
-        amount: parseFloat(form.amount) || 0,
-        interest_rate: form.interest_rate ? parseFloat(form.interest_rate) : null,
-        emi_amount: form.emi_amount ? parseFloat(form.emi_amount) : null,
-        paid_amount: parseFloat(form.paid_amount) || 0,
-      }
-      if (isEdit) {
-        await api.request(`/api/v1/debts/${debt.id}`, { method: 'PATCH', body: JSON.stringify(body) })
-      } else {
-        await api.request('/api/v1/debts', { method: 'POST', body: JSON.stringify(body) })
-      }
-      onSave()
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setSaving(false)
-    }
-  }
 
   const handleDelete = async () => {
     setSaving(true)

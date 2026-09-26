@@ -7,6 +7,7 @@ import Chart from '../components/Chart'
 import QuickLogSheet from '../components/QuickLogSheet'
 import useOnline from '../lib/useOnline'
 import { Plus } from 'lucide-react'
+import { fmtINR } from '../lib/amounts'
 
 export default function Dashboard() {
   const { user } = useAuth()
@@ -95,7 +96,7 @@ export default function Dashboard() {
       <div className="card" style={{ padding: '28px 26px', marginBottom: 20 }}>
         <p style={{ fontSize: 11, color: 'var(--ink-mute)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Net worth</p>
         <p className="fin" style={{ fontFamily: 'var(--sans)', fontSize: 36, fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.1 }}>
-          ₹{(nw).toLocaleString('en-IN')}
+          {fmtINR(nw)}
         </p>
         {data?.debt_free_date && (
           <p style={{ fontSize: 13, color: 'var(--ink-mute)', marginTop: 8 }}>

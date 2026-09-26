@@ -1,5 +1,4 @@
-import { useState } from 'react'
-import { api } from '../lib/api'
+import { useModalForm } from '../lib/useModalForm'
 import { Modal, Field } from './ui'
 import { echoAmount } from '../lib/amounts'
 
@@ -8,7 +7,7 @@ const FREQUENCIES = ['monthly', 'quarterly', 'yearly']
 
 export default function InsuranceFormModal({ open, policy, onClose, onSave, currencySymbol }) {
   const isEdit = !!policy
-  const [form, setForm] = useState({
+  const { form, set, saving, error, handleSubmit } = useModalForm({
     policy_type: policy?.policy_type || 'health',
     provider_name: policy?.provider_name || '',
     premium_amount: policy?.premium_amount || '',
@@ -16,36 +15,19 @@ export default function InsuranceFormModal({ open, policy, onClose, onSave, curr
     coverage_amount: policy?.coverage_amount || '',
     renewal_date: policy?.renewal_date || '',
     notes: policy?.notes || '',
+  }, {
+    basePath: '/api/v1/insurance_policies',
+    id: policy?.id,
+    toBody: (b) => ({
+      ...b,
+      premium_amount: parseFloat(b.premium_amount) || 0,
+      coverage_amount: b.coverage_amount ? parseFloat(b.coverage_amount) : null,
+    }),
+    onSave,
   })
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState(null)
-
-  const set = (key) => (e) => setForm(f => ({ ...f, [key]: e.target.value }))
   const sym = currencySymbol || '₹'
   const premium = parseFloat(form.premium_amount)
   const canEcho = !Number.isNaN(premium) && premium > 0
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setSaving(true)
-    setError(null)
-    try {
-      const body = {
-        ...form,
-        premium_amount: premium || 0,
-        coverage_amount: form.coverage_amount ? parseFloat(form.coverage_amount) : null,
-      }
-      if (isEdit) {
-        await api.request(`/api/v1/insurance_policies/${policy.id}`, { method: 'PATCH', body: JSON.stringify(body) })
-      } else {
-        await api.request('/api/v1/insurance_policies', { method: 'POST', body: JSON.stringify(body) })
-      }
-      onSave()
-    } catch (err) {
-      setError(err.message)
-      setSaving(false)
-    }
-  }
 
   return (
     <Modal className="max-w-480" open={open} title={isEdit ? 'Edit Policy' : 'Add Insurance'} onClose={onClose} >

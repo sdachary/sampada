@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
 import { Modal, Field, ConfirmDialog } from './ui'
+import { useModalForm } from '../lib/useModalForm'
 
 const TYPES = ['expense', 'income']
 const FREQS = ['monthly', 'weekly', 'daily', 'yearly', 'quarterly']
@@ -8,7 +9,7 @@ const FREQS = ['monthly', 'weekly', 'daily', 'yearly', 'quarterly']
 export default function TransactionFormModal({ transaction, onClose, onSave }) {
   const isEdit = !!transaction
   const [categories, setCategories] = useState([])
-  const [form, setForm] = useState({
+  const { form, set, saving, error, handleSubmit } = useModalForm({
     description: transaction?.description || '',
     amount: transaction?.amount || '',
     transaction_type: transaction?.transaction_type || 'expense',
@@ -18,41 +19,17 @@ export default function TransactionFormModal({ transaction, onClose, onSave }) {
     notes: transaction?.notes || '',
     recurring: transaction?.recurring || false,
     recurring_frequency: transaction?.recurring_frequency || '',
+  }, {
+    basePath: '/api/v1/transactions',
+    id: transaction?.id,
+    toBody: (b) => ({
+      ...b,
+      amount: parseFloat(b.amount) || 0,
+      budget_category_id: b.budget_category_id || null,
+      recurring: b.recurring_frequency ? true : false,
+    }),
+    onSave,
   })
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState(null)
-  const [confirming, setConfirming] = useState(false)
-
-  useEffect(() => {
-    api.request('/api/v1/budget_categories').then(d => setCategories(Array.isArray(d) ? d : [])).catch(() => {})
-  }, [])
-
-  const set = (key) => (e) => setForm(f => ({ ...f, [key]: e.target.value }))
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setSaving(true)
-    setError(null)
-    try {
-      const body = {
-        ...form,
-        amount: parseFloat(form.amount) || 0,
-        budget_category_id: form.budget_category_id || null,
-        recurring: form.recurring_frequency ? true : false,
-      }
-      if (isEdit) {
-        await api.request(`/api/v1/transactions/${transaction.id}`, { method: 'PATCH', body: JSON.stringify(body) })
-      } else {
-        await api.request('/api/v1/transactions', { method: 'POST', body: JSON.stringify(body) })
-      }
-      onSave()
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setSaving(false)
-    }
-  }
-
   const handleDelete = async () => {
     setSaving(true)
     try {

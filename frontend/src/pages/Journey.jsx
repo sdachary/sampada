@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
+import { fmtINR } from '../lib/amounts'
 
 export default function Journey() {
   const [journey, setJourney] = useState(null)
@@ -52,19 +53,19 @@ export default function Journey() {
         <div className="card card-pad-16" >
           <p className="label-caps-sm mb-4" >Net Worth</p>
           <p className="fin" style={{ fontSize: 20, fontWeight: 600, color: (+nw.net_worth || 0) >= 0 ? 'var(--emerald)' : 'var(--coral)' }}>
-            ₹{(+nw.net_worth || 0).toLocaleString('en-IN')}
+            {fmtINR(+nw.net_worth || 0)}
           </p>
-          <p className="text-11-muted" >Assets: ₹{(+nw.assets || 0).toLocaleString('en-IN')} · Liab: ₹{(+nw.liabilities || 0).toLocaleString('en-IN')}</p>
+          <p className="text-11-muted" >Assets: {fmtINR(+nw.assets || 0)} · Liab: {fmtINR(+nw.liabilities || 0)}</p>
         </div>
         <div className="card card-pad-16" >
           <p className="label-caps-sm mb-4" >Total Debt</p>
-          <p className="fin amt-20-out" >₹{(+d.total_debt || 0).toLocaleString('en-IN')}</p>
-          {d.total_emi && <p className="text-11-muted" >EMI: ₹{(+d.total_emi).toLocaleString('en-IN')}/mo</p>}
+          <p className="fin amt-20-out" >{fmtINR(+d.total_debt || 0)}</p>
+          {d.total_emi && <p className="text-11-muted" >EMI: {fmtINR(+d.total_emi)}/mo</p>}
         </div>
         <div className="card card-pad-16" >
           <p className="label-caps-sm mb-4" >SIP Progress</p>
           <p className="fin" style={{ fontSize: 20, fontWeight: 600, color: 'var(--emerald)' }}>{sp.progress || 0}%</p>
-          <p className="text-11-muted" >Goal: ₹{(+sp.monthly_goal || 0).toLocaleString('en-IN')}/mo</p>
+          <p className="text-11-muted" >Goal: {fmtINR(+sp.monthly_goal || 0)}/mo</p>
         </div>
       </div>
 
@@ -74,7 +75,7 @@ export default function Journey() {
       <div className="card card-pad-16-mb8" >
         <div className="spread-mb4" >
           <span className="h-500-13" >Net Worth Target</span>
-          <span className="fin text-12-muted" >₹{(+nwp.current || 0).toLocaleString('en-IN')} / ₹{(+nwp.target || 0).toLocaleString('en-IN')}</span>
+          <span className="fin text-12-muted" >{fmtINR(+nwp.current || 0)} / {fmtINR(+nwp.target || 0)}</span>
         </div>
         <div className="progress h-8" >
           <div className="progress-fill green" style={{ width: `${nwp.progress_pct || 0}%` }} />
@@ -85,12 +86,12 @@ export default function Journey() {
       <div className="card card-pad-16-mb8" >
         <div className="spread-mb4" >
           <span className="h-500-13" >Debt Reduction</span>
-          <span className="fin text-12-muted" >₹{(+dp.paid_debt || 0).toLocaleString('en-IN')} / ₹{(+dp.original_debt || 0).toLocaleString('en-IN')}</span>
+          <span className="fin text-12-muted" >{fmtINR(+dp.paid_debt || 0)} / {fmtINR(+dp.original_debt || 0)}</span>
         </div>
         <div className="progress h-8" >
           <div className="progress-fill" style={{ width: `${dp.reduction_pct || 0}%`, background: 'var(--coral)' }} />
         </div>
-        <p className="text-11-faint mt-4" >{dp.reduction_pct || 0}% paid off · ₹{(+dp.total_debt || 0).toLocaleString('en-IN')} remaining</p>
+        <p className="text-11-faint mt-4" >{dp.reduction_pct || 0}% paid off · {fmtINR(+dp.total_debt || 0)} remaining</p>
       </div>
 
       <div className="card" style={{ padding: '16px', marginBottom: 16 }}>
@@ -101,7 +102,7 @@ export default function Journey() {
         <div className="progress h-8" >
           <div className="progress-fill green" style={{ width: `${sp.progress || 0}%`, background: '#a855f7' }} />
         </div>
-        <p className="text-11-faint mt-4" >Goal: ₹{(+sp.monthly_goal || 0).toLocaleString('en-IN')}/mo</p>
+        <p className="text-11-faint mt-4" >Goal: {fmtINR(+sp.monthly_goal || 0)}/mo</p>
       </div>
 
       {milestones.length > 0 && (
@@ -123,7 +124,7 @@ export default function Journey() {
             {p.net_worth_trajectory.slice(0, 12).map((pt, i) => (
               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, padding: '3px 0', borderBottom: i < 11 ? '1px solid var(--line-soft)' : 'none' }}>
                 <span className="text-mute" >{pt.date || pt.month}</span>
-                <span className="fin fw-500" >₹{(+pt.net_worth || 0).toLocaleString('en-IN')}</span>
+                <span className="fin fw-500" >{fmtINR(+pt.net_worth || 0)}</span>
               </div>
             ))}
           </div>

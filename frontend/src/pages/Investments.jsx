@@ -1,16 +1,9 @@
-import { useState, useEffect } from 'react'
-import { api } from '../lib/api'
+import { useResource } from '../lib/useResource'
 import InvestmentFormModal from '../components/InvestmentFormModal'
+import { fmtINR } from '../lib/amounts'
 
 export default function Investments() {
-  const [investments, setInvestments] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [modal, setModal] = useState(null)
-
-  const fetch = () => {
-    api.request('/api/v1/investments').then(d => setInvestments(Array.isArray(d) ? d : [])).catch(() => {}).finally(() => setLoading(false))
-  }
-  useEffect(() => { fetch() }, [])
+  const { items: investments, loading, modal, setModal, closeModal, saved, remove } = useResource('/api/v1/investments', { nameField: 'symbol' })
 
   if (loading) return (
     <div>
@@ -36,10 +29,10 @@ export default function Investments() {
         <div className="card card-pad-mb16" >
           <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
             <div><span className="label-caps-sm" >Total Value</span>
-              <p className="fin amt-in" >₹{totalValue.toLocaleString('en-IN')}</p></div>
+              <p className="fin amt-in" >{fmtINR(totalValue)}</p></div>
             <div><span className="label-caps-sm" >Total P&L</span>
               <p className="fin" style={{ fontSize: 16, fontWeight: 600, color: totalGain >= 0 ? 'var(--emerald)' : 'var(--coral)' }}>
-                {totalGain >= 0 ? '+' : ''}₹{totalGain.toLocaleString('en-IN')}</p></div>
+                {totalGain >= 0 ? '+' : ''}{fmtINR(totalGain)}</p></div>
           </div>
         </div>
       )}
@@ -60,14 +53,14 @@ export default function Investments() {
               <div>
                 <p style={{ fontWeight: 600, fontSize: 14, marginBottom: 1 }}>{i.symbol} <span style={{ fontWeight: 400, fontSize: 12, color: 'var(--ink-mute)' }}>{i.name}</span></p>
                 <p className="text-11-5-muted" >
-                  {i.shares} shares @ ₹{(+i.buy_price).toLocaleString('en-IN')}
+                  {i.shares} shares @ {fmtINR(+i.buy_price)}
                   {i.exchange && <span> · {i.exchange}</span>}
                 </p>
               </div>
               <div className="table-cell-num-plain" >
-                <p className="fin h-600-16" >₹{(+i.current_value || 0).toLocaleString('en-IN')}</p>
+                <p className="fin h-600-16" >{fmtINR(+i.current_value || 0)}</p>
                 <p className="fin" style={{ fontSize: 12, color: gain >= 0 ? 'var(--emerald)' : 'var(--coral)' }}>
-                  {gain >= 0 ? '+' : ''}₹{gain.toLocaleString('en-IN')} ({gainPct >= 0 ? '+' : ''}{gainPct.toFixed(1)}%)
+                  {gain >= 0 ? '+' : ''}{fmtINR(gain)} ({gainPct >= 0 ? '+' : ''}{gainPct.toFixed(1)}%)
                 </p>
               </div>
             </div>
@@ -77,7 +70,7 @@ export default function Investments() {
               {i.dividend_yield != null && +i.dividend_yield > 0 && <span className="tag" style={{ fontSize: 10, background: 'var(--emerald)', color: '#fff' }}>{i.dividend_yield}% div</span>}
               <span style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
                 <button onClick={() => setModal(i)} style={{ fontSize: 11, padding: '2px 8px', background: 'none', border: '1px solid var(--line)', borderRadius: 999, color: 'var(--ink-soft)', cursor: 'pointer' }}>Edit</button>
-                <button onClick={() => { if (confirm(`Delete "${i.symbol}"?`)) { api.request(`/api/v1/investments/${i.id}`, { method: 'DELETE' }).then(fetch).catch(e => alert(e.message)) } }}
+                <button onClick={() => remove(i)}
                   style={{ fontSize: 11, padding: '2px 8px', background: 'none', border: '1px solid var(--line)', borderRadius: 999, color: 'var(--ink-faint)', cursor: 'pointer' }}>Delete</button>
               </span>
             </div>
@@ -88,8 +81,8 @@ export default function Investments() {
       {modal && (
         <InvestmentFormModal
           investment={modal === 'new' ? null : modal}
-          onClose={() => setModal(null)}
-          onSave={() => { setModal(null); fetch() }}
+          onClose={closeModal}
+          onSave={saved}
         />
       )}
     </div>

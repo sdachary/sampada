@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
+import { fmtINR } from '../lib/amounts'
 
 export default function Sips() {
   const [sips, setSips] = useState([])
@@ -28,9 +29,9 @@ export default function Sips() {
         <div className="card card-pad-mb16" >
           <div className="flex-g20-wrap" >
             <div><span className="label-caps-sm" >Monthly Investment</span>
-              <p className="fin amt-out" >₹{totalMonthly.toLocaleString('en-IN')}</p></div>
+              <p className="fin amt-out" >{fmtINR(totalMonthly)}</p></div>
             <div><span className="label-caps-sm" >Projected Annual</span>
-              <p className="fin amt-in" >₹{totalProjected.toLocaleString('en-IN')}</p></div>
+              <p className="fin amt-in" >{fmtINR(totalProjected)}</p></div>
           </div>
         </div>
       )}
@@ -48,11 +49,11 @@ export default function Sips() {
               <p className="row-600-14" >{s.name}</p>
               <p className="text-11-5-muted" >{s.frequency} · {s.status}</p>
             </div>
-            <p className="fin" style={{ fontFamily: 'var(--sans)', fontSize: 17, fontWeight: 600 }}>₹{(+s.monthly_investment || 0).toLocaleString('en-IN')}/mo</p>
+            <p className="fin" style={{ fontFamily: 'var(--sans)', fontSize: 17, fontWeight: 600 }}>{fmtINR(+s.monthly_investment || 0)}/mo</p>
           </div>
           <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 6 }}>
-            {s.target_income && <span className="tag fs-10" >target ₹{(+s.target_income).toLocaleString('en-IN')}/mo</span>}
-            {s.projected_annual_income && <span className="tag green fs-10" >₹{(+s.projected_annual_income).toLocaleString('en-IN')}/yr projected</span>}
+            {s.target_income && <span className="tag fs-10" >target {fmtINR(+s.target_income)}/mo</span>}
+            {s.projected_annual_income && <span className="tag green fs-10" >{fmtINR(+s.projected_annual_income)}/yr projected</span>}
           </div>
           <div style={{ fontSize: 11.5, color: 'var(--ink-faint)', display: 'flex', justifyContent: 'space-between' }}>
             <span>Status: <span style={{ color: s.status === 'active' ? 'var(--emerald)' : 'var(--ink-mute)' }}>{s.status}</span></span>

@@ -1,59 +1,26 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
 import { Modal, Field, ConfirmDialog } from './ui'
+import { useModalForm } from '../lib/useModalForm'
 
 export default function PayoffPlanModal({ plan, onClose, onSave }) {
   const isEdit = !!plan
-  const [form, setForm] = useState({
+  const { form, set, saving, error, handleSubmit } = useModalForm({
     name: plan?.name || '',
     strategy: plan?.strategy || 'avalanche',
     extra_payment: plan?.extra_payment || '',
     debt_ids: plan?.debts?.map(d => d.id) || [],
+  }, {
+    basePath: '/api/v1/payoff_plans',
+    id: plan?.id,
+    toBody: (b) => ({
+      name: b.name,
+      strategy: b.strategy,
+      extra_payment: parseFloat(b.extra_payment) || 0,
+      debt_ids: b.debt_ids,
+    }),
+    onSave,
   })
-  const [debts, setDebts] = useState([])
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState(null)
-  const [confirming, setConfirming] = useState(false)
-
-  useEffect(() => {
-    api.request('/api/v1/debts').then(d => setDebts(Array.isArray(d) ? d : [])).catch(() => {})
-  }, [])
-
-  const set = (key) => (e) => setForm(f => ({ ...f, [key]: e.target.value }))
-
-  const toggleDebt = (id) => {
-    setForm(f => ({
-      ...f,
-      debt_ids: f.debt_ids.includes(id)
-        ? f.debt_ids.filter(x => x !== id)
-        : [...f.debt_ids, id],
-    }))
-  }
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setSaving(true)
-    setError(null)
-    try {
-      const body = {
-        name: form.name,
-        strategy: form.strategy,
-        extra_payment: parseFloat(form.extra_payment) || 0,
-        debt_ids: form.debt_ids,
-      }
-      if (isEdit) {
-        await api.request(`/api/v1/payoff_plans/${plan.id}`, { method: 'PATCH', body: JSON.stringify(body) })
-      } else {
-        await api.request('/api/v1/payoff_plans', { method: 'POST', body: JSON.stringify(body) })
-      }
-      onSave()
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setSaving(false)
-    }
-  }
-
   const handleDelete = async () => {
     setSaving(true)
     try {

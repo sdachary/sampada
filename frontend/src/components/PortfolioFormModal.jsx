@@ -1,44 +1,25 @@
 import { useState } from 'react'
 import { api } from '../lib/api'
 import { Modal, Field, ConfirmDialog } from './ui'
+import { useModalForm } from '../lib/useModalForm'
 
 const GOALS = ['retirement', 'wealth', 'education', 'house', 'emergency', 'other']
 
 export default function PortfolioFormModal({ portfolio, onClose, onSave }) {
   const isEdit = !!portfolio
-  const [form, setForm] = useState({
+  const { form, set, saving, error, handleSubmit } = useModalForm({
     name: portfolio?.name || '',
     goal: portfolio?.goal || 'wealth',
     risk_tolerance: portfolio?.risk_tolerance != null ? portfolio.risk_tolerance : '',
+  }, {
+    basePath: '/api/v1/portfolios',
+    id: portfolio?.id,
+    toBody: (b) => ({
+      ...b,
+      risk_tolerance: b.risk_tolerance ? parseFloat(b.risk_tolerance) : null,
+    }),
+    onSave,
   })
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState(null)
-  const [confirming, setConfirming] = useState(false)
-
-  const set = (key) => (e) => setForm(f => ({ ...f, [key]: e.target.value }))
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setSaving(true)
-    setError(null)
-    try {
-      const body = {
-        ...form,
-        risk_tolerance: form.risk_tolerance ? parseFloat(form.risk_tolerance) : null,
-      }
-      if (isEdit) {
-        await api.request(`/api/v1/portfolios/${portfolio.id}`, { method: 'PATCH', body: JSON.stringify(body) })
-      } else {
-        await api.request('/api/v1/portfolios', { method: 'POST', body: JSON.stringify(body) })
-      }
-      onSave()
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setSaving(false)
-    }
-  }
-
   const handleDelete = async () => {
     setSaving(true)
     try {

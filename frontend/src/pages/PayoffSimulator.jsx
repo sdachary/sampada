@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { api } from '../lib/api'
 import { Field } from '../components/ui'
 import Chart from '../components/Chart'
+import { fmtINR } from '../lib/amounts'
 
 export default function PayoffSimulator() {
   const [searchParams] = useSearchParams()
@@ -79,7 +80,7 @@ export default function PayoffSimulator() {
                 className="input" style={{ maxWidth: 360, padding: '9px 12px' }}>
                 <option value="">Choose a debt…</option>
                 {filtered.map(d => (
-                  <option key={d.id} value={d.id}>{d.name} — ₹{(+d.amount || 0).toLocaleString('en-IN')} @ {d.interest_rate}%</option>
+                  <option key={d.id} value={d.id}>{d.name} — {fmtINR(+d.amount || 0)} @ {d.interest_rate}%</option>
                 ))}
               </select>
             </Field>
@@ -92,7 +93,7 @@ export default function PayoffSimulator() {
             <div className="card card-pad-mb16" >
               <p className="h-600-12 mb-4" >{selected.name}</p>
               <p className="text-11-5-muted" >
-                ₹{(+selected.amount || 0).toLocaleString('en-IN')} · {selected.interest_rate}% APR · EMI: ₹{(+selected.emi_amount || 0).toLocaleString('en-IN')}/mo
+                {fmtINR(+selected.amount || 0)} · {selected.interest_rate}% APR · EMI: {fmtINR(+selected.emi_amount || 0)}/mo
               </p>
             </div>
           )}
@@ -124,12 +125,12 @@ export default function PayoffSimulator() {
                   <div style={{ flex: '1 1 140px' }}>
                     <p className="label-caps-sm mb-3" >Current plan</p>
                     <p className="fin" style={{ fontSize: 24, fontWeight: 700, color: 'var(--coral)' }}>{base.months} mo</p>
-                    <p className="fin text-12-muted" >₹{(+base.total_interest).toLocaleString('en-IN')} interest</p>
+                    <p className="fin text-12-muted" >{fmtINR(+base.total_interest)} interest</p>
                   </div>
                   <div style={{ flex: '1 1 140px' }}>
                     <p className="label-caps-sm mb-3" >Accelerated</p>
                     <p className="fin" style={{ fontSize: 24, fontWeight: 700, color: 'var(--emerald)' }}>{res.months} mo</p>
-                    <p className="fin text-12-muted" >₹{(+res.total_interest).toLocaleString('en-IN')} interest</p>
+                    <p className="fin text-12-muted" >{fmtINR(+res.total_interest)} interest</p>
                   </div>
                 </div>
                 <div className="card" style={{ padding: '16px 18px', background: 'var(--surface-2)', marginBottom: 12 }}>
@@ -179,10 +180,10 @@ export default function PayoffSimulator() {
                       {res.schedule.slice(0, 60).map(s => (
                         <tr key={s.month}>
                           <td style={{ padding: '3px 8px', color: 'var(--ink-mute)' }}>{s.month}</td>
-                          <td className="table-cell-num-sm" >₹{s.payment.toLocaleString('en-IN')}</td>
-                          <td className="table-cell-num-sm" >₹{s.interest.toLocaleString('en-IN')}</td>
-                          <td className="table-cell-num-sm" >₹{s.principal.toLocaleString('en-IN')}</td>
-                          <td className="table-cell-num-sm" >₹{s.balance.toLocaleString('en-IN')}</td>
+                          <td className="table-cell-num-sm" >{fmtINR(s.payment)}</td>
+                          <td className="table-cell-num-sm" >{fmtINR(s.interest)}</td>
+                          <td className="table-cell-num-sm" >{fmtINR(s.principal)}</td>
+                          <td className="table-cell-num-sm" >{fmtINR(s.balance)}</td>
                         </tr>
                       ))}
                       {res.schedule.length > 60 && (
@@ -202,7 +203,7 @@ export default function PayoffSimulator() {
                   </div>
                   <div>
                     <p className="label-caps-sm" >Interest</p>
-                    <p className="fin amt-22-in" >₹{interestSaved.toLocaleString('en-IN')}</p>
+                    <p className="fin amt-22-in" >{fmtINR(interestSaved)}</p>
                   </div>
                 </div>
               </div>
