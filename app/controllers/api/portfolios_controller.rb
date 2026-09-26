@@ -1,30 +1,7 @@
 module Api
   class PortfoliosController < Api::BaseController
-    def index
-      portfolios = current_user.portfolios.order(created_at: :desc)
-      render_success(portfolios.map { |p| portfolio_json(p) })
-    end
-
-    def show
-      portfolio = current_user.portfolios.find(params.expect(:id))
-      render_success(portfolio_json(portfolio))
-    end
-
-    def create
-      portfolio = current_user.portfolios.create!(portfolio_params)
-      render_success(portfolio_json(portfolio), status: :created)
-    end
-
-    def update
-      portfolio = current_user.portfolios.find(params.expect(:id))
-      portfolio.update!(portfolio_params)
-      render_success(portfolio_json(portfolio))
-    end
-
-    def destroy
-      current_user.portfolios.find(params.expect(:id)).destroy!
-      head :no_content
-    end
+    include ScopedCrud
+    crud_for :portfolios, serialize: :portfolio_json, params: :portfolio_params
 
     def rebalance
       portfolio = current_user.portfolios.find(params.expect(:id))

@@ -15,6 +15,7 @@
 **Action:** Extract a `useModalForm(initial)` hook for state + change handlers; migrate modals one per commit.
 **Verify:** `npm run build` + create/edit round-trip per modal.
 
-## P2 — Backend controller audit (not yet verified)
-**Action:** Audit `app/controllers/api/v1/` for duplicated index/show/create/update/destroy + scoping chains; propose shared `Api::V1::BaseController` concerns. Research-only first.
-**Verify:** `bundle exec rspec` green before and after.
+## P2 — Backend controller audit (DONE for goals/portfolios/budgets)
+**Done:** `app/controllers/concerns/scoped_crud.rb` (`crud_for` + `scope_index`/`destroy_response` hooks); migrated `goals`, `portfolios`, `budgets` (budgets keeps eager-load via hook).
+**Remaining:** apply the same one-line-per-controller pattern to the other ~20 resource controllers (debts, transactions, investments, …) — mechanical, keep custom actions/serializers.
+**Verify:** `bundle exec rspec` (no Ruby runtime on this machine — review-verified only).

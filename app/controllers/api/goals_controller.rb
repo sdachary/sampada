@@ -2,32 +2,8 @@
 
 module Api
   class GoalsController < Api::BaseController
-    def index
-      goals = current_user.goals.order(created_at: :desc)
-      render_success(goals.map { |g| goal_json(g) })
-    end
-
-    def show
-      goal = current_user.goals.find(params.expect(:id))
-      render_success(goal_json(goal))
-    end
-
-    def create
-      goal = current_user.goals.create!(goal_params)
-      render_success(goal_json(goal), status: :created)
-    end
-
-    def update
-      goal = current_user.goals.find(params.expect(:id))
-      goal.update!(goal_params)
-      render_success(goal_json(goal))
-    end
-
-    def destroy
-      goal = current_user.goals.find(params.expect(:id))
-      goal.destroy!
-      head :no_content
-    end
+    include ScopedCrud
+    crud_for :goals, serialize: :goal_json, params: :goal_params
 
     private
 

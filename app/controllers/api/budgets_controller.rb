@@ -1,30 +1,7 @@
 module Api
   class BudgetsController < Api::BaseController
-    def index
-      budgets = current_user.budgets.includes(:budget_category).order(created_at: :desc)
-      render_success(budgets.map { |b| budget_json(b) })
-    end
-
-    def show
-      budget = current_user.budgets.find(params.expect(:id))
-      render_success(budget_json(budget))
-    end
-
-    def create
-      budget = current_user.budgets.create!(budget_params)
-      render_success(budget_json(budget), status: :created)
-    end
-
-    def update
-      budget = current_user.budgets.find(params.expect(:id))
-      budget.update!(budget_params)
-      render_success(budget_json(budget))
-    end
-
-    def destroy
-      current_user.budgets.find(params.expect(:id)).destroy!
-      head :no_content
-    end
+    include ScopedCrud
+    crud_for :budgets, serialize: :budget_json, params: :budget_params
 
     def overview
       budgets = current_user.budgets.includes(:budget_category)
@@ -32,6 +9,10 @@ module Api
     end
 
     private
+
+    def scope_index(rel)
+      rel.includes(:budget_category)
+    end
 
     def budget_params
       source = params[:budget].presence || params
