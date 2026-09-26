@@ -1,6 +1,6 @@
 class RecurringExpense < TenantRecord
   belongs_to :user
-  has_many :transactions, foreign_key: :recurring_expense_id, dependent: :nullify
+  has_many :transactions, dependent: :nullify, inverse_of: :recurring_expense
 
   validates :name, :amount, :frequency, presence: true
   validates :amount, numericality: { greater_than: 0 }
@@ -17,7 +17,7 @@ class RecurringExpense < TenantRecord
   def log_due_transaction!
     return unless auto_debit? && active?
     return unless next_due_date && next_due_date <= Time.zone.today
-    return if transactions.where(transaction_date: next_due_date).exists?
+    return if transactions.exists?(transaction_date: next_due_date)
 
     self.class.transaction do
       transactions.create!(

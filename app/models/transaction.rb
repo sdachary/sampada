@@ -2,6 +2,7 @@ class Transaction < TenantRecord
   belongs_to :user
   belongs_to :budget_category, optional: true
   belongs_to :household, optional: true
+  belongs_to :recurring_expense, optional: true, inverse_of: :transactions
 
   validates :description, :amount, :transaction_date, presence: true
   validates :amount, numericality: { other_than: 0 }

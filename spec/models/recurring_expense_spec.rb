@@ -56,7 +56,7 @@ RSpec.describe RecurringExpense, type: :model do
   describe '#log_due_transaction!' do
     it 'creates an expense transaction dated on the due date and advances next_due_date' do
       expense = create(:recurring_expense, auto_debit: true, next_due_date: Time.zone.today, amount: 1200.0)
-      expect { expense.log_due_transaction! }.to change { Transaction.count }.by(1)
+      expect { expense.log_due_transaction! }.to change(Transaction, :count).by(1)
       txn = expense.transactions.last
       expect(txn.transaction_type).to eq('expense')
       expect(txn.description).to eq(expense.name)
@@ -73,17 +73,17 @@ RSpec.describe RecurringExpense, type: :model do
 
     it 'does nothing for a future due date' do
       expense = create(:recurring_expense, auto_debit: true, next_due_date: Time.zone.today + 3.days)
-      expect { expense.log_due_transaction! }.not_to change { Transaction.count }
+      expect { expense.log_due_transaction! }.not_to change(Transaction, :count)
     end
 
     it 'does nothing when auto_debit is off' do
       expense = create(:recurring_expense, auto_debit: false, next_due_date: Time.zone.today)
-      expect { expense.log_due_transaction! }.not_to change { Transaction.count }
+      expect { expense.log_due_transaction! }.not_to change(Transaction, :count)
     end
 
     it 'does nothing when inactive' do
       expense = create(:recurring_expense, auto_debit: true, active: false, next_due_date: Time.zone.today)
-      expect { expense.log_due_transaction! }.not_to change { Transaction.count }
+      expect { expense.log_due_transaction! }.not_to change(Transaction, :count)
     end
   end
 end
