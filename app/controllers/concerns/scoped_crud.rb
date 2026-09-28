@@ -20,29 +20,29 @@ module ScopedCrud
   end
 
   def index
-    rel = current_user.public_send(self.class.crud_resource).order(created_at: :desc)
+    rel = current_user.send(self.class.crud_resource).order(created_at: :desc)
     rel = scope_index(rel) if respond_to?(:scope_index, true)
-    render_success(rel.map { |r| public_send(self.class.crud_serializer, r) })
+    render_success(rel.map { |r| send(self.class.crud_serializer, r) })
   end
 
   def show
-    record = current_user.public_send(self.class.crud_resource).find(params.expect(:id))
-    render_success(public_send(self.class.crud_serializer, record))
+    record = current_user.send(self.class.crud_resource).find(params.expect(:id))
+    render_success(send(self.class.crud_serializer, record))
   end
 
   def create
-    record = current_user.public_send(self.class.crud_resource).create!(public_send(self.class.crud_params_method))
-    render_success(public_send(self.class.crud_serializer, record), status: :created)
+    record = current_user.send(self.class.crud_resource).create!(send(self.class.crud_params_method))
+    render_success(send(self.class.crud_serializer, record), status: :created)
   end
 
   def update
-    record = current_user.public_send(self.class.crud_resource).find(params.expect(:id))
-    record.update!(public_send(self.class.crud_params_method))
-    render_success(public_send(self.class.crud_serializer, record))
+    record = current_user.send(self.class.crud_resource).find(params.expect(:id))
+    record.update!(send(self.class.crud_params_method))
+    render_success(send(self.class.crud_serializer, record))
   end
 
   def destroy
-    record = current_user.public_send(self.class.crud_resource).find(params.expect(:id))
+    record = current_user.send(self.class.crud_resource).find(params.expect(:id))
     if respond_to?(:destroy_response, true)
       destroy_response(record)
     else
