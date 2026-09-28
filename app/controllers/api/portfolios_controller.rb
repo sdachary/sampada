@@ -1,6 +1,7 @@
 module Api
   class PortfoliosController < Api::BaseController
     include ScopedCrud
+
     crud_for :portfolios, serialize: :portfolio_json, params: :portfolio_params
 
     def rebalance

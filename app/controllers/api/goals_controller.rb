@@ -3,6 +3,7 @@
 module Api
   class GoalsController < Api::BaseController
     include ScopedCrud
+
     crud_for :goals, serialize: :goal_json, params: :goal_params
 
     private

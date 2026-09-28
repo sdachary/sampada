@@ -1,6 +1,7 @@
 module Api
   class BudgetsController < Api::BaseController
     include ScopedCrud
+
     crud_for :budgets, serialize: :budget_json, params: :budget_params
 
     def overview
