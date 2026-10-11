@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { api } from '../lib/api'
 import { fmtINR } from '../lib/amounts'
 
@@ -35,12 +35,12 @@ function TripDetail({ tripId, onBack }) {
   const [newMember, setNewMember] = useState('')
   const [newMemberEmail, setNewMemberEmail] = useState('')
 
-  const load = () => {
+  const load = useCallback(() => {
     setLoading(true)
     api.request(`/api/v1/trips/${tripId}`).then(setTrip).catch(() => {}).finally(() => setLoading(false))
-  }
+  }, [tripId])
 
-  useEffect(() => { load() }, [tripId])
+  useEffect(() => { load() }, [load])
 
   const addMember = async () => {
     if (!newMember.trim()) return
@@ -56,7 +56,6 @@ function TripDetail({ tripId, onBack }) {
   if (loading) return <div style={{ padding: 20 }}><div className="skeleton h-200"  /></div>
   if (!trip) return <div className="empty-state"><p>Trip not found</p></div>
 
-  const myId = trip.members[0]?.id // current user is first member
   const toRupees = (cents) => (cents / 100)
   const owes = Object.entries(trip.balances || {}).filter(([_, v]) => v < 0)
   const owed = Object.entries(trip.balances || {}).filter(([_, v]) => v > 0)
@@ -100,7 +99,7 @@ function TripDetail({ tripId, onBack }) {
       {owed.length > 0 && (
         <div className="card card-pad-16-mb12" >
           <p className="label-caps mb-8" >Settlements needed</p>
-          {owed.map(([id, amount]) => {
+          {owed.map(([id]) => {
             const from = owes.find(([fid]) => fid !== id)
             if (!from) return null
             return (

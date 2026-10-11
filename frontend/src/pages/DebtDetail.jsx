@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { api } from '../lib/api'
 
 const CATEGORIES = ['credit_card', 'loan', 'personal', 'mortgage', 'education', 'other']
@@ -78,7 +78,6 @@ function InlineField({ label, value, type = 'text', options, onSave, currency })
 
 export default function DebtDetail() {
   const { id } = useParams()
-  const navigate = useNavigate()
   const { debt, loading, saving, patch } = useDebt(id)
 
   if (loading) return (

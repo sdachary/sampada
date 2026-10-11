@@ -51,6 +51,6 @@
         localStorage.setItem('acharylab-cookie-consent', 'reject');
         banner.remove();
       });
-    } catch (e) { /* storage unavailable; show nothing */ }
+    } catch { /* storage unavailable; show nothing */ }
   };
 })();

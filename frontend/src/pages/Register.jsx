@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
-import { useAuth } from '../lib/auth'
+import { useAuth } from '../lib/useAuth'
 import { api } from '../lib/api'
 import AuthLayout from './AuthLayout'
 

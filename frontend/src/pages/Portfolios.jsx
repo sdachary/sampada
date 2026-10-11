@@ -22,7 +22,7 @@ export default function Portfolios() {
         data.prices.forEach(p => { map[p.symbol] = p })
         setPrices(prev => ({ ...prev, ...map }))
       }
-    } catch (e) { /* ignore */ }
+    } catch { /* ignore */ }
     setRefreshing(false)
   }
 

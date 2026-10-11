@@ -35,7 +35,6 @@ export default function Journey() {
   )
 
   const d = journey.debt || {}
-  const s = journey.sip || {}
   const nw = journey.net_worth || {}
   const p = progress || {}
   const dp = p.debt_progress || {}

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import ThemeToggle from '../components/ThemeToggle'
 import {
   TrendingDown, PiggyBank, RefreshCw, MessageSquare,
-  AlertTriangle, Globe, Users, Cpu, Terminal, Check, X,
+  AlertTriangle, Globe, Users, Cpu, Check, X,
 } from 'lucide-react'
 
 function useReveal() {

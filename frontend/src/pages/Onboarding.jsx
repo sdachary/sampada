@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { api } from '../lib/api'
-import { useAuth } from '../lib/auth'
+import { useAuth } from '../lib/useAuth'
 import { echoAmount } from '../lib/amounts'
 import InsuranceFormModal from '../components/InsuranceFormModal'
 import glossary from '../i18n/en.json'

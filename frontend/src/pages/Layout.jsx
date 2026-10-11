@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Outlet, useNavigate, useLocation, Link } from 'react-router-dom'
-import { useAuth } from '../lib/auth'
+import { useAuth } from '../lib/useAuth'
 import useTheme from '../lib/useTheme'
 import useOnline from '../lib/useOnline'
 import CommandPalette from '../components/CommandPalette'

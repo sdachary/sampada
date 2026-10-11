@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useAuth } from '../lib/auth'
-import { api, auth as authApi } from '../lib/api'
+import { useAuth } from '../lib/useAuth'
+import { api } from '../lib/api'
 import { useNavigate } from 'react-router-dom'
 import { Field } from '../components/ui'
 import { registerServiceWorker, subscribeToPush, unsubscribeFromPush, isPushSupported, isPushSubscribed } from '../lib/push'

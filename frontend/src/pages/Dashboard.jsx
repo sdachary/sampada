@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../lib/api'
-import { useAuth } from '../lib/auth'
 import { StatCard } from '../components/ui'
 import Chart from '../components/Chart'
 import QuickLogSheet from '../components/QuickLogSheet'
@@ -10,7 +9,6 @@ import { Plus } from 'lucide-react'
 import { fmtINR } from '../lib/amounts'
 
 export default function Dashboard() {
-  const { user } = useAuth()
   const { isOnline } = useOnline()
   const [data, setData] = useState(null)
   const [projection, setProjection] = useState(null)
