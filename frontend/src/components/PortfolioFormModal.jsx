@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { api } from '../lib/api'
 import { Modal, Field, ConfirmDialog } from './ui'
 import { useModalForm } from '../lib/useModalForm'
 
@@ -7,7 +6,8 @@ const GOALS = ['retirement', 'wealth', 'education', 'house', 'emergency', 'other
 
 export default function PortfolioFormModal({ portfolio, onClose, onSave }) {
   const isEdit = !!portfolio
-  const { form, set, saving, error, handleSubmit } = useModalForm({
+  const [confirming, setConfirming] = useState(false)
+  const { form, set, saving, error, handleSubmit, handleDelete } = useModalForm({
     name: portfolio?.name || '',
     goal: portfolio?.goal || 'wealth',
     risk_tolerance: portfolio?.risk_tolerance != null ? portfolio.risk_tolerance : '',
@@ -20,16 +20,6 @@ export default function PortfolioFormModal({ portfolio, onClose, onSave }) {
     }),
     onSave,
   })
-  const handleDelete = async () => {
-    setSaving(true)
-    try {
-      await api.request(`/api/v1/portfolios/${portfolio.id}`, { method: 'DELETE' })
-      onSave()
-    } catch (err) {
-      setError(err.message)
-      setSaving(false)
-    }
-  }
 
   return (
     <Modal open title={isEdit ? 'Edit Portfolio' : 'Add Portfolio'} onClose={onClose} style={{ maxWidth: 460 }}>

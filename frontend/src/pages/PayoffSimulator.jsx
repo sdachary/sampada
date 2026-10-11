@@ -49,7 +49,7 @@ export default function PayoffSimulator() {
 
   useEffect(() => {
     if (selectedId && debts.length > 0 && !baseline && !simulating) simulate()
-  }, [debts, selectedId])
+  }, [debts, selectedId, simulate, baseline, simulating])
 
   if (loading) return <div><div className="skeleton h-200"  /></div>
 
@@ -135,7 +135,7 @@ export default function PayoffSimulator() {
                 </div>
                 <div className="card" style={{ padding: '16px 18px', background: 'var(--surface-2)', marginBottom: 12 }}>
                   <p className="h-600-12 mb-8" >Balance over time</p>
-                  <Chart data={base.schedule.map((s, i) => ({ ...s, baseline: s.balance, accelerated: accelerated.schedule[i]?.balance ?? null }))}
+                  <Chart data={base.schedule.map((s, i) => ({ ...s, baseline: s.balance, accelerated: res.schedule[i]?.balance ?? null }))}
                     xKey="month" series={[
                       { key: 'baseline', name: 'Current', color: 'var(--coral)' },
                       { key: 'accelerated', name: 'Accelerated', color: 'var(--emerald)' },

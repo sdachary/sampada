@@ -9,7 +9,8 @@ const FREQS = ['monthly', 'weekly', 'daily', 'yearly', 'quarterly']
 export default function TransactionFormModal({ transaction, onClose, onSave }) {
   const isEdit = !!transaction
   const [categories, setCategories] = useState([])
-  const { form, set, saving, error, handleSubmit } = useModalForm({
+  const [confirming, setConfirming] = useState(false)
+  const { form, set, saving, error, handleSubmit, handleDelete } = useModalForm({
     description: transaction?.description || '',
     amount: transaction?.amount || '',
     transaction_type: transaction?.transaction_type || 'expense',
@@ -30,16 +31,10 @@ export default function TransactionFormModal({ transaction, onClose, onSave }) {
     }),
     onSave,
   })
-  const handleDelete = async () => {
-    setSaving(true)
-    try {
-      await api.request(`/api/v1/transactions/${transaction.id}`, { method: 'DELETE' })
-      onSave()
-    } catch (err) {
-      setError(err.message)
-      setSaving(false)
-    }
-  }
+
+  useEffect(() => {
+    api.request('/api/v1/budget_categories').then(d => setCategories(Array.isArray(d) ? d : [])).catch(() => {})
+  }, [])
 
   return (
     <Modal className="max-w-480" open title={isEdit ? 'Edit Transaction' : 'Add Transaction'} onClose={onClose} >

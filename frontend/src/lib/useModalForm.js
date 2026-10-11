@@ -32,5 +32,17 @@ export function useModalForm(initial, { basePath, id, toBody = (b) => b, onSave 
     }
   }, [form, id, basePath, toBody, onSave])
 
-  return { form, set, saving, error, setError, handleSubmit }
+  const handleDelete = useCallback(async () => {
+    if (!id) return
+    setSaving(true)
+    try {
+      await api.request(`${basePath}/${id}`, { method: 'DELETE' })
+      onSave()
+    } catch (err) {
+      setError(err.message)
+      setSaving(false)
+    }
+  }, [id, basePath, onSave])
+
+  return { form, setForm, set, saving, error, handleSubmit, handleDelete }
 }

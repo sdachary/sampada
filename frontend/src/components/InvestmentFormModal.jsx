@@ -8,7 +8,8 @@ const TYPES = ['stock', 'etf', 'mutual_fund', 'bond', 'gold', 'crypto', 'other']
 export default function InvestmentFormModal({ investment, onClose, onSave }) {
   const isEdit = !!investment
   const [portfolios, setPortfolios] = useState([])
-  const { form, set, saving, error, handleSubmit } = useModalForm({
+  const [confirming, setConfirming] = useState(false)
+  const { form, set, saving, error, handleSubmit, handleDelete } = useModalForm({
     portfolio_id: investment?.portfolio_id || '',
     symbol: investment?.symbol || '',
     name: investment?.name || '',
@@ -29,16 +30,10 @@ export default function InvestmentFormModal({ investment, onClose, onSave }) {
     }),
     onSave,
   })
-  const handleDelete = async () => {
-    setSaving(true)
-    try {
-      await api.request(`/api/v1/investments/${investment.id}`, { method: 'DELETE' })
-      onSave()
-    } catch (err) {
-      setError(err.message)
-      setSaving(false)
-    }
-  }
+
+  useEffect(() => {
+    api.request('/api/v1/portfolios').then(d => setPortfolios(Array.isArray(d) ? d : [])).catch(() => {})
+  }, [])
 
   return (
     <Modal className="max-w-480" open title={isEdit ? 'Edit Investment' : 'Add Investment'} onClose={onClose} >

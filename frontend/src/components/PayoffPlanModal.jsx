@@ -5,7 +5,9 @@ import { useModalForm } from '../lib/useModalForm'
 
 export default function PayoffPlanModal({ plan, onClose, onSave }) {
   const isEdit = !!plan
-  const { form, set, saving, error, handleSubmit } = useModalForm({
+  const [debts, setDebts] = useState([])
+  const [confirming, setConfirming] = useState(false)
+  const { form, setForm, set, saving, error, handleSubmit, handleDelete } = useModalForm({
     name: plan?.name || '',
     strategy: plan?.strategy || 'avalanche',
     extra_payment: plan?.extra_payment || '',
@@ -21,15 +23,18 @@ export default function PayoffPlanModal({ plan, onClose, onSave }) {
     }),
     onSave,
   })
-  const handleDelete = async () => {
-    setSaving(true)
-    try {
-      await api.request(`/api/v1/payoff_plans/${plan.id}`, { method: 'DELETE' })
-      onSave()
-    } catch (err) {
-      setError(err.message)
-      setSaving(false)
-    }
+
+  useEffect(() => {
+    api.request('/api/v1/debts').then(d => setDebts(Array.isArray(d) ? d : [])).catch(() => {})
+  }, [])
+
+  const toggleDebt = (id) => {
+    setForm(f => ({
+      ...f,
+      debt_ids: f.debt_ids.includes(id)
+        ? f.debt_ids.filter(x => x !== id)
+        : [...f.debt_ids, id],
+    }))
   }
 
   const selectedDebts = debts.filter(d => form.debt_ids.includes(d.id))

@@ -7,7 +7,7 @@ const STATUSES = ['active', 'paid_default', 'paid_off', 'frozen']
 
 export default function DebtFormModal({ debt, onClose, onSave }) {
   const isEdit = !!debt
-  const { form, set, saving, error, handleSubmit } = useModalForm({
+  const { form, set, saving, error, handleSubmit, handleDelete } = useModalForm({
     name: debt?.name || '',
     category: debt?.category || 'loan',
     amount: debt?.amount || '',
@@ -30,17 +30,6 @@ export default function DebtFormModal({ debt, onClose, onSave }) {
     onSave,
   })
   const [confirming, setConfirming] = useState(false)
-
-  const handleDelete = async () => {
-    setSaving(true)
-    try {
-      await api.request(`/api/v1/debts/${debt.id}`, { method: 'DELETE' })
-      onSave()
-    } catch (err) {
-      setError(err.message)
-      setSaving(false)
-    }
-  }
 
   return (
     <Modal className="max-w-480" open title={isEdit ? 'Edit Debt' : 'Add Debt'} onClose={onClose} >
