@@ -7,6 +7,15 @@ on:
       - '*.md'
       - 'docs/**'
       - '.github/**'
+  # Without this, PR checks were only the Cloudflare Pages preview: rubocop,
+  # brakeman, bundler-audit, rspec and the frontend build all ran after the
+  # merge, never before it. Same blind spot bepara and sadhan had.
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - '*.md'
+      - 'docs/**'
+      - '.github/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
