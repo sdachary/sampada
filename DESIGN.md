@@ -76,3 +76,49 @@ No neumorphism, no glassmorphism.
 - Financial figures always use `.fin` class for `font-variant-numeric: tabular-nums`.
 - The `--ink` variable is `#15140f` (not black) — use it for all primary text.
 - When adding semantic colors (success, warning, danger), use purpose-named CSS variables, never hardcoded hex.
+
+## Design tokens (single source of truth)
+
+All palette hex lives in exactly one file: `frontend/src/styles/tokens.css` (imported first in
+`src/main.jsx`). Light theme is `:root`; dark theme is `[data-theme="dark"]`. Legacy variable
+names (`--paper`, `--ink-mute`, `--coral`, `--line`, …) are alias layers on top of the
+purpose-named tokens, so both naming styles resolve; **new code uses the purpose names**:
+
+| Purpose | Legacy equals | Note |
+|---|---|---|
+| `--bg` · `--bg-warm` · `--bg-deep` | `--paper` · `--paper-warm` · `--paper-dark` | page ground, sidebar ground |
+| `--surface` | `--paper-card` | cards, modals, dropdowns |
+| `--ink` · `--ink-soft` | same | primary / secondary text |
+| `--muted` · `--faint` | `--ink-mute` · `--ink-faint` | captions / hints |
+| `--accent` · `--accent-soft` | `--coral` · `--coral-soft` | the single accent voice |
+| `--accent-bg` · `--accent-active-bg` | `--coral-bg` · `--coral-active-bg` | tinted surfaces |
+| `--success` · `--warning` · `--danger` | `--emerald` · (new) · (new) | semantic, purpose-named only |
+| `--border` · `--border-soft` | `--line` · `--line-soft` | outlines, dividers |
+| `--shadow-hover` · `--shadow-modal` | `--shadow` | the only two shadows |
+| `--z-nav 100 · --z-overlay 500 · --z-modal 1000 · --z-toast 1100` | — | stacking scale |
+| `--space-1…16` (4/8 grid) · `--radius-sm/md/pill` · type scale `--text-2xs…3xl` · `--dur-fast/base/slow` + `--ease` | — | spacing, radius, type, motion |
+
+Contrast fixes applied in the token layer (components never compensate individually):
+- `--faint` light theme **#8b8676 → #6e6858** (3.22 → 4.91:1 on `--bg`); dark theme
+  **#6b6257 → #8f8577** (3.09 → 5.10:1). Needed wherever faint text renders at 10–12px.
+- Known flag for the Button primitive: white label on `--accent` is 2.99:1 (fails AA at 14px);
+  ink-on-coral is 6.17:1 — resolved in the Button component (Step 4), not by re-tinting the brand accent.
+
+## Craft rules (anti-"generated" tells)
+- Motion answers user actions (open, expand, confirm, save). **Unprompted motion is rare**:
+  at most one orchestrated entrance per page (e.g. the hero). Never fade-and-slide every
+  section; never hover-motion every card. Hover lift is available but only on `interactive` cards.
+- All-caps tracked labels only for small table/column headers and nav group names. No
+  all-caps "eyebrow" above headings.
+- Numbered markers (01/02/03) only when content is a real sequence.
+- Not every block is a rounded card: vary hierarchy; some content sits directly on the page
+  with whitespace as the separator.
+- Body line length under ~75 characters.
+- Animate only `transform` and `opacity` (targeted `transform: translateY` hover is
+  grandfathered from the existing card). Never animate layout properties in lists.
+
+## Copy rules
+- Sentence case, plain verbs, active voice. Buttons say what happens (`Save changes`, not
+  `Submit`). The same action keeps the same name across button, toast, and confirmation.
+- Empty states tell the user the next action. Errors say what went wrong and how to fix
+  it — no apologies, no re-styled dead ends.
