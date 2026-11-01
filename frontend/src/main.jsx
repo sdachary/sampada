@@ -8,6 +8,8 @@ import { AuthProvider } from './lib/auth'
 import { registerServiceWorker } from './lib/push'
 import App from './App.jsx'
 import './styles/tokens.css'
+import './styles/fonts.css'
+import './styles/base.css'
 import './index.css'
 
 registerServiceWorker()

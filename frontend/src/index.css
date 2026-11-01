@@ -1,13 +1,4 @@
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 html { scroll-behavior: smooth; }
-body {
-  font-family: var(--body);
-  background: var(--paper);
-  color: var(--ink);
-  line-height: 1.55;
-  -webkit-font-smoothing: antialiased;
-}
 
 h1, h2, h3, h4 { font-family: var(--sans); font-weight: 600; letter-spacing: -0.02em; }
 
@@ -79,8 +70,6 @@ input, button, textarea { font-family: var(--body); }
   .main-area { padding: 20px 16px; max-width: 100%; }
   input, select, textarea { font-size: 16px !important; }
 }
-
-.fin { font-variant-numeric: tabular-nums; }
 
 /* reusable style classes extracted from inline patterns */
 .label-caps { font-size: 10.5px; font-weight: 600; color: var(--ink-faint); letter-spacing: 0.08em; text-transform: uppercase; }
