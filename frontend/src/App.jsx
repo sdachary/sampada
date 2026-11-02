@@ -16,6 +16,7 @@ const Transactions = lazy(() => import('./pages/Transactions'))
 const Budgets = lazy(() => import('./pages/Budgets'))
 const Recurring = lazy(() => import('./pages/Recurring'))
 const Portfolios = lazy(() => import('./pages/Portfolios'))
+const PortfolioRebalance = lazy(() => import('./pages/PortfolioRebalance'))
 const Investments = lazy(() => import('./pages/Investments'))
 const Sips = lazy(() => import('./pages/Sips'))
 const Journey = lazy(() => import('./pages/Journey'))
@@ -59,6 +60,7 @@ export default function App() {
           <Route path="budgets" element={<Budgets />} />
           <Route path="recurring" element={<Recurring />} />
           <Route path="portfolios" element={<Portfolios />} />
+          <Route path="portfolios/:id/rebalance" element={<PortfolioRebalance />} />
           <Route path="investments" element={<Investments />} />
           <Route path="sips" element={<Sips />} />
           <Route path="goals" element={<Goals />} />
