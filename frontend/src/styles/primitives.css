@@ -108,3 +108,5 @@
 .p-page-header__title { font-family: var(--font-display); font-size: var(--text-xl); font-weight: 600; letter-spacing: -0.02em; color: var(--ink); margin: 0; }
 .p-page-header__num { font-family: var(--font-serif); font-size: var(--text-base); font-style: italic; color: var(--muted); margin: 0 0 2px; letter-spacing: 0; }
 .p-page-header__actions { flex-shrink: 0; }
+
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
