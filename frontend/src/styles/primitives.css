@@ -98,3 +98,13 @@
 
 /* Toast */
 .p-toast { background: var(--ink); color: var(--bg); padding: 12px 16px; border-radius: var(--radius-md); font-size: var(--text-sm); box-shadow: var(--shadow-modal); }
+
+/* PageHeader (Step 5) — shared header: title (display font), optional serif-italic page num, primary action right */
+.p-page-header {
+  display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-4);
+  margin-bottom: var(--space-6); padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border);
+}
+.p-page-header__title { font-family: var(--font-display); font-size: var(--text-xl); font-weight: 600; letter-spacing: -0.02em; color: var(--ink); margin: 0; }
+.p-page-header__num { font-family: var(--font-serif); font-size: var(--text-base); font-style: italic; color: var(--muted); margin: 0 0 2px; letter-spacing: 0; }
+.p-page-header__actions { flex-shrink: 0; }
