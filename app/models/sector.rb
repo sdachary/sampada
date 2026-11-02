@@ -1,5 +1,5 @@
 class Sector < TenantRecord
-  has_many :investments
+  has_many :investments, dependent: :nullify
 
   validates :name, presence: true, uniqueness: { case_sensitive: false }
   validates :color, presence: true

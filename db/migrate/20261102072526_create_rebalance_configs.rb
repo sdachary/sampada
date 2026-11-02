@@ -1,7 +1,7 @@
 class CreateRebalanceConfigs < ActiveRecord::Migration[8.1]
   def change
     create_table :rebalance_configs do |t|
-      t.references :portfolio, null: false, foreign_key: true, index: { unique: true }
+      t.references :portfolio, null: false, foreign_key: true, index: { unique: true }, type: :uuid
 
       # Core config
       t.decimal :contribution, precision: 14, scale: 2, default: 21000.0
