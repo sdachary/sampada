@@ -39,6 +39,28 @@ export const api = {
   dashboardProjection: () => request('/api/v1/dashboard/projection'),
   onboardingSnapshot: () => request('/api/v1/onboarding/snapshot'),
   onboardingComplete: () => request('/api/v1/onboarding/complete', { method: 'POST' }),
+
+  // Rebalance v2
+  rebalanceV2: (portfolioId, contribution) =>
+    request(`/api/v1/portfolios/${portfolioId}/rebalance_v2`, {
+      method: 'POST',
+      body: JSON.stringify({ contribution }),
+    }),
+  rebalanceConfig: (portfolioId) => request(`/api/v1/portfolios/${portfolioId}/rebalance_config`),
+  updateRebalanceConfig: (portfolioId, config) =>
+    request(`/api/v1/portfolios/${portfolioId}/rebalance_config`, {
+      method: 'PUT',
+      body: JSON.stringify({ rebalance_config: config }),
+    }),
+  importInvestments: (portfolioId, file, preview = false) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return request(`/api/v1/portfolios/${portfolioId}/import_investments${preview ? '?preview=true' : ''}`, {
+      method: 'POST',
+      headers: {}, // Let browser set Content-Type with boundary
+      body: formData,
+    })
+  },
 }
 
 export const auth = {
