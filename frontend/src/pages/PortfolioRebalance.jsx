@@ -335,47 +335,51 @@ export default function PortfolioRebalance() {
       </Card>
 
       {/* Compare v1 Toggle */}
-      {compareV1 && v1Result && (
+      {compareV1 && v1Result && result && (
         <Card style={{ padding: '16px', border: '2px solid var(--accent)' }}>
-          <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)', marginBottom: 12 }}>v1 vs v2 Comparison (Seed Portfolio)</p>
+          <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)', marginBottom: 12 }}>v1 vs v2 Comparison (Current Portfolio)</p>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)', textAlign: 'left' }}>
                 <th style={{ padding: '8px 12px' }}>Metric</th>
-                <th style={{ padding: '8px 12px', textAlign: 'right' }}>v1</th>
-                <th style={{ padding: '8px 12px', textAlign: 'right' }}>v2</th>
+                <th style={{ padding: '8px 12px', textAlign: 'right' }}>v1 (Legacy)</th>
+                <th style={{ padding: '8px 12px', textAlign: 'right' }}>v2 (New)</th>
               </tr>
             </thead>
             <tbody>
               <tr style={{ borderBottom: '1px solid var(--border-soft)' }}>
                 <td style={{ padding: '8px 12px' }}>Spent</td>
-                <td style={{ padding: '8px 12px', textAlign: 'right' }}>₹20,099.58</td>
-                <td style={{ padding: '8px 12px', textAlign: 'right' }}>₹20,936.57</td>
+                <td style={{ padding: '8px 12px', textAlign: 'right' }}>{fmtINR(v1Result.summary.totalActualCost)}</td>
+                <td style={{ padding: '8px 12px', textAlign: 'right' }}>{fmtINR(result.summary.totalActualCost)}</td>
               </tr>
               <tr style={{ borderBottom: '1px solid var(--border-soft)' }}>
                 <td style={{ padding: '8px 12px' }}>Leftover</td>
-                <td style={{ padding: '8px 12px', textAlign: 'right' }}>₹900.42</td>
-                <td style={{ padding: '8px 12px', textAlign: 'right' }}>₹63.43</td>
+                <td style={{ padding: '8px 12px', textAlign: 'right' }}>{fmtINR(v1Result.summary.leftoverCash)}</td>
+                <td style={{ padding: '8px 12px', textAlign: 'right' }}>{fmtINR(result.summary.leftoverCash)}</td>
               </tr>
               <tr style={{ borderBottom: '1px solid var(--border-soft)' }}>
                 <td style={{ padding: '8px 12px' }}>Orders</td>
-                <td style={{ padding: '8px 12px', textAlign: 'right' }}>16</td>
-                <td style={{ padding: '8px 12px', textAlign: 'right' }}>8</td>
+                <td style={{ padding: '8px 12px', textAlign: 'right' }}>{v1Result.summary.orders}</td>
+                <td style={{ padding: '8px 12px', textAlign: 'right' }}>{result.summary.orders}</td>
               </tr>
               <tr style={{ borderBottom: '1px solid var(--border-soft)' }}>
                 <td style={{ padding: '8px 12px' }}>Above 10% cap</td>
-                <td style={{ padding: '8px 12px', textAlign: 'right' }}>₹2,637</td>
-                <td style={{ padding: '8px 12px', textAlign: 'right' }}>₹0</td>
+                <td style={{ padding: '8px 12px', textAlign: 'right' }}>
+                  {fmtINR(v1Result.rows.filter(r => r.suggestedQty > 0 && r.weightAfter > 0.10).reduce((sum, r) => sum + r.actualCost, 0))}
+                </td>
+                <td style={{ padding: '8px 12px', textAlign: 'right' }}>
+                  {fmtINR(result.rows.filter(r => r.suggestedQty > 0 && r.weightAfter > 0.10).reduce((sum, r) => sum + r.actualCost, 0))}
+                </td>
               </tr>
               <tr style={{ borderBottom: '1px solid var(--border-soft)' }}>
                 <td style={{ padding: '8px 12px' }}>Top-5 weight</td>
-                <td style={{ padding: '8px 12px', textAlign: 'right' }}>47.0%</td>
-                <td style={{ padding: '8px 12px', textAlign: 'right' }}>44.1%</td>
+                <td style={{ padding: '8px 12px', textAlign: 'right' }}>{(v1Result.summary.concentrationAfter?.top5 * 100 || 0).toFixed(1)}%</td>
+                <td style={{ padding: '8px 12px', textAlign: 'right' }}>{(result.summary.concentrationAfter.top5 * 100).toFixed(1)}%</td>
               </tr>
               <tr style={{ borderBottom: '1px solid var(--border-soft)' }}>
                 <td style={{ padding: '8px 12px' }}>HHI</td>
-                <td style={{ padding: '8px 12px', textAlign: 'right' }}>0.0708</td>
-                <td style={{ padding: '8px 12px', textAlign: 'right' }}>0.0664</td>
+                <td style={{ padding: '8px 12px', textAlign: 'right' }}>{(v1Result.summary.concentrationAfter?.hhi || 0).toFixed(4)}</td>
+                <td style={{ padding: '8px 12px', textAlign: 'right' }}>{result.summary.concentrationAfter.hhi.toFixed(4)}</td>
               </tr>
             </tbody>
           </table>
