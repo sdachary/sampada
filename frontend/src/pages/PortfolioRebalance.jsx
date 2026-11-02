@@ -32,6 +32,7 @@ export default function PortfolioRebalance() {
   const [importPreview, setImportPreview] = useState(null)
   const [importFile, setImportFile] = useState(null)
   const [editingHolding, setEditingHolding] = useState(null)
+  const [sectors, setSectors] = useState([])
 
   const {
     holdings: apiHoldings,
@@ -82,6 +83,11 @@ export default function PortfolioRebalance() {
       }))
     }
   }, [apiConfig])
+
+  // Fetch sectors for edit dialog
+  useEffect(() => {
+    api.request('/api/v1/sectors').then(d => setSectors(Array.isArray(d) ? d : [])).catch(() => {})
+  }, [])
 
   const holdings = useMemo(() => {
     if (!apiHoldings?.length) return []
@@ -517,27 +523,13 @@ export default function PortfolioRebalance() {
         }}
       />
 
-      <Dialog open={!!editingHolding} onClose={() => setEditingHolding(null)} title={editingHolding?.id ? 'Edit Holding' : 'Add Holding'}>
-        <p style={{ color: 'var(--muted)' }}>Edit form implementation pending</p>
-      </Dialog>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 16, padding: 16, background: 'var(--surface)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
-        <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)', marginBottom: 8 }}>Edit Holding</p>
-        <form style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <InputField label="Symbol" value={editingHolding?.symbol || ''} onChange={e => setEditingHolding({ ...editingHolding, symbol: e.target.value })} required />
-            <InputField label="Name" value={editingHolding?.name || ''} onChange={e => setEditingHolding({ ...editingHolding, name: e.target.value })} />
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <InputField label="Shares" type="number" value={editingHolding?.shares || ''} onChange={e => setEditingHolding({ ...editingHolding, shares: e.target.value })} required />
-            <InputField label="Buy Price" type="number" step="0.01" value={editingHolding?.buy_price || ''} onChange={e => setEditingHolding({ ...editingHolding, buy_price: e.target.value })} required />
-          </div>
-          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 8 }}>
-            <Button variant="ghost" onClick={() => setEditingHolding(null)}>Cancel</Button>
-            <Button onClick={() => { toast('Saved'); setEditingHolding(null); }}>Save</Button>
-          </div>
-        </form>
-      </div>
+      <EditHoldingDialog
+        open={!!editingHolding}
+        onClose={() => setEditingHolding(null)}
+        holding={editingHolding}
+        sectors={sectors}
+        onSave={() => setEditingHolding(null)}
+      />
 
       <ToastHost />
 
