@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Dialog, Button, Input, InputField, Select } from '../ui'
+import { Dialog, Button, InputField, Select, toast } from '../ui'
 import { api } from '../../lib/api'
 
 const INVESTMENT_TYPES = [
@@ -17,8 +17,6 @@ export default function EditHoldingDialog({
   sectors,
   onSave,
 }) {
-  if (!open) return null
-
   const isEdit = !!holding?.id
   const [form, setForm] = useState({
     symbol: holding?.symbol || '',
@@ -112,6 +110,8 @@ export default function EditHoldingDialog({
       setSaving(false)
     }
   }
+
+  if (!open) return null
 
   return (
     <Dialog open onClose={onClose} title={isEdit ? 'Edit Holding' : 'Add Holding'}>

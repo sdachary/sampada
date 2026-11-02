@@ -27,7 +27,6 @@ export default function PortfolioRebalance() {
   const { id } = useParams()
   const { user } = useAuth()
   const [compareV1, setCompareV1] = useState(false)
-  const [v1Result, setV1Result] = useState(null)
   const [holdingsDrawerOpen, setHoldingsDrawerOpen] = useState(false)
   const [importPreview, setImportPreview] = useState(null)
   const [importFile, setImportFile] = useState(null)
@@ -59,8 +58,6 @@ export default function PortfolioRebalance() {
     maxOrders: 8,
     targetMode: 'equal',
   })
-
-  const [result, setResult] = useState(null)
 
   useEffect(() => {
     if (apiConfig) {
@@ -109,16 +106,14 @@ export default function PortfolioRebalance() {
       }))
   }, [apiHoldings])
 
-  useEffect(() => {
-    if (holdings.length > 0) {
-      const engineConfig = { ...config }
-      const result = rebalanceV2(holdings, engineConfig)
-      setResult(result)
-
-      const v1Holdings = holdings.map(h => ({ ...h, perf: (h.ltp - h.avgCost) / h.avgCost }))
-      const v1 = rebalanceV1(v1Holdings, { contribution: engineConfig.contribution })
-      setV1Result(v1)
-    }
+  // Memoized rebalance computation for performance (<10ms for 200 rows)
+  const { result, v1Result } = useMemo(() => {
+    if (holdings.length === 0) return { result: null, v1Result: null }
+    const engineConfig = { ...config }
+    const result = rebalanceV2(holdings, engineConfig)
+    const v1Holdings = holdings.map(h => ({ ...h, perf: (h.ltp - h.avgCost) / h.avgCost }))
+    const v1Result = rebalanceV1(v1Holdings, { contribution: engineConfig.contribution })
+    return { result, v1Result }
   }, [holdings, config])
 
   const handleConfigChange = (key, value) => {
@@ -152,11 +147,6 @@ export default function PortfolioRebalance() {
 
   const handleCompareV1 = () => {
     setCompareV1(!compareV1)
-    if (!compareV1 && result) {
-      const v1Holdings = holdings.map(h => ({ ...h, perf: (h.ltp - h.avgCost) / h.avgCost }))
-      const v1 = rebalanceV1(v1Holdings, { contribution: config.contribution })
-      setV1Result(v1)
-    }
   }
 
   const handleImportPreview = async (file) => {

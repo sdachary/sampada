@@ -248,8 +248,8 @@ export function rebalanceV2(holdings: HoldingPosition[], userCfg: Partial<Rebala
     warnings.push('No priced Growth stocks: that pool was moved to Dividend.');
   }
 
-  sleeves.Dividend.length && sleeveWeights(sleeves.Dividend, cfg);
-  sleeves.Growth.length && sleeveWeights(sleeves.Growth, cfg);
+  if (sleeves.Dividend.length) sleeveWeights(sleeves.Dividend, cfg);
+  if (sleeves.Growth.length) sleeveWeights(sleeves.Growth, cfg);
 
   const driftBefore = drift(priced, (r) => r.value);
 

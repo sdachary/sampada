@@ -207,6 +207,8 @@ function Hero3DCanvas({ scrollProgress, prefersReducedMotion }) {
       frameloop={prefersReducedMotion ? 'never' : 'demand'}
       onCreated={({ gl }) => {
         gl.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
+        // Explicitly set clear color to transparent to avoid black background
+        gl.clearColor(0, 0, 0, 0)
       }}
       style={{ width: '100%', height: '100%', display: 'block' }}
     >
