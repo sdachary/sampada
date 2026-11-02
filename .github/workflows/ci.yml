@@ -65,6 +65,25 @@ jobs:
       - name: Build
         run: npm run build
         working-directory: frontend
+      - name: Check bundle size
+        run: npm run size
+        working-directory: frontend
+      - name: Start preview server
+        run: npm run preview -- --port 4173 &
+        working-directory: frontend
+      - name: Wait for preview
+        run: sleep 5 && curl -f http://localhost:4173/
+      - name: Lighthouse CI
+        run: npx lhci autorun
+        working-directory: frontend
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+      - name: Accessibility tests (axe)
+        run: npx playwright test test/accessibility.test.js
+        working-directory: frontend
+      - name: Visual smoke tests
+        run: npx playwright test test/visual-smoke.test.js
+        working-directory: frontend
 
   test:
     runs-on: ubuntu-latest
