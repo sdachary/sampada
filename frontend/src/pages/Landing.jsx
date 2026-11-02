@@ -1,23 +1,87 @@
-import { useEffect } from 'react'
+import { useEffect, useState, useRef, Suspense, lazy } from 'react'
 import { Link } from 'react-router-dom'
 import ThemeToggle from '../components/ThemeToggle'
 import { Reveal, PageTransition } from '../lib/motion-primitives'
 import { Check, X } from 'lucide-react'
 import { Card, Button, PageHeader, fmtINR } from '../components/ui'
-import {
-  TrendingDown, PiggyBank, RefreshCw, MessageSquare,
-  AlertTriangle, Globe, Users, Cpu,
-} from 'lucide-react'
+
+// 3D hero lazy import (Step 9) - loaded after first paint, landing route only
+const Hero3D = lazy(() => import('../landing/hero3d/Hero3D').then(m => ({ default: m.Hero3DWithFallback })))
+const HeroPoster = lazy(() => import('../landing/hero3d/HeroPoster'))
+
+function Hero3DLoader() {
+  const [show3D, setShow3D] = useState(false)
+  const [showPoster, setShowPoster] = useState(true)
+  const canvasRef = useRef(null)
+
+  // Check hardware capabilities for 3D rendering
+  const canRender3D = () => {
+    if (typeof window === 'undefined') return false
+    const canvas = document.createElement('canvas')
+    const gl = canvas.getContext('webgl2') || canvas.getContext('webgl')
+    if (!gl) return false
+
+    // Check viewport
+    if (window.innerWidth < 768) return false
+
+    // Check reduced motion
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false
+
+    // Check save-data
+    if (navigator.connection?.saveData === true) return false
+
+    // Check hardware concurrency
+    if (navigator.hardwareConcurrency !== undefined && navigator.hardwareConcurrency <= 4) return false
+
+    return true
+  }
+
+  useEffect(() => {
+    if (!canRender3D()) return
+
+    // Load 3D after first paint
+    const timer = requestIdleCallback
+      ? requestIdleCallback(() => setShow3D(true), { timeout: 2000 })
+      : setTimeout(() => setShow3D(true), 1000)
+
+    return () => cancelIdleCallback?.(timer) || clearTimeout(timer)
+  }, [])
+
+  const handleCanvasReady = () => {
+    setShowPoster(false)
+  }
+
+  return (
+    <div id="landing-3d-slot" style={{ width: '100%', maxWidth: 400, aspectRatio: '1/1', margin: '48px auto 0', position: 'relative' }}>
+      {/* Poster - shown immediately */}
+      <Suspense fallback={<div style={{ width: '100%', aspectRatio: '1/1', background: 'var(--border-soft)', borderRadius: 'var(--radius-lg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} aria-hidden="true" />}>
+        <HeroPoster ref={showPoster ? undefined : null} style={{ position: 'absolute', inset: 0, transition: 'opacity 0.6s ease', opacity: showPoster && !show3D ? 1 : 0, pointerEvents: 'none' }} />
+      </Suspense>
+
+      {/* 3D canvas - fades in */}
+      {show3D && (
+        <Suspense fallback={<div style={{ position: 'absolute', inset: 0, background: 'var(--border-soft)', borderRadius: 'var(--radius-lg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} aria-hidden="true" />}>
+          <Hero3D
+            ref={canvasRef}
+            onLoad={handleCanvasReady}
+            style={{ position: 'absolute', inset: 0, opacity: showPoster ? 0 : 1, transition: 'opacity 0.6s ease' }}
+            aria-hidden="true"
+          />
+        </Suspense>
+      )}
+    </div>
+  )
+}
 
 const FEATURES = [
-  { icon: TrendingDown, title: 'Debt payoff tracker', body: 'Avalanche or snowball order, a full EMI calendar, and a month-by-month projection to your debt-free date.' },
-  { icon: PiggyBank, title: 'Dividend SIP planner', body: 'Set an income target and timeline. Sampada\'s AI picks 2–3 dividend stocks to match.' },
-  { icon: RefreshCw, title: 'Portfolio rebalancing', body: 'Modern Portfolio Theory checks your allocation every month and flags what\'s off track.' },
-  { icon: MessageSquare, title: 'Natural-language entries', body: '"I spent ₹500 on groceries" becomes a categorized transaction, no forms.' },
-  { icon: AlertTriangle, title: 'Anomaly detection', body: 'A 3-sigma algorithm flags spending that breaks your normal pattern, automatically.' },
-  { icon: Globe, title: 'Multi-currency, global markets', body: '32 currencies with live rates. NYSE, NASDAQ, LSE, TSE, ASX — plus native NSE/BSE support.' },
-  { icon: Users, title: 'Household sharing', body: 'Add family members with role-based access and one shared household dashboard.' },
-  { icon: Cpu, title: 'Free AI, by default', body: 'Runs on OpenRouter\'s free models or fully local via Ollama. No AI paywall, ever.' },
+  { icon: 'TrendingDown', title: 'Debt payoff tracker', body: 'Avalanche or snowball order, a full EMI calendar, and a month-by-month projection to your debt-free date.' },
+  { icon: 'PiggyBank', title: 'Dividend SIP planner', body: 'Set an income target and timeline. Sampada\'s AI picks 2–3 dividend stocks to match.' },
+  { icon: 'RefreshCw', title: 'Portfolio rebalancing', body: 'Modern Portfolio Theory checks your allocation every month and flags what\'s off track.' },
+  { icon: 'MessageSquare', title: 'Natural-language entries', body: '"I spent ₹500 on groceries" becomes a categorized transaction, no forms.' },
+  { icon: 'AlertTriangle', title: 'Anomaly detection', body: 'A 3-sigma algorithm flags spending that breaks your normal pattern, automatically.' },
+  { icon: 'Globe', title: 'Multi-currency, global markets', body: '32 currencies with live rates. NYSE, NASDAQ, LSE, TSE, ASX — plus native NSE/BSE support.' },
+  { icon: 'Users', title: 'Household sharing', body: 'Add family members with role-based access and one shared household dashboard.' },
+  { icon: 'Cpu', title: 'Free AI, by default', body: 'Runs on OpenRouter\'s free models or fully local via Ollama. No AI paywall, ever.' },
 ]
 
 const COMPARE_ROWS = [
@@ -48,10 +112,24 @@ function Stage({ label, desc, color, pct, index }) {
 }
 
 function FeatureCard({ f }) {
-  const Icon = f.icon
+  // Dynamic icon import
+  const iconMap = {
+    TrendingDown: () => import('lucide-react').then(m => m.TrendingDown),
+    PiggyBank: () => import('lucide-react').then(m => m.PiggyBank),
+    RefreshCw: () => import('lucide-react').then(m => m.RefreshCw),
+    MessageSquare: () => import('lucide-react').then(m => m.MessageSquare),
+    AlertTriangle: () => import('lucide-react').then(m => m.AlertTriangle),
+    Globe: () => import('lucide-react').then(m => m.Globe),
+    Users: () => import('lucide-react').then(m => m.Users),
+    Cpu: () => import('lucide-react').then(m => m.Cpu),
+  }
+  const Icon = lazy(() => iconMap[f.icon]())
+
   return (
     <Card style={{ padding: '22px 22px' }}>
-      <Icon className="mb-12" size={20} color="var(--accent)" strokeWidth={1.75} />
+      <Suspense fallback={<div style={{ width: 20, height: 20 }} aria-hidden="true" />}>
+        <Icon className="mb-12" size={20} color="var(--accent)" strokeWidth={1.75} />
+      </Suspense>
       <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 600, letterSpacing: '-0.01em', marginBottom: 6 }}>{f.title}</h3>
       <p style={{ fontSize: 13.5, color: 'var(--muted)', lineHeight: 1.55 }}>{f.body}</p>
     </Card>
@@ -95,10 +173,8 @@ export default function Landing() {
             </p>
           </Reveal>
 
-          {/* 3D hero slot reserved (Step 9) */}
-          <div id="landing-3d-slot" style={{ width: '100%', maxWidth: 400, aspectRatio: '1/1', margin: '48px auto 0', background: 'var(--border-soft)', borderRadius: 'var(--radius-lg)' }} aria-hidden="true">
-            {/* HeroPoster will render here in Step 9 */}
-          </div>
+          {/* 3D hero slot with lazy-loaded canvas + poster fallback */}
+          <Hero3DLoader />
         </section>
 
         {/* 2. Debt → Zero → Wealth arc */}
