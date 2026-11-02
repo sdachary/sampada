@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, Suspense, lazy } from 'react'
 import { Link } from 'react-router-dom'
 import ThemeToggle from '../components/ThemeToggle'
 import { Reveal, PageTransition } from '../lib/motion-primitives'
-import { Check, X } from 'lucide-react'
+import { Check, X, TrendingDown, PiggyBank, RefreshCw, MessageSquare, AlertTriangle, Globe, Users, Cpu } from 'lucide-react'
 import { Card, Button, PageHeader, fmtINR } from '../components/ui'
 
 // 3D hero lazy import (Step 9) - loaded after first paint, landing route only
@@ -111,25 +111,23 @@ function Stage({ label, desc, color, pct, index }) {
   )
 }
 
+const FEATURE_ICONS = {
+  TrendingDown,
+  PiggyBank,
+  RefreshCw,
+  MessageSquare,
+  AlertTriangle,
+  Globe,
+  Users,
+  Cpu,
+}
+
 function FeatureCard({ f }) {
-  // Dynamic icon import
-  const iconMap = {
-    TrendingDown: () => import('lucide-react').then(m => m.TrendingDown),
-    PiggyBank: () => import('lucide-react').then(m => m.PiggyBank),
-    RefreshCw: () => import('lucide-react').then(m => m.RefreshCw),
-    MessageSquare: () => import('lucide-react').then(m => m.MessageSquare),
-    AlertTriangle: () => import('lucide-react').then(m => m.AlertTriangle),
-    Globe: () => import('lucide-react').then(m => m.Globe),
-    Users: () => import('lucide-react').then(m => m.Users),
-    Cpu: () => import('lucide-react').then(m => m.Cpu),
-  }
-  const Icon = lazy(() => iconMap[f.icon]())
+  const Icon = FEATURE_ICONS[f.icon]
 
   return (
     <Card style={{ padding: '22px 22px' }}>
-      <Suspense fallback={<div style={{ width: 20, height: 20 }} aria-hidden="true" />}>
-        <Icon className="mb-12" size={20} color="var(--accent)" strokeWidth={1.75} />
-      </Suspense>
+      <Icon className="mb-12" size={20} color="var(--accent)" strokeWidth={1.75} />
       <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 600, letterSpacing: '-0.01em', marginBottom: 6 }}>{f.title}</h3>
       <p style={{ fontSize: 13.5, color: 'var(--muted)', lineHeight: 1.55 }}>{f.body}</p>
     </Card>
