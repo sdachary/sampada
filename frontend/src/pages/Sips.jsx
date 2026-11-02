@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
-import { fmtINR } from '../lib/amounts'
+import { Card, Badge, Skeleton, EmptyState, PageHeader, Stat, fmtINR } from '../components/ui'
 
 export default function Sips() {
   const [sips, setSips] = useState([])
@@ -11,8 +11,8 @@ export default function Sips() {
   }, [])
 
   if (loading) return (
-    <div>
-      {[1,2].map(i => <div key={i} className="skeleton" style={{ height: 110, marginBottom: 8, borderRadius: 'var(--radius)' }} />)}
+    <div style={{ display: 'grid', gap: 8 }}>
+      {[1,2].map(i => <Skeleton key={i} style={{ height: 110, borderRadius: 'var(--radius-md)' }} />)}
     </div>
   )
 
@@ -20,47 +20,51 @@ export default function Sips() {
   const totalProjected = sips.reduce((sum, s) => sum + (+s.projected_annual_income || 0), 0)
 
   return (
-    <div>
-      <p className="page-num mb-4" >00<em>11</em> / 016</p>
-      <h1 className="page-title" >SIPs</h1>
-      <p className="text-13-5-muted-sm" >Systematic Investment Plans.</p>
+    <div style={{ display: 'grid', gap: 20 }}>
+      <PageHeader
+        title="SIPs"
+        num="011 / 016"
+      >
+        <p style={{ fontSize: 13, color: 'var(--muted)' }}>Systematic Investment Plans.</p>
+      </PageHeader>
 
       {sips.length > 0 && (
-        <div className="card card-pad-mb16" >
-          <div className="flex-g20-wrap" >
-            <div><span className="label-caps-sm" >Monthly Investment</span>
-              <p className="fin amt-out" >{fmtINR(totalMonthly)}</p></div>
-            <div><span className="label-caps-sm" >Projected Annual</span>
-              <p className="fin amt-in" >{fmtINR(totalProjected)}</p></div>
-          </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px,1fr))', gap: 12 }}>
+          <Stat label="Monthly Investment" value={fmtINR(totalMonthly)} />
+          <Stat label="Projected Annual" value={fmtINR(totalProjected)} />
         </div>
       )}
 
       {sips.length === 0 ? (
-        <div className="empty-state">
-          <span className="emoji">◒</span>
-          <p>No SIPs active</p>
-          <p className="text-12-faint" >Set up recurring investments to build wealth automatically.</p>
+        <EmptyState
+          icon={<span aria-hidden="true" style={{ fontSize: 48, color: 'var(--border)' }}>◒</span>}
+          title="No SIPs active"
+        >
+          Set up recurring investments to build wealth automatically.
+        </EmptyState>
+      ) : (
+        <div style={{ display: 'grid', gap: 8 }}>
+          {sips.map(s => (
+            <Card key={s.id} style={{ padding: '14px 18px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+                <div>
+                  <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)' }}>{s.name}</p>
+                  <p style={{ fontSize: 11.5, color: 'var(--muted)' }}>{s.frequency} · {s.status}</p>
+                </div>
+                <p className="fin" style={{ fontFamily: 'var(--font-display)', fontSize: 17, fontWeight: 600 }}>{fmtINR(+s.monthly_investment || 0)}/mo</p>
+              </div>
+              <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 6 }}>
+                {s.target_income && <Badge variant="accent" style={{ fontSize: 10 }}>target {fmtINR(+s.target_income)}/mo</Badge>}
+                {s.projected_annual_income && <Badge variant="success" style={{ fontSize: 10 }}>{fmtINR(+s.projected_annual_income)}/yr projected</Badge>}
+              </div>
+              <div style={{ fontSize: 11.5, color: 'var(--muted)', display: 'flex', justifyContent: 'space-between' }}>
+                <span>Status: <span style={{ color: s.status === 'active' ? 'var(--success)' : 'var(--muted)' }}>{s.status}</span></span>
+                {s.next_execution && <span>Next: {s.next_execution}</span>}
+              </div>
+            </Card>
+          ))}
         </div>
-      ) : sips.map(s => (
-        <div key={s.id} className="card" style={{ padding: '14px 18px', marginBottom: 8 }}>
-          <div className="spread-top-mb6" >
-            <div>
-              <p className="row-600-14" >{s.name}</p>
-              <p className="text-11-5-muted" >{s.frequency} · {s.status}</p>
-            </div>
-            <p className="fin" style={{ fontFamily: 'var(--sans)', fontSize: 17, fontWeight: 600 }}>{fmtINR(+s.monthly_investment || 0)}/mo</p>
-          </div>
-          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 6 }}>
-            {s.target_income && <span className="tag fs-10" >target {fmtINR(+s.target_income)}/mo</span>}
-            {s.projected_annual_income && <span className="tag green fs-10" >{fmtINR(+s.projected_annual_income)}/yr projected</span>}
-          </div>
-          <div style={{ fontSize: 11.5, color: 'var(--ink-faint)', display: 'flex', justifyContent: 'space-between' }}>
-            <span>Status: <span style={{ color: s.status === 'active' ? 'var(--emerald)' : 'var(--ink-mute)' }}>{s.status}</span></span>
-            {s.next_execution && <span>Next: {s.next_execution}</span>}
-          </div>
-        </div>
-      ))}
+      )}
     </div>
   )
 }
