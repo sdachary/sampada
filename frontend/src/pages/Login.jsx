@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/useAuth'
 import AuthLayout from './AuthLayout'
+import { Input, Button, Card } from '../components/ui'
 
 export default function Login() {
   const { user, login } = useAuth()
@@ -33,27 +34,27 @@ export default function Login() {
       title="Welcome back"
       subtitle="Sign in to your account"
       error={error}
-      foot={<><span>No account? </span><Link className="text-coral" to="/register" >Register</Link></>}
+      foot={<><span>No account? </span><Link to="/register" style={{ color: 'var(--accent)', fontWeight: 500 }}>Register</Link></>}
     >
-      <form className="col-g14" onSubmit={handleSubmit} >
+      <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 14 }}>
         <input
           type="text" name="website" value={website} onChange={e => setWebsite(e.target.value)}
           tabIndex={-1} autoComplete="off" aria-hidden="true"
           style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, opacity: 0 }}
         />
-        <input type="email" placeholder="Email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} className="input" required />
-        <div className="pos-rel" >
-          <input type={showPw ? 'text' : 'password'} placeholder="Password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} className="input" required style={{ width: '100%' }} />
-          <button type="button" onClick={() => setShowPw(!showPw)} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: 'var(--ink-mute)', padding: 4 }} aria-label={showPw ? 'Hide password' : 'Show password'}>
+        <Input type="email" placeholder="Email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} required />
+        <div style={{ position: 'relative' }}>
+          <Input type={showPw ? 'text' : 'password'} placeholder="Password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} required />
+          <button type="button" onClick={() => setShowPw(!showPw)} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: 'var(--muted)', padding: 4 }} aria-label={showPw ? 'Hide password' : 'Show password'}>
             {showPw ? '◔' : '◑'}
           </button>
         </div>
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: -4 }}>
-          <Link to="/forgot-password" style={{ fontSize: 12.5, color: 'var(--ink-mute)' }}>Forgot password?</Link>
+          <Link to="/forgot-password" style={{ fontSize: 12.5, color: 'var(--muted)' }}>Forgot password?</Link>
         </div>
-        <button type="submit" disabled={submitting} className="btn btn-primary center-h" >
+        <Button type="submit" loading={submitting} style={{ justifySelf: 'center' }}>
           {submitting ? 'Signing in…' : 'Sign in'}
-        </button>
+        </Button>
       </form>
     </AuthLayout>
   )

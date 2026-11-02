@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Outlet, useNavigate, useLocation, Link } from 'react-router-dom'
+import { PageTransition } from '../lib/motion-primitives'
 import { useAuth } from '../lib/useAuth'
 import useTheme from '../lib/useTheme'
 import useOnline from '../lib/useOnline'
@@ -88,10 +89,15 @@ function NavLink({ item, current, depth, onNav }) {
       style={{
         display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', marginLeft: depth ? 16 : 0,
         borderRadius: 6, fontSize: 13, fontWeight: active ? 500 : 400,
-        color: active ? 'var(--coral)' : 'var(--ink)',
-        background: active ? 'rgba(237,111,92,0.08)' : 'transparent',
-        transition: 'all 0.15s ease',
+        color: active ? 'var(--accent)' : 'var(--ink)',
+        background: 'transparent',
+        position: 'relative',
+        transition: 'color var(--dur-fast) var(--ease)',
       }}>
+      {active && <span style={{
+        position: 'absolute', left: -12, top: '50%', transform: 'translateY(-50%)',
+        width: 4, height: '60%', borderRadius: 2, background: 'var(--accent)',
+      }} />}
       <NavIcon name={item.icon} />
       <span>{item.name}</span>
     </Link>
@@ -254,7 +260,11 @@ export default function Layout() {
           }
           return (
             <Link key={item.path} to={item.path}
-              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, padding: '4px 0', fontSize: 10, color: active ? 'var(--coral)' : 'var(--ink-mute)', textDecoration: 'none' }}>
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, padding: '8px 0 4px', fontSize: 10, color: active ? 'var(--accent)' : 'var(--ink-mute)', textDecoration: 'none', position: 'relative' }}>
+              {active && <span style={{
+                position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
+                width: 24, height: 3, borderRadius: 1.5, background: 'var(--accent)',
+              }} />}
               <NavIcon name={item.icon} size={18} />
               <span>{item.name}</span>
             </Link>
@@ -285,10 +295,15 @@ export default function Layout() {
                     style={{
                       display: 'flex', alignItems: 'center', gap: 12, padding: '12px 12px',
                       borderRadius: 8, fontSize: 14, fontWeight: active ? 500 : 400,
-                      color: active ? 'var(--coral)' : 'var(--ink)',
-                      background: active ? 'var(--coral-active-bg)' : 'transparent',
+                      color: active ? 'var(--accent)' : 'var(--ink)',
+                      background: 'transparent',
                       textDecoration: 'none',
+                      position: 'relative',
                     }}>
+                    {active && <span style={{
+                      position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+                      width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)',
+                    }} />}
                     <NavIcon name={item.icon} size={20} />
                     <span>{item.name}</span>
                   </Link>
@@ -330,7 +345,9 @@ export default function Layout() {
             <span>Offline — viewing cached data, edits disabled</span>
           </div>
         )}
-        <Outlet />
+        <PageTransition>
+          <Outlet />
+        </PageTransition>
       </main>
 
       <CommandPalette open={cmdOpen} onClose={() => setCmdOpen(false)} />

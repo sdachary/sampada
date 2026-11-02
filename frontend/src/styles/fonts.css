@@ -1,0 +1,29 @@
+/* Self-hosted, latin-subset variable fonts. Preloaded from index.html; font-display: swap. */
+
+@font-face {
+  font-family: 'Inter Tight';
+  src: url('/fonts/inter-tight-var-latin.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+2000-206F, U+20AC;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter-var-latin.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+2000-206F, U+20AC;
+}
+
+/* Serif accent is italic-only: every usage in the app is italic (verified Step 2). */
+@font-face {
+  font-family: 'Playfair Display';
+  src: url('/fonts/playfair-display-italic-var-latin.woff2') format('woff2');
+  font-weight: 400 900;
+  font-style: italic;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+2000-206F, U+20AC;
+}

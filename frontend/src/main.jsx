@@ -6,7 +6,12 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './lib/auth'
 import { registerServiceWorker } from './lib/push'
+import { MotionProvider } from './lib/motion'
 import App from './App.jsx'
+import './styles/tokens.css'
+import './styles/fonts.css'
+import './styles/base.css'
+import './styles/primitives.css'
 import './index.css'
 
 registerServiceWorker()
@@ -14,9 +19,11 @@ registerServiceWorker()
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
-      <AuthProvider>
-        <App />
-      </AuthProvider>
+      <MotionProvider>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </MotionProvider>
     </BrowserRouter>
   </StrictMode>,
 )

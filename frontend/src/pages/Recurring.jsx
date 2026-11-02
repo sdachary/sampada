@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
-import { fmtINR } from '../lib/amounts'
+import { Card, Badge, Skeleton, EmptyState, PageHeader, Stat, fmtINR } from '../components/ui'
 
 function daysText(days) {
   if (days === null || days === undefined) return ''
@@ -19,8 +19,8 @@ export default function Recurring() {
   }, [])
 
   if (loading) return (
-    <div>
-      {[1,2,3].map(i => <div key={i} className="skeleton" style={{ height: 86, marginBottom: 8, borderRadius: 'var(--radius)' }} />)}
+    <div style={{ display: 'grid', gap: 8 }}>
+      {[1,2,3].map(i => <Skeleton key={i} style={{ height: 86, borderRadius: 'var(--radius-md)' }} />)}
     </div>
   )
 
@@ -28,52 +28,56 @@ export default function Recurring() {
   const activeCount = expenses.filter(e => e.active).length
 
   return (
-    <div>
-      <p className="page-num mb-4" >00<em>8</em> / 016</p>
-      <h1 className="page-title" >Recurring Expenses</h1>
-      <p className="text-13-5-muted-sm" >Subscriptions, EMIs, and regular bills.</p>
+    <div style={{ display: 'grid', gap: 20 }}>
+      <PageHeader
+        title="Recurring Expenses"
+        num="008 / 016"
+      >
+        <p style={{ fontSize: 13, color: 'var(--muted)' }}>Subscriptions, EMIs, and regular bills.</p>
+      </PageHeader>
 
       {expenses.length > 0 && (
-        <div className="card card-pad-mb16" >
-          <div className="flex-g20-wrap" >
-            <div><span className="label-caps-sm" >Monthly Total</span>
-              <p className="fin amt-out" >{fmtINR(totalMonthly)}</p></div>
-            <div><span className="label-caps-sm" >Active</span>
-              <p className="amt-in" >{activeCount}/{expenses.length}</p></div>
-          </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px,1fr))', gap: 12 }}>
+          <Stat label="Monthly Total" value={fmtINR(totalMonthly)} />
+          <Stat label="Active" value={`${activeCount}/${expenses.length}`} />
         </div>
       )}
 
       {expenses.length === 0 ? (
-        <div className="empty-state">
-          <span className="emoji">↻</span>
-          <p>No recurring expenses</p>
-          <p className="text-12-faint" >Add your monthly subscriptions and bills so you never miss a payment.</p>
+        <EmptyState
+          icon={<span aria-hidden="true" style={{ fontSize: 48, color: 'var(--border)' }}>↻</span>}
+          title="No recurring expenses"
+        >
+          Add your monthly subscriptions and bills so you never miss a payment.
+        </EmptyState>
+      ) : (
+        <div style={{ display: 'grid', gap: 8 }}>
+          {expenses.map(e => (
+            <Card key={e.id} style={{ padding: '14px 18px', opacity: e.active ? 1 : 0.5 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+                <div>
+                  <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)' }}>{e.name}</p>
+                  <p style={{ fontSize: 11.5, color: 'var(--muted)' }}>
+                    {e.frequency} · {e.category}
+                    {e.auto_debit && <span> · auto-debit</span>}
+                  </p>
+                </div>
+                <p className="fin" style={{ fontFamily: 'var(--font-display)', fontSize: 17, fontWeight: 600 }}>{fmtINR(+e.amount)}</p>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 11.5 }}>
+                <Badge variant={e.active ? 'success' : 'neutral'}>
+                  {e.active ? 'active' : 'inactive'}
+                </Badge>
+                {e.next_due_date && (
+                  <span style={{ color: 'var(--faint)' }}>
+                    {e.next_due_date} · {daysText(e.next_due_days)}
+                  </span>
+                )}
+              </div>
+            </Card>
+          ))}
         </div>
-      ) : expenses.map(e => (
-        <div key={e.id} className="card" style={{ padding: '14px 18px', marginBottom: 6, opacity: e.active ? 1 : 0.5 }}>
-          <div className="spread-top-mb6" >
-            <div>
-              <p className="row-600-14" >{e.name}</p>
-              <p className="text-11-5-muted" >
-                {e.frequency} · {e.category}
-                {e.auto_debit && <span> · auto-debit</span>}
-              </p>
-            </div>
-            <p className="fin" style={{ fontFamily: 'var(--sans)', fontSize: 17, fontWeight: 600 }}>{fmtINR(+e.amount)}</p>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 11.5 }}>
-            <span className="tag" style={{ background: e.active ? 'var(--emerald)' : 'var(--line)', color: e.active ? '#fff' : 'var(--ink-mute)' }}>
-              {e.active ? 'active' : 'inactive'}
-            </span>
-            {e.next_due_date && (
-              <span className="text-faint" >
-                {e.next_due_date} · {daysText(e.next_due_days)}
-              </span>
-            )}
-          </div>
-        </div>
-      ))}
+      )}
     </div>
   )
 }

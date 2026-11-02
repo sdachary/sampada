@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts'
+import { CHART_COLORS, PIE_COLORS, AXIS_DEFAULTS, GRID_DEFAULTS, fmtINR, ChartTooltip } from '../lib/chartTheme'
 
 const ALLOCATIONS = ['conservative', 'moderate', 'aggressive']
 const TOP_UP_OPTIONS = ['none', 'monthly', 'quarterly', 'yearly']
-const CHART_COLORS = { conservative: '#6366f1', moderate: '#f59e0b', aggressive: '#ef4444' }
-const PIE_COLORS = ['#6366f1', '#f59e0b', '#10b981']
 
 function formatINR(n) {
-  return '₹' + Number(n).toLocaleString('en-IN', { maximumFractionDigits: 0 })
+  return fmtINR(n)
 }
 
 export default function Goals() {
@@ -139,13 +138,13 @@ export default function Goals() {
                   <div className="mt-12" >
                     <p className="h-600-11 mb-6" >Corpus Projection vs Target</p>
                     <ResponsiveContainer width="100%" height={180}>
-                      <LineChart data={g.projection}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
-                        <XAxis dataKey="year" tick={{ fontSize: 10, fill: 'var(--ink-mute)' }} />
-                        <YAxis tick={{ fontSize: 10, fill: 'var(--ink-mute)' }} tickFormatter={v => formatINR(v)} width={60} />
-                        <Tooltip formatter={v => formatINR(v)} contentStyle={{ fontSize: 11 }} />
-                        <Line type="monotone" dataKey="goal_target" stroke="#94a3b8" strokeDasharray="5 5" dot={false} name="Target" />
-                        <Line type="monotone" dataKey="projected_corpus" stroke="var(--coral)" dot={{ r: 2 }} name="Projected" />
+                      <LineChart data={g.projection} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+                        <CartesianGrid {...GRID_DEFAULTS} strokeDasharray="3 3" />
+                        <XAxis dataKey="year" {...AXIS_DEFAULTS.tick} />
+                        <YAxis {...AXIS_DEFAULTS.tick} tickFormatter={v => formatINR(v)} width={60} />
+                        <Tooltip content={<ChartTooltip />} />
+                        <Line type="monotone" dataKey="goal_target" stroke="var(--muted)" strokeDasharray="5 5" dot={false} name="Target" />
+                        <Line type="monotone" dataKey="projected_corpus" stroke="var(--accent)" dot={{ r: 2 }} name="Projected" />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
@@ -165,11 +164,11 @@ export default function Goals() {
                           })
                           return row
                         })
-                      })()}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
-                        <XAxis dataKey="year" tick={{ fontSize: 10, fill: 'var(--ink-mute)' }} />
-                        <YAxis tick={{ fontSize: 10, fill: 'var(--ink-mute)' }} tickFormatter={v => formatINR(v)} width={60} />
-                        <Tooltip formatter={v => formatINR(v)} contentStyle={{ fontSize: 11 }} />
+                      })()} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+                        <CartesianGrid {...GRID_DEFAULTS} strokeDasharray="3 3" />
+                        <XAxis dataKey="year" {...AXIS_DEFAULTS.tick} />
+                        <YAxis {...AXIS_DEFAULTS.tick} tickFormatter={v => formatINR(v)} width={60} />
+                        <Tooltip content={<ChartTooltip />} />
                         <Legend wrapperStyle={{ fontSize: 10 }} />
                         {ALLOCATIONS.map(name => (
                           <Line key={name} type="monotone" dataKey={name} stroke={CHART_COLORS[name]} dot={false} strokeWidth={name === g.allocation ? 2.5 : 1.5} name={name.charAt(0).toUpperCase() + name.slice(1)} />

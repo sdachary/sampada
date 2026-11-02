@@ -3,6 +3,7 @@ import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/useAuth'
 import { api } from '../lib/api'
 import AuthLayout from './AuthLayout'
+import { Input, Select, Button, Card, Badge } from '../components/ui'
 
 const MIN_PASSWORD_LENGTH = 8
 
@@ -70,7 +71,7 @@ export default function Register() {
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value })
 
   const PwToggle = ({ show, setShow }) => (
-    <button type="button" onClick={() => setShow(!show)} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: 'var(--ink-mute)', padding: 4 }} aria-label={show ? 'Hide password' : 'Show password'}>
+    <button type="button" onClick={() => setShow(!show)} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: 'var(--muted)', padding: 4 }} aria-label={show ? 'Hide password' : 'Show password'}>
       {show ? '◔' : '◑'}
     </button>
   )
@@ -81,45 +82,44 @@ export default function Register() {
       subtitle="Start your financial journey"
       error={error}
       after={registered && (
-        <div className="card" style={{ padding: 24, marginTop: 16, borderLeft: '3px solid var(--emerald)' }}>
+        <Card style={{ padding: 24, marginTop: 16, borderLeft: '3px solid var(--success)' }}>
           <h2 style={{ fontSize: 15, fontWeight: 600, letterSpacing: '-0.01em', marginBottom: 4 }}>Optional: enable AI assistant</h2>
-          <p style={{ fontSize: 12.5, color: 'var(--ink-mute)', marginBottom: 14 }}>
+          <p style={{ fontSize: 12.5, color: 'var(--muted)', marginBottom: 14 }}>
             Add a Gemini, Grok, or OpenAI-compatible API key to chat with your finances. Skip to start with it disabled.
           </p>
-          {aiMsg && <p style={{ fontSize: 12, color: 'var(--coral)', marginBottom: 10 }}>{aiMsg}</p>}
-          <form className="col-g10" onSubmit={saveAi} >
-            <select className="input" value={ai.provider} onChange={e => setAi(a => ({ ...a, provider: e.target.value }))}>
-              <option value="">Select provider…</option>
-              <option value="openai">OpenAI</option>
-              <option value="gemini">Google Gemini</option>
-              <option value="grok">xAI Grok</option>
-              <option value="openrouter">OpenRouter</option>
-            </select>
-            <input type="password" className="input" placeholder="API key" value={ai.api_key} onChange={e => setAi(a => ({ ...a, api_key: e.target.value }))} />
+          {aiMsg && <p style={{ fontSize: 12, color: 'var(--accent)', marginBottom: 10 }}>{aiMsg}</p>}
+          <form onSubmit={saveAi} style={{ display: 'grid', gap: 10 }}>
+            <Select value={ai.provider} onChange={e => setAi(a => ({ ...a, provider: e.target.value }))} placeholder="Select provider…" options={[
+              { value: 'openai', label: 'OpenAI' },
+              { value: 'gemini', label: 'Google Gemini' },
+              { value: 'grok', label: 'xAI Grok' },
+              { value: 'openrouter', label: 'OpenRouter' },
+            ]} />
+            <Input type="password" placeholder="API key" value={ai.api_key} onChange={e => setAi(a => ({ ...a, api_key: e.target.value }))} />
             <div style={{ display: 'flex', gap: 10 }}>
-              <button type="submit" disabled={!ai.provider || !ai.api_key || aiSaving} className="btn btn-primary" style={{ flex: 1, justifyContent: 'center', fontSize: 13, padding: '9px 0' }}>
+              <Button type="submit" loading={aiSaving} disabled={!ai.provider || !ai.api_key} style={{ flex: 1 }}>
                 {aiSaving ? 'Saving…' : 'Enable & continue'}
-              </button>
-              <button type="button" onClick={skipAi} className="btn" style={{ background: 'transparent', border: '1px solid var(--line)', fontSize: 13, padding: '9px 18px' }}>Skip</button>
+              </Button>
+              <Button variant="ghost" onClick={skipAi}>Skip</Button>
             </div>
           </form>
-        </div>
+        </Card>
       )}
-      foot={<><span>Already have one? </span><Link className="text-coral" to="/login" >Sign in</Link></>}
+      foot={<><span>Already have one? </span><Link style={{ color: 'var(--accent)', fontWeight: 500 }} to="/login">Sign in</Link></>}
     >
-      <form className="col-g14" onSubmit={handleSubmit} >
+      <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 14 }}>
         <input
           type="text" name="website" value={website} onChange={e => setWebsite(e.target.value)}
           tabIndex={-1} autoComplete="off" aria-hidden="true"
           style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, opacity: 0 }}
         />
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-          <input type="text" placeholder="First name" autoComplete="given-name" value={form.first_name} onChange={set('first_name')} className="input" />
-          <input type="text" placeholder="Last name" autoComplete="family-name" value={form.last_name} onChange={set('last_name')} className="input" />
+          <Input placeholder="First name" autoComplete="given-name" value={form.first_name} onChange={set('first_name')} />
+          <Input placeholder="Last name" autoComplete="family-name" value={form.last_name} onChange={set('last_name')} />
         </div>
-        <input type="email" placeholder="Email" autoComplete="email" value={form.email} onChange={set('email')} className="input" required />
-        <div className="pos-rel" >
-          <input type={showPw ? 'text' : 'password'} placeholder="Password" autoComplete="new-password" minLength={MIN_PASSWORD_LENGTH} value={form.password} onChange={set('password')} className="input w-100" required  />
+        <Input type="email" placeholder="Email" autoComplete="email" value={form.email} onChange={set('email')} required />
+        <div style={{ position: 'relative' }}>
+          <Input type={showPw ? 'text' : 'password'} placeholder="Password" autoComplete="new-password" minLength={MIN_PASSWORD_LENGTH} value={form.password} onChange={set('password')} required />
           <PwToggle show={showPw} setShow={setShowPw} />
         </div>
         {form.password && (
@@ -127,21 +127,21 @@ export default function Register() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ flex: 1, display: 'flex', gap: 3 }}>
                 {[1, 2, 3, 4].map(i => (
-                  <div key={i} style={{ height: 3, flex: 1, borderRadius: 2, background: i <= passwordStrength(form.password) ? ['var(--coral)', 'var(--coral)', 'var(--sun)', 'var(--emerald)'][passwordStrength(form.password) - 1] : 'var(--line)' }} />
+                  <div key={i} style={{ height: 3, flex: 1, borderRadius: 2, background: i <= passwordStrength(form.password) ? ['var(--accent)', 'var(--accent)', 'var(--warning)', 'var(--success)'][passwordStrength(form.password) - 1] : 'var(--border)' }} />
                 ))}
               </div>
-              <span style={{ fontSize: 11.5, color: 'var(--ink-mute)', minWidth: 36, textAlign: 'right' }}>{STRENGTH_LABEL[passwordStrength(form.password)]}</span>
+              <span style={{ fontSize: 11.5, color: 'var(--muted)', minWidth: 36, textAlign: 'right' }}>{STRENGTH_LABEL[passwordStrength(form.password)]}</span>
             </div>
-            <p style={{ fontSize: 11.5, color: 'var(--ink-mute)', marginTop: 5 }}>Use at least {MIN_PASSWORD_LENGTH} characters with a mix of uppercase, lowercase, numbers, and symbols.</p>
+            <p style={{ fontSize: 11.5, color: 'var(--muted)', marginTop: 5 }}>Use at least {MIN_PASSWORD_LENGTH} characters with a mix of uppercase, lowercase, numbers, and symbols.</p>
           </div>
         )}
-        <div className="pos-rel" >
-          <input type={showConfirm ? 'text' : 'password'} placeholder="Confirm password" autoComplete="new-password" minLength={MIN_PASSWORD_LENGTH} value={form.password_confirmation} onChange={set('password_confirmation')} className="input w-100" required  />
+        <div style={{ position: 'relative' }}>
+          <Input type={showConfirm ? 'text' : 'password'} placeholder="Confirm password" autoComplete="new-password" minLength={MIN_PASSWORD_LENGTH} value={form.password_confirmation} onChange={set('password_confirmation')} required />
           <PwToggle show={showConfirm} setShow={setShowConfirm} />
         </div>
-        <button type="submit" disabled={submitting} className="btn btn-primary center-h" >
+        <Button type="submit" loading={submitting} style={{ justifySelf: 'center' }}>
           {submitting ? 'Creating account…' : 'Create account'}
-        </button>
+        </Button>
       </form>
     </AuthLayout>
   )

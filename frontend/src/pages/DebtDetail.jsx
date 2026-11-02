@@ -1,10 +1,13 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { api } from '../lib/api'
+import { Card, Progress, Button, Skeleton, EmptyState, PageHeader, Badge, Input, InputField } from '../components/ui'
+import Chart from '../components/Chart'
+import { fmtINR } from '../lib/amounts'
+import { AlertCircle, ArrowLeft, ExternalLink } from 'lucide-react'
 
 const CATEGORIES = ['credit_card', 'loan', 'personal', 'mortgage', 'education', 'other']
 const STATUSES = ['active', 'paid_default', 'paid_off', 'frozen']
-const INTL = { style: 'decimal', minimumFractionDigits: 0, maximumFractionDigits: 0 }
 
 function useDebt(id) {
   const [debt, setDebt] = useState(null)
@@ -37,7 +40,7 @@ function InlineField({ label, value, type = 'text', options, onSave, currency })
   const [draft, setDraft] = useState(value ?? '')
 
   const display = () => {
-    if (currency) return `₹${(+value || 0).toLocaleString('en-IN', INTL)}`
+    if (currency) return fmtINR(+value || 0)
     if (options) return options.find(o => o[0] === value)?.[1] ?? value
     return value ?? '—'
   }
@@ -52,26 +55,22 @@ function InlineField({ label, value, type = 'text', options, onSave, currency })
 
   if (editing) {
     return (
-      <div>
-        <div style={{ fontSize: 10, color: 'var(--ink-faint)', marginBottom: 2, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
-        {options ? (
-          <select className="input" value={draft} onChange={e => setDraft(e.target.value)} onBlur={handleSave} onKeyDown={handleKey} autoFocus style={{ padding: '4px 8px', fontSize: 13 }}>
-            {options.map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-          </select>
-        ) : (
-          <input className="input" type={type === 'number' ? 'number' : 'text'} value={draft}
-            onChange={e => setDraft(e.target.value)} onBlur={handleSave} onKeyDown={handleKey}
-            autoFocus min={0} step={type === 'number' ? '0.01' : undefined}
-            style={{ padding: '4px 8px', fontSize: 13 }} />
-        )}
-      </div>
+      <InputField
+        label={label}
+        value={draft}
+        onChange={e => setDraft(e.target.value)}
+        onBlur={handleSave}
+        onKeyDown={handleKey}
+        type={type === 'number' ? 'number' : type}
+        inputProps={{ min: 0, step: type === 'number' ? '0.01' : undefined, autoFocus: true }}
+      />
     )
   }
 
   return (
     <div onClick={() => { setDraft(value ?? ''); setEditing(true) }} style={{ cursor: 'pointer' }}>
-      <div style={{ fontSize: 10, color: 'var(--ink-faint)', marginBottom: 2, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
-      <div style={{ fontSize: 14, fontWeight: 500, fontFamily: currency ? 'var(--sans)' : undefined, fontVariantNumeric: currency ? 'tabular-nums' : undefined }}>{display()}</div>
+      <div style={{ fontSize: 10, color: 'var(--muted)', marginBottom: 2, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
+      <div style={{ fontSize: 14, fontWeight: 500, fontFamily: currency ? 'var(--font-display)' : undefined, fontVariantNumeric: currency ? 'tabular-nums' : undefined }}>{display()}</div>
     </div>
   )
 }
@@ -81,21 +80,22 @@ export default function DebtDetail() {
   const { debt, loading, saving, patch } = useDebt(id)
 
   if (loading) return (
-    <div>
-      <div className="skeleton" style={{ width: 80, height: 14, marginBottom: 12 }} />
-      <div className="skeleton" style={{ width: 200, height: 24, marginBottom: 8 }} />
-      <div className="skeleton" style={{ width: 140, height: 14, marginBottom: 20 }} />
-      <div className="skeleton" style={{ height: 200, marginBottom: 10 }} />
-      <div className="skeleton h-200"  />
+    <div style={{ display: 'grid', gap: 12 }}>
+      <Skeleton style={{ width: 80, height: 14 }} />
+      <Skeleton style={{ width: 200, height: 24 }} />
+      <Skeleton style={{ width: 140, height: 14 }} />
+      <Skeleton style={{ height: 200 }} />
+      <Skeleton style={{ height: 200 }} />
     </div>
   )
 
   if (!debt) return (
-    <div className="empty-state">
-      <span className="emoji">○</span>
-      <p>Debt not found</p>
-      <Link to="/dashboard/debts" className="btn btn-ghost mt-12" >Back to debts</Link>
-    </div>
+    <EmptyState
+      icon={<AlertCircle size={32} />}
+      title="Debt not found"
+      action="Back to debts"
+      onAction={() => window.location.href = '/dashboard/debts'}
+    />
   )
 
   const pct = debt.amount > 0 ? Math.min(Math.round((debt.paid_amount / debt.amount) * 100), 100) : 0
@@ -120,53 +120,52 @@ export default function DebtDetail() {
   }
 
   return (
-    <div>
-      <div className="spread-mb20" >
-        <Link to="/dashboard/debts" style={{ fontSize: 12.5, color: 'var(--ink-mute)', display: 'flex', alignItems: 'center', gap: 4 }}>
-          ← Back to Debts
-        </Link>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          {saving && <span style={{ fontSize: 11, color: 'var(--ink-faint)' }}>Saving…</span>}
-          <Link to={`/dashboard/debt-payoffs?debtId=${debt.id}`} className="btn btn-ghost" style={{ fontSize: 11.5, padding: '6px 14px' }}>
-            Open in Simulator
-          </Link>
-        </div>
-      </div>
+    <div style={{ display: 'grid', gap: 20 }}>
+      <PageHeader
+        title="Debt Detail"
+        num="005 / 016"
+        action={
+          <div style={{ display: 'flex', gap: 8 }}>
+            {saving && <span style={{ fontSize: 11, color: 'var(--muted)' }}>Saving…</span>}
+            <Link to={`/dashboard/debt-payoffs?debtId=${debt.id}`}>
+              <Button variant="ghost" size="sm">Open in Simulator</Button>
+            </Link>
+          </div>
+        }
+      />
 
-      {/* header */}
-      <div className="card card-pad-lg card-pad-mb16" >
+      {/* header card */}
+      <Card>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
           <div>
             <h1 style={{ fontSize: 22, fontWeight: 600, letterSpacing: '-0.02em', marginBottom: 4 }}>{debt.name}</h1>
-            <p className="text-13-muted" >
+            <p style={{ fontSize: 13, color: 'var(--muted)' }}>
               {debt.category ? debt.category.charAt(0).toUpperCase() + debt.category.slice(1) : 'Loan'}
               {debt.interest_rate ? ` · ${debt.interest_rate}% APR` : ''}
               {debt.currency_symbol ? ` · ${debt.currency_code || 'INR'}` : ''}
             </p>
           </div>
-          <span className={`tag ${debt.status === 'active' ? 'coral' : debt.status === 'paid_off' ? 'green' : ''}`}>
+          <Badge variant={debt.status === 'active' ? 'accent' : debt.status === 'paid_off' ? 'success' : 'neutral'}>
             {debt.status.replace('_', ' ')}
-          </span>
+          </Badge>
         </div>
 
         <div style={{ display: 'flex', gap: 24, marginBottom: 12, flexWrap: 'wrap' }}>
-          <div><span className="label-caps-sm" >Total</span><p className="fin" style={{ fontSize: 20, fontWeight: 700 }}>{debt.currency_symbol}₹{debt.amount.toLocaleString('en-IN', INTL)}</p></div>
-          <div><span className="label-caps-sm" >Paid</span><p className="fin" style={{ fontSize: 20, fontWeight: 700, color: 'var(--emerald)' }}>{debt.currency_symbol}₹{debt.paid_amount.toLocaleString('en-IN', INTL)}</p></div>
-          <div><span className="label-caps-sm" >Remaining</span><p className="fin" style={{ fontSize: 20, fontWeight: 700, color: 'var(--coral)' }}>{debt.currency_symbol}₹{Math.round(remaining).toLocaleString('en-IN', INTL)}</p></div>
+          <div><span style={{ fontSize: 10, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Total</span><p className="fin" style={{ fontSize: 20, fontWeight: 700 }}>{fmtINR(debt.amount)}</p></div>
+          <div><span style={{ fontSize: 10, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Paid</span><p className="fin" style={{ fontSize: 20, fontWeight: 700, color: 'var(--success)' }}>{fmtINR(debt.paid_amount)}</p></div>
+          <div><span style={{ fontSize: 10, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Remaining</span><p className="fin" style={{ fontSize: 20, fontWeight: 700, color: 'var(--accent)' }}>{fmtINR(Math.round(remaining))}</p></div>
         </div>
 
-        <div className="progress" style={{ marginBottom: 6, height: 8, borderRadius: 4 }}>
-          <div className={`progress-fill ${pct >= 100 ? 'green' : ''}`} style={{ width: `${Math.min(pct, 100)}%`, borderRadius: 4 }} />
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--ink-mute)' }}>
+        <Progress value={pct} variant={pct >= 100 ? 'success' : 'accent'} label="Debt paid off" />
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--muted)', marginTop: 8 }}>
           <span className="fin">{pct}% paid off</span>
           {debt.debt_free_date && <span className="fin">Debt free by {new Date(debt.debt_free_date).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })} ({debt.months_remaining} mo)</span>}
         </div>
-      </div>
+      </Card>
 
       {/* detail fields */}
-      <div className="card card-pad-lg card-pad-mb16" >
-        <p className="h-600-12 mb-14" >Details <span style={{ fontWeight: 400, color: 'var(--ink-faint)' }}>— click to edit</span></p>
+      <Card>
+        <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)', marginBottom: 14 }}>Details <span style={{ fontWeight: 400, color: 'var(--muted)' }}>— click to edit</span></p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 16 }}>
           <InlineField label="Amount" value={debt.amount} type="number" currency onSave={v => patch({ amount: v })} />
           <InlineField label="EMI (₹/mo)" value={debt.emi_amount} type="number" currency onSave={v => patch({ emi_amount: v || null })} />
@@ -178,45 +177,48 @@ export default function DebtDetail() {
           <InlineField label="Due Date" value={debt.due_date} type="date" onSave={v => patch({ due_date: v || null })} />
         </div>
 
-        <div className="mt-16" >
+        <div style={{ marginTop: 16 }}>
           <InlineField label="Notes" value={debt.notes} type="text" onSave={v => patch({ notes: v || null })} />
         </div>
-      </div>
+      </Card>
 
       {/* payment timeline */}
-      <div className="card" style={{ padding: '20px 24px' }}>
-        <p className="h-600-12 mb-14" >Payment Timeline</p>
+      <Card>
+        <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)', marginBottom: 14 }}>Payment Timeline</p>
         {timeline.length === 0 ? (
-          <div className="empty-state" style={{ padding: '24px 16px' }}>
-            <span className="emoji">○</span>
-            <p>No payment history yet</p>
-            <p className="text-12-faint" >Update the paid amount to track your progress.</p>
-          </div>
+          <EmptyState
+            icon={<AlertCircle size={32} />}
+            title="No payment history yet"
+            action="Add payment"
+            onAction={() => patch({ paid_amount: debt.paid_amount + (debt.emi_amount || 0) })}
+          >
+            Update the paid amount to track your progress.
+          </EmptyState>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
             {timeline.map((t, i) => (
               <div key={i} style={{
                 display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0',
-                borderBottom: i < timeline.length - 1 ? '1px solid var(--line-soft)' : 'none',
+                borderBottom: i < timeline.length - 1 ? '1px solid var(--border-soft)' : 'none',
               }}>
                 <span style={{
                   width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
-                  background: i === timeline.length - 1 && t.remaining <= 0 ? 'var(--emerald)' : 'var(--coral-soft)',
+                  background: i === timeline.length - 1 && t.remaining <= 0 ? 'var(--success)' : 'var(--accent-soft)',
                 }} />
-                <span style={{ flex: '0 0 80px', fontSize: 12, color: 'var(--ink-mute)' }}>
+                <span style={{ flex: '0 0 80px', fontSize: 12, color: 'var(--muted)' }}>
                   {t.date.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}
                 </span>
                 <span className="fin" style={{ flex: '0 0 80px', fontSize: 13, fontWeight: 500 }}>
-                  ₹{t.amount.toLocaleString('en-IN', INTL)}
+                  {fmtINR(t.amount)}
                 </span>
-                <span className="fin" style={{ flex: 1, fontSize: 12, color: 'var(--ink-faint)', textAlign: 'right' }}>
-                  Remaining: ₹{Math.round(t.remaining).toLocaleString('en-IN', INTL)}
+                <span className="fin" style={{ flex: 1, fontSize: 12, color: 'var(--muted)', textAlign: 'right' }}>
+                  Remaining: {fmtINR(Math.round(t.remaining))}
                 </span>
               </div>
             ))}
           </div>
         )}
-      </div>
+      </Card>
     </div>
   )
 }
