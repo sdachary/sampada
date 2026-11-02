@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { lazy } from 'react'
 import { useAuth } from './lib/useAuth'
 import Landing from './pages/Landing'
 import Login from './pages/Login'
@@ -27,6 +28,9 @@ import Settings from './pages/Settings'
 import Privacy from './pages/Privacy'
 import Onboarding from './pages/Onboarding'
 import Layout from './pages/Layout'
+
+// Dev-only styleguide: lazy so the production chunk never renders it.
+const Styleguide = import.meta.env.DEV ? lazy(() => import('./pages/Styleguide.jsx')) : null
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -66,6 +70,7 @@ export default function App() {
         <Route path="privacy" element={<Privacy />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
+      {Styleguide && <Route path="/styleguide" element={<Styleguide />} />}
     </Routes>
   )
 }

@@ -11,6 +11,7 @@ import App from './App.jsx'
 import './styles/tokens.css'
 import './styles/fonts.css'
 import './styles/base.css'
+import './styles/primitives.css'
 import './index.css'
 
 registerServiceWorker()

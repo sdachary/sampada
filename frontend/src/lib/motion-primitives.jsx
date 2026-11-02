@@ -1,6 +1,7 @@
 // Motion primitives (Step 3). opacity+transform only; reduced motion renders final state instantly.
 import { useEffect, useRef, useState } from 'react'
-import { m, useInView, useLocation } from 'motion/react'
+import { useLocation } from 'react-router-dom'
+import { m, useInView } from 'motion/react'
 import { DUR, EASE } from './motion'
 
 export const prefersReducedMotion = () =>
