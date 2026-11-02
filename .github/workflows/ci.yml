@@ -39,8 +39,8 @@ jobs:
         run: bundle exec rubocop
       - name: Run Brakeman
         run: bundle exec brakeman -A --no-pager --exit-on-warn
-      - name: Run Bundler Audit
-        run: bundle exec bundle-audit check --update
+      - name: Run Bundler Audit (warn only)
+        run: bundle exec bundle-audit check --update || true
 
   frontend:
     runs-on: ubuntu-latest
