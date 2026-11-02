@@ -2,16 +2,9 @@ import { useRef, useEffect, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { Html, OrbitControls } from '@react-three/drei'
 
-// Error boundary fallback
-function Hero3DErrorFallback({ error, resetErrorBoundary }) {
-  console.error('Hero3D error:', error)
-  return null // Will fall back to poster via parent
-}
-
 // Coin mark component - procedural geometry with "सं"
 function CoinMark({ position = [0, 0, 0], rotation = [0, 0, 0], scale = 1 }) {
   const groupRef = useRef()
-  const markRef = useRef()
 
   useEffect(() => {
     // The mark texture could be generated via canvas
@@ -229,7 +222,6 @@ function Hero3DCanvas({ scrollProgress, prefersReducedMotion }) {
 export default function Hero3D() {
   const [scrollProgress, setScrollProgress] = useState(0)
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
-  const [error, setError] = useState(null)
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -249,8 +241,8 @@ export default function Hero3D() {
       const heroHeight = rect.height
 
       // Progress from when hero top enters viewport to when hero bottom leaves
-      const start = -heroHeight
-      const end = viewportHeight
+      const _start = -heroHeight
+      const _end = viewportHeight
       const progress = Math.max(0, Math.min(1, (viewportHeight - rect.top) / (heroHeight + viewportHeight)))
 
       setScrollProgress(progress)
@@ -261,8 +253,6 @@ export default function Hero3D() {
 
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
-
-  if (error) return null // Error boundary will catch
 
   return (
     <Hero3DCanvas
