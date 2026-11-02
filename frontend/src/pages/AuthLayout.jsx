@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import ThemeToggle from '../components/ThemeToggle'
+import { Card, Button, PageHeader, Badge, fmtINR } from '../components/ui'
 
 const shellStyle = {
   minHeight: '100vh',
@@ -11,16 +12,13 @@ const shellStyle = {
 }
 
 const brandStyle = {
-  fontFamily: 'var(--sans)',
+  fontFamily: 'var(--font-display)',
   fontWeight: 700,
   fontSize: 20,
   letterSpacing: '-0.02em',
   color: 'var(--ink)',
 }
 
-// Shared shell for the unauthenticated pages (login/register/reset/forgot).
-// `variant="success"` drops the brand row and centers the card for the
-// "we sent you a link / password updated" confirmation screens.
 export default function AuthLayout({ variant = 'form', icon, title, subtitle, error, children, after, foot }) {
   const success = variant === 'success'
   return (
@@ -34,25 +32,26 @@ export default function AuthLayout({ variant = 'form', icon, title, subtitle, er
             <Link to="/" style={brandStyle}>Sampada</Link>
           </div>
         )}
-        <div className="card" style={{ padding: 32 }}>
+        <Card style={{ padding: 32 }}>
           {success ? (
             <>
               <p style={{ fontSize: 28, marginBottom: 12 }}>{icon}</p>
               <h1 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>{title}</h1>
-              <p style={{ fontSize: 13.5, color: 'var(--ink-mute)', lineHeight: 1.6 }}>{subtitle}</p>
+              <p style={{ fontSize: 13.5, color: 'var(--muted)', lineHeight: 1.6 }}>{subtitle}</p>
               {children}
             </>
           ) : (
             <>
-              <h1 className="page-title" >{title}</h1>
-              <p className="text-13-5-muted-lg" >{subtitle}</p>
-              {error && <p style={{ fontSize: 13, color: 'var(--coral)', marginBottom: 16 }}>{error}</p>}
+              <PageHeader title={title} style={{ borderBottom: 'none', paddingBottom: 0, marginBottom: 16 }}>
+                <p style={{ fontSize: 13.5, color: 'var(--muted)', lineHeight: 1.6 }}>{subtitle}</p>
+              </PageHeader>
+              {error && <Badge variant="danger" style={{ marginBottom: 16, fontSize: 13 }}>{error}</Badge>}
               {children}
             </>
           )}
-        </div>
+        </Card>
         {after}
-        {foot && <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--ink-mute)', marginTop: 20 }}>{foot}</p>}
+        {foot && <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--muted)', marginTop: 20 }}>{foot}</p>}
       </div>
     </div>
   )
