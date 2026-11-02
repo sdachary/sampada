@@ -117,8 +117,6 @@ jobs:
         with:
           ruby-version: .ruby-version
           bundler-cache: true
-      - name: Auto-fix RuboCop offenses
-        run: bundle exec rubocop -A
       - name: Setup database
         env:
           DATABASE_URL: postgres://sampada:sampada@localhost:5432/sampada_test
