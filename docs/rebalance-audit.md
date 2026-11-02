@@ -91,21 +91,21 @@ Tokens: `tokens.css` (single source, `:root` + `[data-theme="dark"]`), purpose-n
 | Backend | RSpec | `spec/` (models, services, requests, jobs) |
 | Engine ref | Node (ESM) | `rebalance-v2/reference/rebalanceEngine.test.mjs` (golden v1/v2 + 300 random invariants) |
 
-## 7. Conflicts / Questions for Owner
+## 7. Conflicts / Questions for Owner — **RESOLVED**
 
-| # | Issue | Spec Expectation | Current Reality | Question |
-|---|-------|------------------|-----------------|----------|
-| 1 | **Existing `/rebalance`** | Replace v1 (MPT) with v2 (buy-only contribution) behind toggle | `PortfolioService.optimize` runs MPT on expected_return/volatility | Keep MPT endpoint for "Compare with v1"? Or remove v1 entirely from API? |
-| 2 | **Per-stock settings** | `targetWeight`, `conviction`, `paused`, `sector`, `trend`, `mom6m` | `Investment` has `sector`, `dividend_yield`; no `targetWeight`, `conviction`, `paused`, `trend`, `mom6m` | Add migration with new columns? Or JSONB `settings` on `investments`? |
-| 3 | **Dividend/Growth type** | `InstrumentType = 'Dividend' \| 'Growth'` per holding | `Investment.investment_type` = `stock\|etf\|mutual_fund\|bond\|other`; `dividend_yield` exists | Map: `dividend_yield > 0` → `Dividend`, else `Growth`? Or add explicit `type` column? |
-| 4 | **Sectors** | Optional `sector` string per holding, used for max sector weight | `Investment.sector` exists (free text) | Normalize to enum? Or keep free text with max-sector guard? |
-| 5 | **Price adapter** | Optional live source; LTP editable with stale warning | `PriceRefreshJob` (Yahoo) + manual `current_price` column | Expose `PriceRefreshJob` as adapter? Accept `mom6m`/`trend` from same? |
-| 6 | **Config persistence** | `RebalanceConfig` + per-stock settings | No config table; `Portfolio.risk_tolerance` only | New `RebalanceConfig` model (belongs_to :portfolio) + JSONB on `investments`? |
-| 7 | **API routes** | New endpoints for rebalance v2 run, config CRUD, CSV import | Only `/rebalance` (v1) and `/prices` | Add `POST /api/v1/portfolios/:id/rebalance_v2`, `GET/PUT /api/v1/portfolios/:id/rebalance_config` |
-| 8 | **CSV import** | Preview + validation before apply | No import endpoint | New `POST /api/v1/portfolios/:id/import_investments` |
-| 9 | **Frontend route** | New page `/dashboard/portfolio/:id/rebalance` or tab | `Portfolios.jsx` shows list; detail is inline | Add nested route under `/dashboard/portfolios/:id/rebalance`? |
-| 10 | **Default contribution** | ₹21,000 (from spec seed) | No contribution concept in backend | Where does user set monthly contribution? New field on `Portfolio` or `RebalanceConfig`? |
-| 11 | **Currency** | INR (₹) formatting via `fmtINR` / `en-IN` | `Currency.symbol_for`, `currency_code` on Investment/Portfolio | Assume INR-only for MVP? Or support multi-currency in engine? |
+| # | Decision | Rationale |
+|---|----------|-----------|
+| **1** | Keep MPT as `/rebalance_v1` for compare toggle | Spec requires compare toggle with golden metrics |
+| **2** | JSONB `rebalance_settings` on `investments` | Single flexible column for target_weight, conviction, paused, trend, mom6m, type |
+| **3** | Explicit `instrument_sub_type` enum + heuristic default | User can override; default from dividend_yield > 0 |
+| **4** | Free-text + reference `sectors` table | Autocomplete + consistent 25% sector cap |
+| **5** | Extend `PriceRefreshJob` for `mom6m`/`trend` | Cache alongside LTP; return via `/prices` |
+| **6** | `RebalanceConfig` model + JSONB on investments | Global config in model; per-stock in JSONB |
+| **7** | Add all 3 routes: `rebalance_v2`, `rebalance_config`, `import_investments` | Full feature support |
+| **8** | Backend preview + apply (`?preview=true`) | Validation before commit |
+| **9** | Nested route `/dashboard/portfolios/:id/rebalance` | Portfolio context, consistent with existing patterns |
+| **10** | `monthly_contribution` on `RebalanceConfig` | Editable in UI KPI bar |
+| **11** | Per-portfolio currency | Engine uses `portfolio.currency_code` for fmtINR |
 
 ## 8. Integration Plan Summary
 
