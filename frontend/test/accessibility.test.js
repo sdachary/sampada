@@ -8,9 +8,9 @@ const PAGES = [
   { path: '/login', name: 'login' },
 ]
 
-for (const page of PAGES) {
-  test(`axe: ${page.name}`, async ({ page }) => {
-    await page.goto(`http://localhost:4173${page.path}`, { waitUntil: 'networkidle' })
+for (const p of PAGES) {
+  test(`axe: ${p.name}`, async ({ page }) => {
+    await page.goto(`http://localhost:4173${p.path}`, { waitUntil: 'networkidle' })
     const results = await new AxeBuilder({ page }).analyze()
     expect(results.violations).toEqual([])
   })
