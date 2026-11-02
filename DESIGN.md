@@ -104,8 +104,21 @@ Contrast fixes applied in the token layer (components never compensate individua
 - Known flag for the Button primitive: white label on `--accent` is 2.99:1 (fails AA at 14px);
   ink-on-coral is 6.17:1 — resolved in the Button component (Step 4), not by re-tinting the brand accent.
 
+## Motion (library rules — Step 3)
+
+Library: **Motion** (`motion/react`) via `<LazyMotion features={domAnimation} strict>` +
+`<MotionConfig reducedMotion="user">` in `src/lib/motion.jsx`; primitives in
+`src/lib/motion-primitives.jsx`. Always the `m` component, never `motion`.
+
+- Durations: 120 ms / 200 ms / 320 ms (`--dur-*`, `DUR`), ease `[0.2, 0, 0, 1]` (`--ease`, `EASE`).
+- Animate `opacity` + `transform` only. Unprompted motion: at most one orchestrated entrance
+  per page; `<Reveal>` below-fold sections fade up **once**; `<PageTransition>` is a ≤200 ms
+  route fade; `useCountUp` animates a figure on first view.
+- `prefers-reduced-motion` short-circuits everything to the final state (MotionConfig + the
+  primitives check it directly, so SSR/static renders are instant).
+
 ## Craft rules (anti-"generated" tells)
-- Motion answers user actions (open, expand, confirm, save). **Unprompted motion is rare**:
+- Motion answers user actions (open, expand, confirm, save). **Unprompted motion is rare**: (open, expand, confirm, save). **Unprompted motion is rare**:
   at most one orchestrated entrance per page (e.g. the hero). Never fade-and-slide every
   section; never hover-motion every card. Hover lift is available but only on `interactive` cards.
 - All-caps tracked labels only for small table/column headers and nav group names. No
