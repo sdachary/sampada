@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../lib/useAuth'
 import { api } from '../lib/api'
 import { useNavigate } from 'react-router-dom'
-import { Field } from '../components/ui'
 import { registerServiceWorker, subscribeToPush, unsubscribeFromPush, isPushSupported, isPushSubscribed } from '../lib/push'
+import { Card, Button, Input, Select, InputField, Badge, Skeleton, PageHeader, ToastHost, toast } from '../components/ui'
 
 const PROVIDERS = [
   { value: 'zerodha', label: 'Zerodha' },
@@ -63,15 +63,14 @@ export default function Settings() {
     if (pushSubscribed) {
       await unsubscribeFromPush(swReg)
       setPushSubscribed(false)
-      setMsg('Push notifications disabled')
+      toast('Push notifications disabled')
     } else {
       const sub = await subscribeToPush(swReg)
       if (sub) {
         setPushSubscribed(true)
-        setMsg('Push notifications enabled')
+        toast('Push notifications enabled')
       }
     }
-    setTimeout(() => setMsg(''), 3000)
   }
 
   const saveAi = async () => {
@@ -84,9 +83,8 @@ export default function Settings() {
       setAiProvider(aiForm.provider)
       setAiConfigured(true)
       setAiForm({ provider: '', api_key: '' })
-      setMsg('AI assistant enabled')
+      toast('AI assistant enabled')
     } catch (e) { setAiError(e.message) }
-    setTimeout(() => setMsg(''), 3000)
   }
 
   const disableAi = async () => {
@@ -94,9 +92,8 @@ export default function Settings() {
       await api.request('/api/v1/ai_settings', { method: 'DELETE' })
       setAiConfigured(false)
       setAiProvider('')
-      setMsg('AI assistant disabled')
-    } catch { setMsg('Failed to disable AI') }
-    setTimeout(() => setMsg(''), 3000)
+      toast('AI assistant disabled')
+    } catch { toast('Failed to disable AI') }
   }
 
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }))
@@ -104,12 +101,9 @@ export default function Settings() {
   const handleSave = async () => {
     try {
       await api.request('/api/v1/auth/profile', { method: 'PATCH', body: JSON.stringify(form) })
-      setMsg('Profile updated')
+      toast('Profile updated')
       setEditing(false)
-    } catch (e) {
-      setMsg(e.message)
-    }
-    setTimeout(() => setMsg(''), 3000)
+    } catch (e) { toast(e.message) }
   }
 
   const handleExport = async () => {
@@ -120,9 +114,8 @@ export default function Settings() {
       a.href = URL.createObjectURL(blob)
       a.download = `sampada-full-export-${new Date().toISOString().slice(0, 10)}.json`
       a.click()
-      setMsg('Full export downloaded')
-    } catch { setMsg('Export failed') }
-    setTimeout(() => setMsg(''), 3000)
+      toast('Full export downloaded')
+    } catch { toast('Export failed') }
   }
 
   const fetchCredentials = async () => {
@@ -142,87 +135,80 @@ export default function Settings() {
       setShowAdd(false)
       setNewCred({ provider: '', label: '', encrypted_value: '' })
       fetchCredentials()
-      setMsg('API key added')
-    } catch (e) { setMsg(e.message) }
-    setTimeout(() => setMsg(''), 3000)
+      toast('API key added')
+    } catch (e) { toast(e.message) }
   }
 
   const deleteCredential = async (id) => {
     try {
       await api.request(`/api/v1/api_credentials/${id}`, { method: 'DELETE' })
       fetchCredentials()
-      setMsg('API key removed')
-    } catch (e) { setMsg(e.message) }
-    setTimeout(() => setMsg(''), 3000)
+      toast('API key removed')
+    } catch (e) { toast(e.message) }
   }
 
   return (
-    <div>
-      <p className="page-num mb-4" >00<em>17</em> / 016</p>
-      <h1 className="page-title" >Settings</h1>
-      <p className="text-13-5-muted-sm" >Account preferences and profile.</p>
+    <div style={{ display: 'grid', gap: 20 }}>
+      <PageHeader
+        title="Settings"
+        num="017 / 016"
+      >
+        <p style={{ fontSize: 13, color: 'var(--muted)' }}>Account preferences and profile.</p>
+      </PageHeader>
 
-      {msg && (
-        <div className="card" style={{ padding: '10px 16px', marginBottom: 12, fontSize: 13, color: msg.startsWith('Error') || msg.includes('fail') ? 'var(--coral)' : '#2d7d6a' }}>
-          {msg}
-        </div>
-      )}
+      {msg && <Card style={{ padding: '10px 16px', fontSize: 13, color: msg.startsWith('Error') || msg.includes('fail') ? 'var(--accent)' : 'var(--success)' }}>{msg}</Card>}
 
-      <div className="card card-pad-lg" >
-        <div className="spread-mb12" >
-          <p className="h-600-12" >Profile</p>
-          <button onClick={() => setEditing(!editing)} className="btn btn-ghost" style={{ fontSize: 11.5, padding: '5px 12px' }}>
+      <Card>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)' }}>Profile</p>
+          <Button variant="ghost" size="sm" onClick={() => setEditing(!editing)}>
             {editing ? 'Cancel' : 'Edit'}
-          </button>
+          </Button>
         </div>
 
         {editing ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div className="grid-2" >
-              <Field label="First Name" labelStyle={{ fontSize: 11 }}>
-                <input className="input" value={form.first_name} onChange={set('first_name')} />
-              </Field>
-              <Field label="Last Name" labelStyle={{ fontSize: 11 }}>
-                <input className="input" value={form.last_name} onChange={set('last_name')} />
-              </Field>
+          <div style={{ display: 'grid', gap: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <InputField label="First Name" value={form.first_name} onChange={set('first_name')} />
+              <InputField label="Last Name" value={form.last_name} onChange={set('last_name')} />
             </div>
-            <Field label="Currency" labelStyle={{ fontSize: 11 }}>
-              <select className="input" value={form.currency} onChange={set('currency')}>
-                <option value="INR">INR (₹)</option>
-                <option value="USD">USD ($)</option>
-                <option value="EUR">EUR (€)</option>
-              </select>
-            </Field>
-            <button onClick={handleSave} className="btn btn-primary" style={{ alignSelf: 'flex-start', fontSize: 13, padding: '8px 20px' }}>Save</button>
+            <InputField label="Currency">
+              <Select value={form.currency} onChange={set('currency')} options={[
+                { value: 'INR', label: 'INR (₹)' },
+                { value: 'USD', label: 'USD ($)' },
+                { value: 'EUR', label: 'EUR (€)' },
+              ]} />
+            </InputField>
+            <Button onClick={handleSave} style={{ alignSelf: 'flex-start' }}>Save</Button>
           </div>
         ) : (
           <div style={{ display: 'grid', gap: 10 }}>
             <div>
-              <p className="text-11-muted mb-2" >Name</p>
-              <p className="h-500-14" >{user?.first_name} {user?.last_name}</p>
+              <p style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 2 }}>Name</p>
+              <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)' }}>{user?.first_name} {user?.last_name}</p>
             </div>
             <div>
-              <p className="text-11-muted mb-2" >Email</p>
-              <p className="h-500-14" >{user?.email}</p>
+              <p style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 2 }}>Email</p>
+              <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)' }}>{user?.email}</p>
             </div>
             <div>
-              <p className="text-11-muted mb-2" >Currency</p>
-              <p className="h-500-14" >{user?.currency || 'INR'}</p>
+              <p style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 2 }}>Currency</p>
+              <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)' }}>{user?.currency || 'INR'}</p>
             </div>
           </div>
         )}
-      </div>
+      </Card>
 
-      <div className="card card-pad-lg" >
-        <div className="spread-mb12" >
-          <p className="h-600-12" >
-            AI Assistant <span style={{ fontWeight: 400, color: 'var(--ink-mute)' }}>(powered by your key)</span>
+      <Card>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)' }}>
+            AI Assistant <span style={{ fontWeight: 400, color: 'var(--muted)' }}>(powered by your key)</span>
           </p>
-          <span style={{ fontSize: 10.5, fontWeight: 600, padding: '3px 8px', borderRadius: 999, background: aiConfigured ? '#e5f2ee' : '#f3e8e3', color: aiConfigured ? '#2d7d6a' : '#a25d43', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+          <Badge variant={aiConfigured ? 'success' : 'warning'} style={{ fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.02em' }}>
             {aiConfigured ? 'On' : 'Off'}
-          </span>
+          </Badge>
         </div>
-        <p style={{ fontSize: 12.5, color: 'var(--ink-mute)', marginBottom: 12 }}>
+        <p style={{ fontSize: 12.5, color: 'var(--muted)', marginBottom: 12 }}>
           {aiConfigured
             ? `Using ${aiProvider === 'gemini' ? 'Google Gemini' : aiProvider === 'grok' ? 'xAI Grok' : aiProvider === 'openrouter' ? 'OpenRouter' : 'OpenAI'} — chat in Conversations.`
             : 'Chat is disabled by default. Connect a Gemini, Grok, or any OpenAI-compatible key to enable AI answers.'}
@@ -231,101 +217,86 @@ export default function Settings() {
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: aiConfigured ? 10 : 0 }}>
           {!aiConfigured && (
             <>
-              <select className="input" value={aiForm.provider} onChange={e => setAiForm(f => ({ ...f, provider: e.target.value }))} style={{ flex: 1, minWidth: 160 }}>
-                <option value="">Select provider…</option>
-                <option value="openai">OpenAI</option>
-                <option value="gemini">Google Gemini</option>
-                <option value="grok">xAI Grok</option>
-                <option value="openrouter">OpenRouter</option>
-              </select>
-              <input type="password" className="input" placeholder="API key" value={aiForm.api_key}
-                onChange={e => setAiForm(f => ({ ...f, api_key: e.target.value }))} style={{ flex: 2, minWidth: 220 }} />
-              <button onClick={saveAi} disabled={!aiForm.provider || !aiForm.api_key} className="btn btn-primary" style={{ fontSize: 12.5, padding: '8px 18px' }}>
-                Enable
-              </button>
+              <Select value={aiForm.provider} onChange={e => setAiForm(f => ({ ...f, provider: e.target.value }))} placeholder="Select provider…" options={[
+                { value: 'openai', label: 'OpenAI' },
+                { value: 'gemini', label: 'Google Gemini' },
+                { value: 'grok', label: 'xAI Grok' },
+                { value: 'openrouter', label: 'OpenRouter' },
+              ]} style={{ flex: 1, minWidth: 160 }} />
+              <Input type="password" placeholder="API key" value={aiForm.api_key} onChange={e => setAiForm(f => ({ ...f, api_key: e.target.value }))} style={{ flex: 2, minWidth: 220 }} />
+              <Button onClick={saveAi} disabled={!aiForm.provider || !aiForm.api_key}>Enable</Button>
             </>
           )}
           {aiConfigured && (
-            <button onClick={disableAi} className="btn" style={{ fontSize: 12, padding: '6px 14px', background: 'transparent', border: '1px solid var(--line)', color: 'var(--coral)' }}>
+            <Button variant="ghost" size="sm" onClick={disableAi} style={{ color: 'var(--accent)', borderColor: 'var(--accent)' }}>
               Disable
-            </button>
+            </Button>
           )}
         </div>
-        {aiError && <p style={{ fontSize: 12, color: 'var(--coral)', marginBottom: 8 }}>{aiError}</p>}
-      </div>
+        {aiError && <p style={{ fontSize: 12, color: 'var(--accent)', marginBottom: 8 }}>{aiError}</p>}
+      </Card>
 
-      <div className="card card-pad-lg" >
-        <p className="h-600-12 mb-8" >Data & Privacy</p>
+      <Card>
+        <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)', marginBottom: 8 }}>Data & Privacy</p>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <button onClick={handleExport} className="btn btn-ghost btn-sm-ghost" >
-            Download full export
-          </button>
-          <a href="/dashboard/privacy" className="btn btn-ghost btn-sm-ghost" >
-            Privacy controls
-          </a>
+          <Button variant="ghost" size="sm" onClick={handleExport}>Download full export</Button>
+          <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard/privacy')}>Privacy controls</Button>
         </div>
-      </div>
+      </Card>
 
-      <div className="card card-pad-lg" >
-        <div className="spread-mb12" >
-          <p className="h-600-12" >API Keys</p>
-          <button onClick={() => setShowAdd(!showAdd)} className="btn btn-ghost" style={{ fontSize: 11.5, padding: '5px 12px' }}>
+      <Card>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)' }}>API Keys</p>
+          <Button variant="ghost" size="sm" onClick={() => setShowAdd(!showAdd)}>
             {showAdd ? 'Cancel' : 'Add'}
-          </button>
+          </Button>
         </div>
 
         {showAdd && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 12 }}>
-            <select className="input" value={newCred.provider} onChange={e => setNewCred(c => ({ ...c, provider: e.target.value }))}>
-              <option value="">Select provider…</option>
-              {PROVIDERS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
-            </select>
-            <input className="input" placeholder="Label (optional)" value={newCred.label} onChange={e => setNewCred(c => ({ ...c, label: e.target.value }))} />
-            <input className="input" placeholder="API key / token" value={newCred.encrypted_value} onChange={e => setNewCred(c => ({ ...c, encrypted_value: e.target.value }))} />
-            <button onClick={addCredential} className="btn btn-primary" style={{ alignSelf: 'flex-start', fontSize: 13, padding: '8px 20px' }}>Save</button>
+          <div style={{ display: 'grid', gap: 10, marginBottom: 12 }}>
+            <Select value={newCred.provider} onChange={e => setNewCred(c => ({ ...c, provider: e.target.value }))} placeholder="Select provider…" options={PROVIDERS} />
+            <Input placeholder="Label (optional)" value={newCred.label} onChange={e => setNewCred(c => ({ ...c, label: e.target.value }))} />
+            <Input placeholder="API key / token" value={newCred.encrypted_value} onChange={e => setNewCred(c => ({ ...c, encrypted_value: e.target.value }))} />
+            <Button onClick={addCredential} style={{ alignSelf: 'flex-start' }}>Save</Button>
           </div>
         )}
 
         {credentials.length === 0 ? (
-          <p style={{ fontSize: 12.5, color: 'var(--ink-mute)' }}>No API keys configured yet.</p>
+          <p style={{ fontSize: 12.5, color: 'var(--muted)' }}>No API keys configured yet.</p>
         ) : (
-          <div className="col-g8" >
+          <div style={{ display: 'grid', gap: 8 }}>
             {credentials.map(c => (
               <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: 'var(--bg)', borderRadius: 6 }}>
                 <div>
-                  <p className="h-500-13" >{c.label || PROVIDERS.find(p => p.value === c.provider)?.label || c.provider}</p>
-                  <p className="text-11-muted" >{c.provider}</p>
+                  <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--ink)' }}>{c.label || PROVIDERS.find(p => p.value === c.provider)?.label || c.provider}</p>
+                  <p style={{ fontSize: 11, color: 'var(--muted)' }}>{c.provider}</p>
                 </div>
-                <button onClick={() => deleteCredential(c.id)} className="btn" style={{ fontSize: 11, padding: '4px 10px', background: 'transparent', border: '1px solid var(--line)', color: 'var(--coral)' }}>Remove</button>
+                <Button variant="ghost" size="sm" onClick={() => deleteCredential(c.id)} style={{ color: 'var(--accent)', borderColor: 'var(--accent)' }}>Remove</Button>
               </div>
             ))}
           </div>
         )}
-      </div>
+      </Card>
 
       {pushSupported && (
-        <div className="card" style={{ padding: '18px 20px', borderLeft: '3px solid var(--teal)' }}>
-          <p className="h-600-12 mb-4" >Push Notifications</p>
-          <p className="text-12-muted mb-8" >Get notified about debt reminders and SIP alerts.</p>
-          <button onClick={togglePush} className="btn" style={{
-            fontSize: 12.5, padding: '7px 16px',
-            background: pushSubscribed ? 'transparent' : 'var(--teal)',
-            border: `1px solid ${pushSubscribed ? 'var(--line)' : 'var(--teal)'}`,
-            color: pushSubscribed ? 'var(--coral)' : '#fff',
-          }}>
+        <Card style={{ borderLeft: '3px solid var(--success)' }}>
+          <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)', marginBottom: 4 }}>Push Notifications</p>
+          <p style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 8 }}>Get notified about debt reminders and SIP alerts.</p>
+          <Button variant={pushSubscribed ? 'ghost' : 'primary'} size="sm" onClick={togglePush} style={{ background: pushSubscribed ? 'transparent' : undefined, borderColor: pushSubscribed ? 'var(--border)' : undefined, color: pushSubscribed ? 'var(--accent)' : undefined }}>
             {pushSubscribed ? 'Disable' : 'Enable'}
-          </button>
-        </div>
+          </Button>
+        </Card>
       )}
 
-      <div className="card" style={{ padding: '18px 20px', borderLeft: '3px solid var(--ink-faint)' }}>
-        <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 4, letterSpacing: '-0.01em' }}>Logout</p>
-        <p className="text-12-muted mb-8" >Sign out of your account.</p>
-        <button onClick={() => { logout(); navigate('/') }}
-          className="btn" style={{ fontSize: 12.5, padding: '7px 16px', background: 'transparent', border: '1px solid var(--line)', color: 'var(--coral)' }}>
+      <Card style={{ borderLeft: '3px solid var(--faint)' }}>
+        <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)', marginBottom: 4 }}>Logout</p>
+        <p style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 8 }}>Sign out of your account.</p>
+        <Button variant="ghost" size="sm" onClick={() => { logout(); navigate('/') }} style={{ color: 'var(--accent)', borderColor: 'var(--accent)' }}>
           Sign out
-        </button>
-      </div>
+        </Button>
+      </Card>
+
+      <ToastHost />
     </div>
   )
 }

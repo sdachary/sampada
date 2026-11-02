@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { auth } from '../lib/api'
 import AuthLayout from './AuthLayout'
+import { Input, Button, Card } from '../components/ui'
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('')
@@ -25,7 +26,9 @@ export default function ForgotPassword() {
 
   if (sent) return (
     <AuthLayout variant="success" icon="✉" title="Check your email" subtitle={<>If an account exists for <strong>{email}</strong>, we've sent a password reset link.</>}>
-      <Link to="/login" className="btn btn-primary" style={{ display: 'inline-flex', marginTop: 20, fontSize: 13, padding: '8px 20px' }}>Back to sign in</Link>
+      <Link to="/login">
+        <Button style={{ display: 'inline-flex', marginTop: 20, fontSize: 13, padding: '8px 20px' }}>Back to sign in</Button>
+      </Link>
     </AuthLayout>
   )
 
@@ -34,18 +37,18 @@ export default function ForgotPassword() {
       title="Reset password"
       subtitle="Enter your email and we'll send you a link."
       error={error}
-      foot={<Link className="text-coral" to="/login" >Back to sign in</Link>}
+      foot={<Link style={{ color: 'var(--accent)', fontWeight: 500 }} to="/login">Back to sign in</Link>}
     >
-      <form className="col-g14" onSubmit={handleSubmit} >
+      <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 14 }}>
         <input
           type="text" name="website" value={website} onChange={e => setWebsite(e.target.value)}
           tabIndex={-1} autoComplete="off" aria-hidden="true"
           style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, opacity: 0 }}
         />
-        <input type="email" placeholder="Email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} className="input" required />
-        <button type="submit" disabled={submitting} className="btn btn-primary center-h" >
+        <Input type="email" placeholder="Email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} required />
+        <Button type="submit" loading={submitting} style={{ justifySelf: 'center' }}>
           {submitting ? 'Sending…' : 'Send reset link'}
-        </button>
+        </Button>
       </form>
     </AuthLayout>
   )

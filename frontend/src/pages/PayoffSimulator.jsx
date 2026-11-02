@@ -1,9 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { api } from '../lib/api'
-import { Field } from '../components/ui'
+import { Input, Select, Textarea, InputField, Button, Card, EmptyState, Table, PageHeader, Progress, Skeleton, fmtINR } from '../components/ui'
 import Chart from '../components/Chart'
-import { fmtINR } from '../lib/amounts'
 
 export default function PayoffSimulator() {
   const [searchParams] = useSearchParams()
@@ -51,7 +50,7 @@ export default function PayoffSimulator() {
     if (selectedId && debts.length > 0 && !baseline && !simulating) simulate()
   }, [debts, selectedId, simulate, baseline, simulating])
 
-  if (loading) return <div><div className="skeleton h-200"  /></div>
+  if (loading) return <Skeleton style={{ height: 200 }} />
 
   const selected = debts.find(d => d.id === +selectedId)
   const base = baseline
@@ -61,152 +60,149 @@ export default function PayoffSimulator() {
   const filtered = search ? debts.filter(d => d.name.toLowerCase().includes(search.toLowerCase())) : debts
 
   return (
-    <div>
-      <p className="page-num mb-4" >00<em>5</em> / 016</p>
-      <h1 className="page-title" >Payoff Simulator</h1>
-      <p className="text-13-5-muted-lg" >See how extra payments affect your debt-free date.</p>
+    <div style={{ display: 'grid', gap: 20 }}>
+      <PageHeader
+        title="Payoff Simulator"
+        num="005 / 016"
+      >
+        <p style={{ fontSize: 13, color: 'var(--muted)' }}>See how extra payments affect your debt-free date.</p>
+      </PageHeader>
 
       {debts.length === 0 ? (
-        <div className="empty-state">
-          <span className="emoji">◎</span>
-          <p>Select a debt to simulate payoffs</p>
-          <Link to="/dashboard/debts" className="btn btn-ghost" style={{ fontSize: 12.5 }}>View debts</Link>
-        </div>
+        <EmptyState
+          icon={<span aria-hidden="true" style={{ fontSize: 48, color: 'var(--border)' }}>◎</span>}
+          title="No debts to simulate"
+          action="View debts"
+          onAction={() => window.location.href = '/dashboard/debts'}
+        >
+          Select a debt to simulate payoffs.
+        </EmptyState>
       ) : (
-        <div>
-          <div className="mb-16" >
-            <Field className="mb-6" label="Select Debt" >
-              <select value={selectedId} onChange={e => { setSelectedId(e.target.value); setBaseline(null); setResult(null) }}
-                className="input" style={{ maxWidth: 360, padding: '9px 12px' }}>
-                <option value="">Choose a debt…</option>
-                {filtered.map(d => (
-                  <option key={d.id} value={d.id}>{d.name} — {fmtINR(+d.amount || 0)} @ {d.interest_rate}%</option>
-                ))}
-              </select>
-            </Field>
-            <input type="text" value={search} onChange={e => setSearch(e.target.value)}
-              placeholder="Search debts…" className="input" style={{ maxWidth: 360, padding: '9px 12px', fontSize: 14 }} />
-            {search && filtered.length === 0 && <p className="text-11-faint mt-4" >No debts match "{search}"</p>}
-          </div>
+        <div style={{ display: 'grid', gap: 16 }}>
+          <Card>
+            <Select
+              value={selectedId}
+              onChange={e => { setSelectedId(e.target.value); setBaseline(null); setResult(null) }}
+              placeholder="Choose a debt…"
+              options={filtered.map(d => ({ value: d.id, label: `${d.name} — ${fmtINR(+d.amount || 0)} @ ${d.interest_rate}%` }))}
+            />
+            <Input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search debts…"
+              style={{ maxWidth: 360 }}
+            />
+            {search && filtered.length === 0 && <p style={{ fontSize: 11, color: 'var(--muted)', marginTop: 8 }}>No debts match "{search}"</p>}
+          </Card>
 
           {selected && (
-            <div className="card card-pad-mb16" >
-              <p className="h-600-12 mb-4" >{selected.name}</p>
-              <p className="text-11-5-muted" >
+            <Card>
+              <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)', marginBottom: 4 }}>{selected.name}</p>
+              <p style={{ fontSize: 11.5, color: 'var(--muted)' }}>
                 {fmtINR(+selected.amount || 0)} · {selected.interest_rate}% APR · EMI: {fmtINR(+selected.emi_amount || 0)}/mo
               </p>
-            </div>
+            </Card>
           )}
 
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
-            <Field className="inline-block" label="Extra Monthly (₹)" >
-              <input type="number" value={extraPayment} onChange={e => setExtraPayment(e.target.value)}
-                className="input" style={{ maxWidth: 160, padding: '9px 12px' }} placeholder="0" min="0" />
-            </Field>
-            <Field className="inline-block" label="Lump Sum (₹)" >
-              <input type="number" value={lumpSum} onChange={e => setLumpSum(e.target.value)}
-                className="input" style={{ maxWidth: 160, padding: '9px 12px' }} placeholder="0" min="0" />
-            </Field>
-            <Field className="inline-block" label="Annual Extra (₹)" >
-              <input type="number" value={annualExtra} onChange={e => setAnnualExtra(e.target.value)}
-                className="input" style={{ maxWidth: 160, padding: '9px 12px' }} placeholder="0" min="0" />
-            </Field>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            <InputField label="Extra Monthly (₹)" type="number" value={extraPayment} onChange={e => setExtraPayment(e.target.value)} placeholder="0" min="0" style={{ maxWidth: 160 }} />
+            <InputField label="Lump Sum (₹)" type="number" value={lumpSum} onChange={e => setLumpSum(e.target.value)} placeholder="0" min="0" style={{ maxWidth: 160 }} />
+            <InputField label="Annual Extra (₹)" type="number" value={annualExtra} onChange={e => setAnnualExtra(e.target.value)} placeholder="0" min="0" style={{ maxWidth: 160 }} />
           </div>
 
-          <button onClick={simulate} disabled={!selectedId || simulating} className="btn btn-primary" style={{ fontSize: 13, padding: '9px 24px' }}>
+          <Button onClick={simulate} disabled={!selectedId || simulating} loading={simulating}>
             {simulating ? 'Simulating…' : 'Simulate'}
-          </button>
+          </Button>
 
           {res && base && (
-            <div style={{ marginTop: 20 }}>
-              <div className="card card-pad-lg" >
-                <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 12 }}>Comparison</p>
+            <div style={{ display: 'grid', gap: 16 }}>
+              <Card>
+                <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)', marginBottom: 12 }}>Comparison</p>
                 <div style={{ display: 'flex', gap: 12, marginBottom: 14, flexWrap: 'wrap' }}>
                   <div style={{ flex: '1 1 140px' }}>
-                    <p className="label-caps-sm mb-3" >Current plan</p>
-                    <p className="fin" style={{ fontSize: 24, fontWeight: 700, color: 'var(--coral)' }}>{base.months} mo</p>
-                    <p className="fin text-12-muted" >{fmtINR(+base.total_interest)} interest</p>
+                    <p style={{ fontSize: 10, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 3 }}>Current plan</p>
+                    <p className="fin" style={{ fontSize: 24, fontWeight: 700, color: 'var(--accent)' }}>{base.months} mo</p>
+                    <p className="fin" style={{ fontSize: 12, color: 'var(--muted)' }}>{fmtINR(+base.total_interest)} interest</p>
                   </div>
                   <div style={{ flex: '1 1 140px' }}>
-                    <p className="label-caps-sm mb-3" >Accelerated</p>
-                    <p className="fin" style={{ fontSize: 24, fontWeight: 700, color: 'var(--emerald)' }}>{res.months} mo</p>
-                    <p className="fin text-12-muted" >{fmtINR(+res.total_interest)} interest</p>
+                    <p style={{ fontSize: 10, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 3 }}>Accelerated</p>
+                    <p className="fin" style={{ fontSize: 24, fontWeight: 700, color: 'var(--success)' }}>{res.months} mo</p>
+                    <p className="fin" style={{ fontSize: 12, color: 'var(--muted)' }}>{fmtINR(+res.total_interest)} interest</p>
                   </div>
                 </div>
-                <div className="card" style={{ padding: '16px 18px', background: 'var(--surface-2)', marginBottom: 12 }}>
-                  <p className="h-600-12 mb-8" >Balance over time</p>
+                <div style={{ padding: '16px 18px', background: 'var(--surface)', borderRadius: 'var(--radius-md)', marginBottom: 12 }}>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)', marginBottom: 8 }}>Balance over time</p>
                   <Chart data={base.schedule.map((s, i) => ({ ...s, baseline: s.balance, accelerated: res.schedule[i]?.balance ?? null }))}
                     xKey="month" series={[
-                      { key: 'baseline', name: 'Current', color: 'var(--coral)' },
-                      { key: 'accelerated', name: 'Accelerated', color: 'var(--emerald)' },
+                      { key: 'baseline', name: 'Current', color: 'var(--accent)' },
+                      { key: 'accelerated', name: 'Accelerated', color: 'var(--success)' },
                     ]} height={200} />
                   <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginTop: 8 }}>
-                    <span style={{ fontSize: 10, color: 'var(--coral)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <span style={{ display: 'inline-block', width: 12, height: 2, background: 'var(--coral)' }} /> Current
+                    <span style={{ fontSize: 10, color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <span style={{ display: 'inline-block', width: 12, height: 2, background: 'var(--accent)' }} /> Current
                     </span>
-                    <span style={{ fontSize: 10, color: 'var(--emerald)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <span style={{ display: 'inline-block', width: 12, height: 2, background: 'var(--emerald)' }} /> Accelerated
+                    <span style={{ fontSize: 10, color: 'var(--success)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <span style={{ display: 'inline-block', width: 12, height: 2, background: 'var(--success)' }} /> Accelerated
                     </span>
                   </div>
                 </div>
+
                 <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', height: 80 }}>
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-                    <span style={{ fontSize: 10, color: 'var(--ink-faint)' }}>{base.months}mo</span>
-                    <div style={{ width: '50%', maxWidth: 80, background: 'var(--coral)', borderRadius: '4px 4px 0 0', opacity: 0.7, height: '64px' }} />
-                    <span style={{ fontSize: 9, color: 'var(--ink-mute)' }}>Current</span>
+                    <span style={{ fontSize: 10, color: 'var(--muted)' }}>{base.months}mo</span>
+                    <Progress value={100} style={{ width: '50%', maxWidth: 80, height: 64 }} />
+                    <span style={{ fontSize: 9, color: 'var(--muted)' }}>Current</span>
                   </div>
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-                    <span style={{ fontSize: 10, color: 'var(--ink-faint)' }}>{res.months}mo</span>
-                    <div style={{ width: '50%', maxWidth: 80, background: 'var(--emerald)', borderRadius: '4px 4px 0 0', height: `${Math.min((res.months / base.months) * 64, 64)}px` }} />
-                    <span style={{ fontSize: 9, color: 'var(--ink-mute)' }}>Extra</span>
+                    <span style={{ fontSize: 10, color: 'var(--muted)' }}>{res.months}mo</span>
+                    <Progress value={(res.months / base.months) * 100} style={{ width: '50%', maxWidth: 80, height: 64 }} />
+                    <span style={{ fontSize: 9, color: 'var(--muted)' }}>Extra</span>
                   </div>
                 </div>
-              </div>
+              </Card>
 
               {res.schedule && (
-                <div className="card" style={{ padding: '16px 18px', marginBottom: 12, overflowX: 'auto' }}>
-                  <p className="h-600-12 mb-8" >Monthly schedule</p>
-                  <table style={{ width: '100%', fontSize: 11, borderCollapse: 'collapse' }}>
-                    <thead>
-                      <tr style={{ color: 'var(--ink-faint)', textTransform: 'uppercase', fontSize: 9, letterSpacing: '0.05em' }}>
-                        <th style={{ textAlign: 'left', padding: '4px 8px' }}>Month</th>
-                        <th className="table-cell-num" >Payment</th>
-                        <th className="table-cell-num" >Interest</th>
-                        <th className="table-cell-num" >Principal</th>
-                        <th className="table-cell-num" >Balance</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {res.schedule.slice(0, 60).map(s => (
-                        <tr key={s.month}>
-                          <td style={{ padding: '3px 8px', color: 'var(--ink-mute)' }}>{s.month}</td>
-                          <td className="table-cell-num-sm" >{fmtINR(s.payment)}</td>
-                          <td className="table-cell-num-sm" >{fmtINR(s.interest)}</td>
-                          <td className="table-cell-num-sm" >{fmtINR(s.principal)}</td>
-                          <td className="table-cell-num-sm" >{fmtINR(s.balance)}</td>
-                        </tr>
-                      ))}
-                      {res.schedule.length > 60 && (
-                        <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--ink-faint)', padding: 8, fontSize: 10 }}>… {res.schedule.length - 60} more months</td></tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+                <Card>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)', marginBottom: 8 }}>Monthly schedule</p>
+                  <Table
+                    columns={[
+                      { key: 'month', label: 'Month' },
+                      { key: 'payment', label: 'Payment', align: 'right' },
+                      { key: 'interest', label: 'Interest', align: 'right' },
+                      { key: 'principal', label: 'Principal', align: 'right' },
+                      { key: 'balance', label: 'Balance', align: 'right' },
+                    ]}
+                    rows={res.schedule.slice(0, 60).map(s => ({
+                      id: s.month,
+                      cells: {
+                        month: s.month,
+                        payment: fmtINR(s.payment),
+                        interest: fmtINR(s.interest),
+                        principal: fmtINR(s.principal),
+                        balance: fmtINR(s.balance),
+                      },
+                    }))}
+                    ariaLabel="Monthly payment schedule"
+                  />
+                  {res.schedule.length > 60 && (
+                    <p style={{ textAlign: 'center', color: 'var(--muted)', padding: 8, fontSize: 10 }}>… {res.schedule.length - 60} more months</p>
+                  )}
+                </Card>
               )}
 
-              <div className="card" style={{ padding: '16px 18px', borderTop: '2px solid var(--success)' }}>
-                <p className="h-600-12 mb-8" >You save</p>
+              <Card style={{ borderTop: '2px solid var(--success)' }}>
+                <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)', marginBottom: 8 }}>You save</p>
                 <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
                   <div>
-                    <p className="label-caps-sm" >Time</p>
-                    <p className="fin amt-22-in" >{monthsSaved} months</p>
+                    <p style={{ fontSize: 10, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Time</p>
+                    <p className="fin" style={{ fontSize: 22, fontWeight: 700, color: 'var(--success)' }}>{monthsSaved} months</p>
                   </div>
                   <div>
-                    <p className="label-caps-sm" >Interest</p>
-                    <p className="fin amt-22-in" >{fmtINR(interestSaved)}</p>
+                    <p style={{ fontSize: 10, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Interest</p>
+                    <p className="fin" style={{ fontSize: 22, fontWeight: 700, color: 'var(--success)' }}>{fmtINR(interestSaved)}</p>
                   </div>
                 </div>
-              </div>
+              </Card>
             </div>
           )}
         </div>

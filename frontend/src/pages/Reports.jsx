@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
-import { fmtINR } from '../lib/amounts'
+import { Card, Skeleton, PageHeader, Tabs, Progress, Badge, fmtINR, Stat } from '../components/ui'
 
 function CalendarHeatmap() {
   const [txns, setTxns] = useState([])
@@ -32,50 +32,48 @@ function CalendarHeatmap() {
   function intensity(day) {
     const key = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
     const amt = daily[key] || 0
-    if (amt === 0) return { bg: 'var(--line-soft)', opacity: 0.3 }
+    if (amt === 0) return { bg: 'var(--border-soft)', opacity: 0.3 }
     const pct = amt / max
-    return { bg: 'var(--coral)', opacity: 0.15 + pct * 0.75 }
+    return { bg: 'var(--accent)', opacity: 0.15 + pct * 0.75 }
   }
 
   return (
-    <div>
-      <div className="card" style={{ padding: '16px 18px' }}>
-        <p className="label-caps-sm mb-4" >
-          {now.toLocaleString('default', { month: 'long', year: 'numeric' })} spend
-        </p>
-        {loading ? <div className="skeleton h-200"  /> : (
-          <>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4, textAlign: 'center' }}>
-              {labels.map(l => <div key={l} style={{ fontSize: 9, color: 'var(--ink-faint)', padding: '2px 0' }}>{l}</div>)}
-              {Array.from({ length: firstDow }, (_, i) => <div key={`e${i}`} />)}
-              {Array.from({ length: daysInMonth }, (_, i) => {
-                const day = i + 1
-                const c = intensity(day)
-                return (
-                  <div key={day}
-                    title={daily[`${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`]
-                      ? `₹${daily[`${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`].toLocaleString('en-IN')}`
-                      : ''}
-                    style={{
-                      aspectRatio: '1', borderRadius: 6,
-                      background: c.bg, opacity: c.opacity,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 9, color: 'var(--ink-mute)',
-                    }}>{day}</div>
-                )
-              })}
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'flex-end', marginTop: 8 }}>
-              <span style={{ fontSize: 9, color: 'var(--ink-faint)' }}>Less</span>
-              {[0.15, 0.3, 0.5, 0.7, 0.9].map(o => (
-                <span key={o} style={{ width: 12, height: 12, borderRadius: 3, background: 'var(--coral)', opacity: o, display: 'inline-block' }} />
-              ))}
-              <span style={{ fontSize: 9, color: 'var(--ink-faint)' }}>More</span>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
+    <Card style={{ padding: '16px 18px' }}>
+      <p style={{ fontSize: 10, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 4 }}>
+        {now.toLocaleString('default', { month: 'long', year: 'numeric' })} spend
+      </p>
+      {loading ? <Skeleton style={{ height: 200 }} /> : (
+        <>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4, textAlign: 'center' }}>
+            {labels.map(l => <div key={l} style={{ fontSize: 9, color: 'var(--muted)', padding: '2px 0' }}>{l}</div>)}
+            {Array.from({ length: firstDow }, (_, i) => <div key={`e${i}`} />)}
+            {Array.from({ length: daysInMonth }, (_, i) => {
+              const day = i + 1
+              const c = intensity(day)
+              return (
+                <div key={day}
+                  title={daily[`${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`]
+                    ? `₹${daily[`${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`].toLocaleString('en-IN')}`
+                    : ''}
+                  style={{
+                    aspectRatio: '1', borderRadius: 6,
+                    background: c.bg, opacity: c.opacity,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 9, color: 'var(--muted)',
+                  }}>{day}</div>
+              )
+            })}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'flex-end', marginTop: 8 }}>
+            <span style={{ fontSize: 9, color: 'var(--muted)' }}>Less</span>
+            {[0.15, 0.3, 0.5, 0.7, 0.9].map(o => (
+              <span key={o} style={{ width: 12, height: 12, borderRadius: 3, background: 'var(--accent)', opacity: o, display: 'inline-block' }} />
+            ))}
+            <span style={{ fontSize: 9, color: 'var(--muted)' }}>More</span>
+          </div>
+        </>
+      )}
+    </Card>
   )
 }
 
@@ -105,63 +103,51 @@ export default function Reports() {
     { key: 'goals', label: 'Goals' },
   ]
 
-  if (loading) return (
-    <div>
-      <div className="skeleton" style={{ height: 200, borderRadius: 'var(--radius)', marginBottom: 10 }} />
-    </div>
-  )
+  if (loading) return <Skeleton style={{ height: 200, borderRadius: 'var(--radius-md)' }} />
 
   return (
-    <div>
-      <p className="page-num mb-4" >00<em>15</em> / 016</p>
-      <h1 className="page-title" >Reports</h1>
-      <p className="text-13-5-muted-sm" >Annual summaries, cash flow forecasts, and anomaly detection.</p>
+    <div style={{ display: 'grid', gap: 20 }}>
+      <PageHeader
+        title="Reports"
+        num="015 / 016"
+      >
+        <p style={{ fontSize: 13, color: 'var(--muted)' }}>Annual summaries, cash flow forecasts, and anomaly detection.</p>
+      </PageHeader>
 
-      <div style={{ display: 'flex', gap: 4, marginBottom: 16, borderBottom: '1px solid var(--line)', paddingBottom: 0 }}>
-        {tabs.map(t => (
-          <button key={t.key} onClick={() => setActiveTab(t.key)}
-            style={{ padding: '8px 14px', border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, fontWeight: activeTab === t.key ? 600 : 400, color: activeTab === t.key ? 'var(--ink)' : 'var(--ink-mute)', borderBottom: activeTab === t.key ? '2px solid var(--coral)' : '2px solid transparent', marginBottom: -1 }}>
-            {t.label}
-          </button>
-        ))}
-      </div>
+      <Tabs tabs={tabs} value={activeTab} onChange={setActiveTab} />
 
       {activeTab === 'annual' && annual && (
-        <div>
-          <div className="card card-pad-lg" >
-            <p className="label-caps-sm mb-4" >{annual.year} Summary</p>
+        <div style={{ display: 'grid', gap: 16 }}>
+          <Card>
+            <p style={{ fontSize: 10, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 4 }}>{annual.year} Summary</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginTop: 8 }}>
-              <div><span className="text-11-muted" >Income</span>
-                <p className="fin amt-in-15" >{fmtINR(+annual.summary?.total_income || 0)}</p></div>
-              <div><span className="text-11-muted" >Expenses</span>
-                <p className="fin amt-out-15" >{fmtINR(+annual.summary?.total_expenses || 0)}</p></div>
-              <div><span className="text-11-muted" >Net Savings</span>
-                <p className="fin h-600-15" >{fmtINR(+annual.summary?.net_savings || 0)}</p></div>
-              <div><span className="text-11-muted" >Savings Rate</span>
-                <p className="h-600-15" >{(+annual.summary?.savings_rate || 0).toFixed(1)}%</p></div>
+              <Stat label="Income" value={fmtINR(+annual.summary?.total_income || 0)} />
+              <Stat label="Expenses" value={fmtINR(+annual.summary?.total_expenses || 0)} />
+              <Stat label="Net Savings" value={fmtINR(+annual.summary?.net_savings || 0)} />
+              <Stat label="Savings Rate" value={Number(annual.summary?.savings_rate || 0).toFixed(1) + '%'} />
             </div>
-          </div>
+          </Card>
           {annual.net_worth_trajectory?.length > 0 && (
-            <div className="card card-pad-mb12" >
-              <p className="h-600-12 mb-8" >Net Worth Trajectory</p>
+            <Card>
+              <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)', marginBottom: 8 }}>Net Worth Trajectory</p>
               {annual.net_worth_trajectory.slice(0, 12).map((pt, i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, padding: '3px 0', borderBottom: '1px solid var(--line-soft)' }}>
-                  <span className="text-mute" >{pt.date}</span>
-                  <span className="fin fw-500" >{fmtINR(+pt.net_worth || 0)}</span>
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, padding: '3px 0', borderBottom: '1px solid var(--border-soft)' }}>
+                  <span style={{ color: 'var(--muted)' }}>{pt.date}</span>
+                  <span className="fin" style={{ fontWeight: 500 }}>{fmtINR(+pt.net_worth || 0)}</span>
                 </div>
               ))}
-            </div>
+            </Card>
           )}
           {annual.categories?.length > 0 && (
-            <div className="card card-pad" >
-              <p className="h-600-12 mb-8" >Spending by Category</p>
+            <Card>
+              <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)', marginBottom: 8 }}>Spending by Category</p>
               {annual.categories.map((c, i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, padding: '4px 0', borderBottom: '1px solid var(--line-soft)' }}>
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, padding: '4px 0', borderBottom: '1px solid var(--border-soft)' }}>
                   <span>{c.category}</span>
                   <span className="fin">{fmtINR(+c.total || 0)} ({(+c.percentage || 0).toFixed(1)}%)</span>
                 </div>
               ))}
-            </div>
+            </Card>
           )}
         </div>
       )}
@@ -169,74 +155,65 @@ export default function Reports() {
       {activeTab === 'heatmap' && <CalendarHeatmap />}
 
       {activeTab === 'forecast' && forecast && (
-        <div>
-          <div className="card card-pad-mb12" >
-            <p className="label-caps-sm mb-4" >Cash Flow Health</p>
-            <span className="tag" style={{ background: forecast.summary?.health === 'healthy' ? 'var(--emerald)' : 'var(--coral)', color: '#fff', fontSize: 11, marginBottom: 8, display: 'inline-block' }}>
+        <div style={{ display: 'grid', gap: 16 }}>
+          <Card>
+            <p style={{ fontSize: 10, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 4 }}>Cash Flow Health</p>
+            <Badge variant={forecast.summary?.health === 'healthy' ? 'success' : 'accent'} style={{ fontSize: 11, marginBottom: 8 }}>
               {forecast.summary?.health}
-            </span>
+            </Badge>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 10, marginTop: 8 }}>
-              <div><span className="text-11-muted" >Monthly Income</span>
-                <p className="fin" style={{ fontSize: 14, fontWeight: 600, color: 'var(--emerald)' }}>{fmtINR(+forecast.summary?.monthly_income || 0)}</p></div>
-              <div><span className="text-11-muted" >Monthly Expenses</span>
-                <p className="fin" style={{ fontSize: 14, fontWeight: 600, color: 'var(--coral)' }}>{fmtINR(+forecast.summary?.monthly_expenses || 0)}</p></div>
-              <div><span className="text-11-muted" >Net Monthly</span>
-                <p className="fin h-600-14" >{fmtINR(+forecast.summary?.net_monthly || 0)}</p></div>
-              <div><span className="text-11-muted" >Runway</span>
-                <p className="h-600-14" >{forecast.summary?.runway_months} months</p></div>
+              <Stat label="Monthly Income" value={fmtINR(+forecast.summary?.monthly_income || 0)} />
+              <Stat label="Monthly Expenses" value={fmtINR(+forecast.summary?.monthly_expenses || 0)} />
+              <Stat label="Net Monthly" value={fmtINR(+forecast.summary?.net_monthly || 0)} />
+              <Stat label="Runway" value={forecast.summary?.runway_months + ' months'} />
             </div>
-          </div>
+          </Card>
           {forecast.forecast?.length > 0 && (
-            <div className="card card-pad" >
-              <p className="h-600-12 mb-8" >Forecast</p>
+            <Card>
+              <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)', marginBottom: 8 }}>Forecast</p>
               {forecast.forecast.slice(0, 6).map((f, i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, padding: '4px 0', borderBottom: '1px solid var(--line-soft)' }}>
-                  <span className="text-mute" >{f.label}</span>
-                  <span className="fin" style={{ color: (+f.net_cash_flow || 0) >= 0 ? 'var(--emerald)' : 'var(--coral)' }}>
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, padding: '4px 0', borderBottom: '1px solid var(--border-soft)' }}>
+                  <span style={{ color: 'var(--muted)' }}>{f.label}</span>
+                  <span className="fin" style={{ color: (+f.net_cash_flow || 0) >= 0 ? 'var(--success)' : 'var(--accent)' }}>
                     {fmtINR(+f.net_cash_flow || 0)}
                   </span>
                 </div>
               ))}
-            </div>
+            </Card>
           )}
         </div>
       )}
 
       {activeTab === 'anomalies' && anomalies && (
-        <div>
-          <div className="card card-pad-mb12" >
+        <div style={{ display: 'grid', gap: 16 }}>
+          <Card>
             <div style={{ display: 'flex', gap: 16 }}>
-              <div><span className="label-caps-sm" >Total</span>
-                <p className="h-600-20" >{anomalies.total_anomalies}</p></div>
-              <div><span className="label-caps-sm" >Critical</span>
-                <p className="amt-20-out" >{anomalies.critical}</p></div>
-              <div><span className="label-caps-sm" >Warnings</span>
-                <p style={{ fontSize: 20, fontWeight: 600, color: '#d4a017' }}>{anomalies.warnings}</p></div>
+              <Stat label="Total" value={anomalies.total_anomalies} />
+              <Stat label="Critical" value={anomalies.critical} />
+              <Stat label="Warnings" value={anomalies.warnings} />
             </div>
-          </div>
+          </Card>
           {anomalies.anomalies?.length > 0 && anomalies.anomalies.map((a, i) => (
-            <div key={i} className="card" style={{ padding: '12px 16px', marginBottom: 6, borderLeft: `3px solid ${a.severity >= 7 ? 'var(--coral)' : a.severity >= 4 ? '#d4a017' : 'var(--ink-faint)'}` }}>
-              <p className="row-600-13" >{a.title}</p>
-              <p className="text-11-5-muted" >{a.description}</p>
-              <p style={{ fontSize: 11, color: 'var(--ink-faint)', marginTop: 3 }}>{a.date} · severity {a.severity}/10</p>
-            </div>
+            <Card key={i} style={{ padding: '12px 16px', borderLeft: `3px solid ${a.severity >= 7 ? 'var(--accent)' : a.severity >= 4 ? '#d4a017' : 'var(--faint)'}` }}>
+              <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--ink)' }}>{a.title}</p>
+              <p style={{ fontSize: 11.5, color: 'var(--muted)' }}>{a.description}</p>
+              <p style={{ fontSize: 11, color: 'var(--faint)', marginTop: 3 }}>{a.date} · severity {a.severity}/10</p>
+            </Card>
           ))}
         </div>
       )}
 
       {activeTab === 'goals' && goalCharts && (
-        <div>
+        <div style={{ display: 'grid', gap: 16 }}>
           {goalCharts.debt_free_progress && (
-            <div className="card" style={{ padding: '14px 18px', marginBottom: 10 }}>
-              <p className="h-600-12 mb-6" >Debt Free Progress</p>
-              <div className="progress" style={{ height: 8, marginBottom: 6 }}>
-                <div className="progress-fill green" style={{ width: `${Math.min(+goalCharts.debt_free_progress.progress_pct || 0, 100)}%` }} />
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--ink-mute)' }}>
+            <Card style={{ padding: '14px 18px' }}>
+              <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)', marginBottom: 6 }}>Debt Free Progress</p>
+              <Progress value={Math.min(+goalCharts.debt_free_progress.progress_pct || 0, 100)} variant="success" label="Debt freedom progress" />
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--muted)', marginTop: 6 }}>
                 <span>{fmtINR(+goalCharts.debt_free_progress.paid_so_far || 0)} paid</span>
                 <span>{fmtINR(+goalCharts.debt_free_progress.remaining || 0)} left</span>
               </div>
-            </div>
+            </Card>
           )}
         </div>
       )}

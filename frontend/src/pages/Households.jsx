@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
-import { fmtINR } from '../lib/amounts'
+import { Card, Button, Skeleton, EmptyState, PageHeader, Badge, fmtINR } from '../components/ui'
 
 export default function Households() {
   const [households, setHouseholds] = useState([])
@@ -16,47 +16,48 @@ export default function Households() {
   }
 
   if (loading) return (
-    <div>
-      {[1,2].map(i => <div key={i} className="skeleton" style={{ height: 80, marginBottom: 8, borderRadius: 'var(--radius)' }} />)}
+    <div style={{ display: 'grid', gap: 8 }}>
+      {[1,2].map(i => <Skeleton key={i} style={{ height: 80, borderRadius: 'var(--radius-md)' }} />)}
     </div>
   )
 
   if (detail) return (
-    <div>
-      <p className="page-num mb-4" >00<em>13</em> / 016</p>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-        <button onClick={() => setDetail(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, padding: 0, color: 'var(--ink-soft)' }}>←</button>
-        <h1 className="page-title-no-mb" >{detail.name}</h1>
-        <span className="tag fs-10" >{detail.member_count} members</span>
-      </div>
-      <p className="text-13-5-muted-sm" >Shared finances with family.</p>
+    <div style={{ display: 'grid', gap: 16 }}>
+      <PageHeader
+        title={detail.name}
+        num="013 / 016"
+        action={<Button variant="ghost" size="sm" onClick={() => setDetail(null)}>← Back</Button>}
+      >
+        <p style={{ fontSize: 13, color: 'var(--muted)' }}>Shared finances with family.</p>
+        <Badge variant="neutral" style={{ marginTop: 4 }}>{detail.member_count} members</Badge>
+      </PageHeader>
 
       {detail.net_worth && (
-        <div className="card card-pad-mb12" >
-          <p className="label-caps-sm mb-4" >Household Net Worth</p>
-          <p className="fin h-600-20" >{detail.currency_symbol}{fmtINR(+detail.net_worth.net_worth || 0)}</p>
-          <p className="text-11-muted" >Assets: {fmtINR(+detail.net_worth.total_assets || 0)} · Liabilities: {fmtINR(+detail.net_worth.total_liabilities || 0)}</p>
-        </div>
+        <Card style={{ padding: 16 }}>
+          <p style={{ fontSize: 10, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 4 }}>Household Net Worth</p>
+          <p className="fin" style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 600 }}>{detail.currency_symbol}{fmtINR(+detail.net_worth.net_worth || 0)}</p>
+          <p style={{ fontSize: 11, color: 'var(--muted)', marginTop: 2 }}>Assets: {fmtINR(+detail.net_worth.total_assets || 0)} · Liabilities: {fmtINR(+detail.net_worth.total_liabilities || 0)}</p>
+        </Card>
       )}
 
       {detail.members?.length > 0 && (
-        <div className="mb-16" >
-          <h2 style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>Members</h2>
+        <div style={{ display: 'grid', gap: 8 }}>
+          <h2 style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)', marginBottom: 8 }}>Members</h2>
           {detail.members.map(m => (
-            <div key={m.id} className="card" style={{ padding: '12px 16px', marginBottom: 6 }}>
-              <div className="spread" >
+            <Card key={m.id} style={{ padding: '12px 16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
-                  <p style={{ fontWeight: 600, fontSize: 13 }}>{m.name}</p>
-                  <p className="text-11-muted" >{m.email} · {m.role}</p>
+                  <p style={{ fontWeight: 500, fontSize: 13, color: 'var(--ink)' }}>{m.name}</p>
+                  <p style={{ fontSize: 11, color: 'var(--muted)' }}>{m.email} · {m.role}</p>
                 </div>
-                <span className="tag" style={{ fontSize: 10, textTransform: 'capitalize' }}>{m.role}</span>
+                <Badge variant="neutral" style={{ fontSize: 10, textTransform: 'capitalize' }}>{m.role}</Badge>
               </div>
-              <div style={{ display: 'flex', gap: 12, marginTop: 6, fontSize: 11, color: 'var(--ink-mute)' }}>
+              <div style={{ display: 'flex', gap: 12, marginTop: 6, fontSize: 11, color: 'var(--muted)' }}>
                 <span>Debt: {fmtINR(+m.total_debt || 0)}</span>
                 <span>Invest: {fmtINR(+m.total_investments || 0)}</span>
                 <span>Expenses: {fmtINR(+m.monthly_expenses || 0)}/mo</span>
               </div>
-            </div>
+            </Card>
           ))}
         </div>
       )}
@@ -64,29 +65,37 @@ export default function Households() {
   )
 
   return (
-    <div>
-      <p className="page-num mb-4" >00<em>13</em> / 016</p>
-      <h1 className="page-title" >Households</h1>
-      <p className="text-13-5-muted-sm" >Shared finances with family.</p>
+    <div style={{ display: 'grid', gap: 20 }}>
+      <PageHeader
+        title="Households"
+        num="013 / 016"
+      >
+        <p style={{ fontSize: 13, color: 'var(--muted)' }}>Shared finances with family.</p>
+      </PageHeader>
 
       {households.length === 0 ? (
-        <div className="empty-state">
-          <span className="emoji">◈</span>
-          <p>No households yet</p>
-          <p className="text-12-faint" >Create a household to manage shared expenses and goals.</p>
+        <EmptyState
+          icon={<span aria-hidden="true" style={{ fontSize: 48, color: 'var(--border)' }}>◈</span>}
+          title="No households yet"
+        >
+          Create a household to manage shared expenses and goals.
+        </EmptyState>
+      ) : (
+        <div style={{ display: 'grid', gap: 8 }}>
+          {households.map(h => (
+            <Card key={h.id} interactive onClick={() => loadDetail(h.id)} style={{ padding: '14px 18px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <p style={{ fontSize: 15, fontWeight: 500, color: 'var(--ink)' }}>{h.name}</p>
+                  <p style={{ fontSize: 11.5, color: 'var(--muted)' }}>{h.currency} · {h.member_count} member{h.member_count !== 1 ? 's' : ''}</p>
+                </div>
+                <span style={{ fontSize: 16, color: 'var(--faint)' }}>→</span>
+              </div>
+              {h.description && <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 6 }}>{h.description}</p>}
+            </Card>
+          ))}
         </div>
-      ) : households.map(h => (
-        <div key={h.id} className="card" style={{ padding: '14px 18px', marginBottom: 8, cursor: 'pointer' }} onClick={() => loadDetail(h.id)}>
-          <div className="spread" >
-            <div>
-              <p className="row-600-15" >{h.name}</p>
-              <p className="text-11-5-muted" >{h.currency} · {h.member_count} member{h.member_count !== 1 ? 's' : ''}</p>
-            </div>
-            <span style={{ fontSize: 16, color: 'var(--ink-faint)' }}>→</span>
-          </div>
-          {h.description && <p style={{ fontSize: 12, color: 'var(--ink-mute)', marginTop: 6 }}>{h.description}</p>}
-        </div>
-      ))}
+      )}
     </div>
   )
 }

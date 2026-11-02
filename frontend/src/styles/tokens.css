@@ -1,0 +1,115 @@
+/* Sampada design tokens — single source of truth (Step 1).
+   Raw palette hex exists ONLY here. Legacy variable names (--paper, --ink-mute, …) remain
+   defined alongside the purpose-named spec tokens so existing markup keeps working;
+   new code should prefer --bg/--surface/--muted/--accent/… and add no new hex. */
+
+:root {
+  /* Colour — canonical palette (light theme) */
+  --bg: #f7f1de;
+  --bg-warm: #efe7d2;
+  --bg-deep: #ddd2b6;
+  --surface: #faf9f7;
+  --ink: #15140f;
+  --ink-soft: #2a2620;
+  --muted: #5a5448;      /* AA 6.65:1 on --bg */
+  --faint: #6e6858;      /* darkened from #8b8676 (3.22 → 4.91:1 on --bg) for AA where used as text */
+  --accent: #ed6f5c;
+  --accent-soft: #f08e7c;
+  --accent-bg: rgba(237,111,92,0.12);
+  --accent-active-bg: rgba(237,111,92,0.08);
+  --success: #2d7d6a;    /* 4.37:1 on --bg, 4.7:1 on --surface */
+  --success-bg: rgba(45,125,106,0.12);
+  --warning: #9a6700;    /* warm amber; 4.63:1 on --surface, 4.31:1 on --bg */
+  --danger: #b3402f;     /* deep warm red, distinct from --accent; 5.04:1 on --bg */
+  --overlay: rgba(21,20,15,0.35);
+  --border: rgba(21,20,15,0.12);
+  --border-soft: rgba(21,20,15,0.06);
+
+  /* Legacy aliases (all pre-Step-1 usages resolve through these) */
+  --paper: var(--bg);
+  --paper-warm: var(--bg-warm);
+  --paper-dark: var(--bg-deep);
+  --paper-card: var(--surface);
+  --ink-mute: var(--muted);
+  --ink-faint: var(--faint);
+  --coral: var(--accent);
+  --coral-soft: var(--accent-soft);
+  --coral-bg: var(--accent-bg);
+  --coral-active-bg: var(--accent-active-bg);
+  --emerald: var(--success);
+  --emerald-bg: var(--success-bg);
+  --line: var(--border);
+  --line-soft: var(--border-soft);
+
+  /* Type */
+  --font-display: 'Inter Tight', -apple-system, system-ui, sans-serif;  /* legacy: --sans */
+  --font-body: 'Inter', -apple-system, system-ui, sans-serif;           /* legacy: --body */
+  --font-serif: 'Playfair Display', Georgia, serif;                     /* legacy: --serif */
+  --sans: var(--font-display);
+  --body: var(--font-body);
+  --serif: var(--font-serif);
+  --text-2xs: 10.5px; --text-xs: 12px; --text-sm: 13px; --text-base: 14px;
+  --text-md: 16px; --text-lg: 18px; --text-xl: 20px; --text-2xl: 24px; --text-3xl: 36px;
+  --leading-body: 1.55; --leading-display: 1.1;
+
+  /* Space (4/8 grid) */
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-12: 48px; --space-16: 64px;
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius: var(--radius-md);      /* legacy */
+  --radius-pill: 999px;
+
+  /* Elevation */
+  --shadow-hover: 0 20px 50px -24px rgba(21,20,15,0.15);
+  --shadow-modal: 0 24px 80px rgba(21,20,15,0.2);
+  --shadow: var(--shadow-hover);   /* legacy */
+
+  /* Z-index */
+  --z-nav: 100;
+  --z-overlay: 500;
+  --z-modal: 1000;
+  --z-toast: 1100;
+
+  /* Motion */
+  --dur-fast: 120ms; --dur-base: 200ms; --dur-slow: 320ms;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+}
+
+[data-theme="dark"] {
+  --bg: #161310;
+  --bg-warm: #1e1a15;
+  --bg-deep: #2a241e;
+  --surface: #1e1a15;
+  --ink: #ece3d8;
+  --ink-soft: #c9bfb2;
+  --muted: #9a8f80;
+  --faint: #8f8577;      /* lifted from #6b6257 (3.09 → 5.10:1 on dark --bg) to match the light-theme AA fix */
+  --accent: #ed6f5c;
+  --accent-soft: #f08e7c;
+  --accent-bg: rgba(237,111,92,0.15);
+  --accent-active-bg: rgba(237,111,92,0.12);
+  --success: #3d9e88;
+  --success-bg: rgba(61,158,136,0.15);
+  --warning: #e3b341;
+  --danger: #e06a55;
+  --overlay: rgba(0,0,0,0.55);
+  --border: rgba(236,227,216,0.12);
+  --border-soft: rgba(236,227,216,0.06);
+  --shadow-hover: 0 20px 50px -24px rgba(0,0,0,0.4);
+  --shadow-modal: 0 24px 80px rgba(0,0,0,0.5);
+}
+
+/* Financial figures always tabular */
+.fin { font-variant-numeric: tabular-nums; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

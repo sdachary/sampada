@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { auth } from '../lib/api'
 import AuthLayout from './AuthLayout'
+import { Input, Button, Card } from '../components/ui'
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams()
@@ -37,12 +38,14 @@ export default function ResetPassword() {
 
   if (done) return (
     <AuthLayout variant="success" icon="✓" title="Password reset" subtitle="Your password has been updated successfully.">
-      <Link to="/login" className="btn btn-primary" style={{ display: 'inline-flex', marginTop: 20, fontSize: 13, padding: '8px 20px' }}>Sign in</Link>
+      <Link to="/login">
+        <Button style={{ display: 'inline-flex', marginTop: 20, fontSize: 13, padding: '8px 20px' }}>Sign in</Button>
+      </Link>
     </AuthLayout>
   )
 
   const PwToggle = ({ show, setShow }) => (
-    <button type="button" onClick={() => setShow(!show)} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: 'var(--ink-mute)', padding: 4 }} aria-label={show ? 'Hide password' : 'Show password'}>
+    <button type="button" onClick={() => setShow(!show)} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: 'var(--muted)', padding: 4 }} aria-label={show ? 'Hide password' : 'Show password'}>
       {show ? '◔' : '◑'}
     </button>
   )
@@ -52,20 +55,20 @@ export default function ResetPassword() {
       title="Set new password"
       subtitle="Enter your new password below."
       error={error}
-      foot={<Link className="text-coral" to="/login" >Back to sign in</Link>}
+      foot={<Link style={{ color: 'var(--accent)', fontWeight: 500 }} to="/login">Back to sign in</Link>}
     >
-      <form className="col-g14" onSubmit={handleSubmit} >
-        <div className="pos-rel" >
-          <input type={showPw ? 'text' : 'password'} placeholder="New password" autoComplete="new-password" minLength={8} value={password} onChange={e => setPassword(e.target.value)} className="input" required style={{ width: '100%' }} />
+      <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 14 }}>
+        <div style={{ position: 'relative' }}>
+          <Input type={showPw ? 'text' : 'password'} placeholder="New password" autoComplete="new-password" minLength={8} value={password} onChange={e => setPassword(e.target.value)} required />
           <PwToggle show={showPw} setShow={setShowPw} />
         </div>
-        <div className="pos-rel" >
-          <input type={showConfirm ? 'text' : 'password'} placeholder="Confirm password" autoComplete="new-password" minLength={8} value={passwordConfirmation} onChange={e => setPasswordConfirmation(e.target.value)} className="input" required style={{ width: '100%' }} />
+        <div style={{ position: 'relative' }}>
+          <Input type={showConfirm ? 'text' : 'password'} placeholder="Confirm password" autoComplete="new-password" minLength={8} value={passwordConfirmation} onChange={e => setPasswordConfirmation(e.target.value)} required />
           <PwToggle show={showConfirm} setShow={setShowConfirm} />
         </div>
-        <button type="submit" disabled={submitting} className="btn btn-primary center-h" >
+        <Button type="submit" loading={submitting} style={{ justifySelf: 'center' }}>
           {submitting ? 'Resetting…' : 'Reset password'}
-        </button>
+        </Button>
       </form>
     </AuthLayout>
   )
