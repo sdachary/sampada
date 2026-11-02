@@ -75,6 +75,9 @@ jobs:
         working-directory: frontend
       - name: Wait for preview
         run: sleep 5 && curl -f http://localhost:4173/
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+        working-directory: frontend
       - name: Lighthouse CI
         run: npx lhci autorun
         working-directory: frontend
