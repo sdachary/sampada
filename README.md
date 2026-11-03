@@ -34,8 +34,12 @@ The app never blocks you from doing whatever you want with your money — but de
 
 - 💳 **Debt payoff tracker** — loans, EMIs, avalanche/snowball strategies, month-by-month payoff simulation
 - 📈 **Dividend SIP planner** — AI suggests stocks based on your income target and timeline
-- 🔄 **Portfolio rebalancing** — Modern Portfolio Theory, monthly check-ins, on/off-track status
-- 🔔 **Recurring expense reminders** — EMI/subscription calendar, never miss a due date
+- 🔄 **Portfolio rebalancing (v2)** — buy-only contribution engine: position/sector caps, min-order guard rails, a reason chip on every suggestion, CSV import, holdings drawer, and one-click compare with v1
+- 💰 **Net-worth overview** — net worth, total debt and investments with recent snapshots on the dashboard
+- 🗂️ **Budgets** — monthly per-category limits with usage tracking and on-track status
+- 🔔 **Recurring expense reminders** — EMI/subscription calendar, never miss a due date; recurring expenses auto-log their transaction on the due date
+- ⚡ **Quick-log** — floating action button + bottom sheet to record an expense in seconds
+- 📴 **Offline read-only mode** — cached data stays visible; edits are disabled until you reconnect
 - 🤖 **Free AI, by default** — works with free models via OpenRouter, or fully local via Ollama (BYOK — bring your own key)
 - 🌍 **Multi-currency** — 32 currencies, auto exchange rates, international exchanges (NYSE, NASDAQ, LSE, TSE, ASX, and more)
 - 🇮🇳 **Built for Indian markets** — native NSE/BSE support, EMIs, SIPs, ₹ throughout
@@ -49,7 +53,7 @@ The app never blocks you from doing whatever you want with your money — but de
 - 🛡️ **DPDP compliance** — granular consent, data export, erasure requests, grievance redressal
 
 <details>
-<summary><b>Release history (v0.1 → v2.5)</b></summary>
+<summary><b>Release history (v0.1 → today)</b></summary>
 
 | Version | Milestone |
 |---|---|
@@ -66,6 +70,10 @@ The app never blocks you from doing whatever you want with your money — but de
 | v2.3 | Collaboration & Sharing — households, member roles, family dashboard |
 | v2.4 | Onboarding tour, Insurance tracker, trip settlement math, Recharts, spec suite 311 green |
 | v2.5 | Quick-log expense entry, offline read-only indicator |
+| v2.6 | Recurring auto-log on due date, net-worth overview, budget health strip, UI dedup + CSS sweep |
+| UI modernization | Design tokens, self-hosted fonts, motion foundation, primitive components + dev styleguide, responsive app shell, themed charts, 3D hero, CI quality gates (#27) |
+| Rebalance v2 | Buy-only contribution engine with guard rails, reason chips, CSV import, holdings drawer, sector caps, V1 compare (#27) |
+| Reliability | Landing white-page crash fixed (static icon map); mount smoke test hard-gated in CI (#28–#30) |
 | Phase 5 | Optimization — modular AI namespace, standardized API responses, 100% schema sync |
 
 </details>
@@ -130,15 +138,15 @@ cd sampada
 cp .env.example .env
 # Edit .env — set SECRET_KEY_BASE, POSTGRES_PASSWORD, BETTER_AUTH_VERIFY_URL at minimum
 docker compose up -d
-open http://localhost:3002
+curl http://localhost:3002/up          # API health check
 ```
 
-**Note:** The frontend is deployed separately on Cloudflare Pages. For local development, run the frontend separately:
+**Frontend (run separately — it deploys to Cloudflare Pages, not Rails):**
 
 ```bash
 cd frontend
 npm install
-npm run dev
+npm run dev                            # http://localhost:5173, proxies /api → :3002
 ```
 
 ---
@@ -165,39 +173,34 @@ Sampada is a **Rails 8.1 API-only backend** + **React 19/Vite SPA frontend**, de
 
 | Layer | Stack |
 |---|---|
-| **Frontend** | React 19, Vite, React Router, Recharts (charts) |
+| **Frontend** | React 19, Vite 8, React Router 7, hand-rolled CSS design tokens (no framework), motion (LazyMotion) animations, Recharts 3, lucide-react, lazy Three.js/R3F hero |
 | **Backend** | Ruby on Rails 8.1 (API-only), PostgreSQL 16, Redis, Sidekiq |
-| **Background jobs** | Sidekiq + Sidekiq-Cron (market data, exchange rates, maintenance) |
-| **Auth** | Better-Auth (shared identity service, JWT verification) |
+| **Background jobs** | Sidekiq + Sidekiq-Cron (market data, FX sync, recurring auto-log, backups, reminders) |
+| **Auth** | Better-Auth (shared identity service, JWT verification per request) |
 | **AI** | Modular `Ai::` namespace, pluggable providers (Ollama, OpenRouter, etc.), BYOK |
 | **API** | Standardized JSON response layer (`Api::BaseController`) with global exception handling |
-| **Multi-currency** | Exchange rates cached from Yahoo Finance/Alpha Vantage, refreshed every 6 hours |
+| **Multi-currency** | Exchange rates fetched from Yahoo Finance, cached in DB, refreshed every 6 hours |
 | **Export** | CSV and JSON export across all financial modules |
 | **Households** | Multi-user sharing with role-based access control |
 | **DPDP Compliance** | Granular consent, full data export, erasure workflow, grievance redressal |
-| **Deployment** | Docker Compose on shared VM (oradb) alongside other AcharyaLab products |
+| **Testing** | RSpec + FactoryBot + SimpleCov (413 examples green); frontend: oxlint, node --test, Playwright |
+| **CI gates** | RuboCop, Brakeman, gitleaks, RSpec; size-limit, Lighthouse CI, mount smoke test (hard gate), axe + visual smoke (warn only) |
+| **Deployment** | Docker Compose + sops secrets on shared VM (oradb); frontend on Cloudflare Pages |
 
 ---
 
 ## Roadmap
 
-Full plan: [`docs/roadmap-updated.md`](docs/roadmap-updated.md)
+Full plan: [`docs/roadmap-updated.md`](docs/roadmap-updated.md). Everything already shipped is in the [release history](#what-is-sampada) above.
 
-- ✅ v0.1 — Installer + Docker setup + AI connector
-- ✅ v0.2 — Debt payoff module
-- ✅ v0.3 — Dividend SIP planner
-- ✅ v0.4 — Portfolio rebalancing
-- ✅ v0.5 — Recurring expense tracker
-- ✅ v1.0 — Security audit & standalone architecture
-- ✅ Phase 6 — Architecture refinement
-- ✅ v2.0 — Multi-currency & international markets
-- ✅ v2.1 — Advanced AI features
-- ✅ v2.2 — Reporting & export
-- ✅ v2.3 — Collaboration & sharing
-- ✅ v2.4 — Onboarding tour, Insurance tracker, correctness fixes
-- ✅ Phase 5 — Optimization & refactoring
-- ✅ v2.5 — Quick-log expense entry, offline read-only indicator
-- ❌ Push notifications — **Won't Do** (2026-09-12): email reminders already cover due-date/EMI reminders
+**Upcoming (no locked date):**
+
+- 🔜 **PWA polish** — full offline support beyond the read-only indicator (shipped v2.5), true offline queueing
+- 🔜 **Biometric auth** — platform biometrics on supported devices
+
+**Won't do:**
+
+- ❌ **Push notifications** (2026-09-12) — email reminders already cover EMI/due-date notifications; not in the roadmap
 
 ---
 
