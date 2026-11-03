@@ -485,7 +485,7 @@ export default function Landing() {
         </section>
 
         {/* ── 2. THE ARC: Debt → Zero → Wealth (Z-Axis Cascade) ── */}
-        <section style={{ padding: '100px 0 80px', position: 'relative' }}>
+        <section aria-labelledby="arc-heading" style={{ padding: '100px 0 80px', position: 'relative' }}>
           <Reveal y={20} delay={0}>
             <div style={{ textAlign: 'center', marginBottom: '56px', maxWidth: '520px', marginLeft: 'auto', marginRight: 'auto' }}>
               <p style={{
@@ -625,7 +625,7 @@ export default function Landing() {
         </section>
 
         {/* ── 3. FEATURES (Editorial Split Layout) ── */}
-        <section style={{ padding: '100px 0 80px' }}>
+        <section aria-labelledby="features-heading" style={{ padding: '100px 0 80px' }}>
           <Reveal y={20} delay={0}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48, alignItems: 'start' }}>
               {/* Left: Editorial headline */}
@@ -694,7 +694,7 @@ export default function Landing() {
         </section>
 
         {/* ── 4. COMPARISON (Visual Cards) ── */}
-        <section style={{ padding: '100px 0 80px', background: 'var(--bg-warm)', margin: '0 -24px', paddingLeft: '24px', paddingRight: '24px' }}>
+        <section aria-labelledby="compare-heading" style={{ padding: '100px 0 80px', background: 'var(--bg-warm)', margin: '0 -24px', paddingLeft: '24px', paddingRight: '24px' }}>
           <Reveal y={20} delay={0}>
             <div style={{ textAlign: 'center', marginBottom: '56px', maxWidth: '520px', marginLeft: 'auto', marginRight: 'auto' }}>
               <p style={{
@@ -730,7 +730,7 @@ export default function Landing() {
         </section>
 
         {/* ── 5. TRUST SIGNALS ── */}
-        <section style={{ padding: '100px 0 80px' }}>
+        <section aria-labelledby="trust-heading" style={{ padding: '100px 0 80px' }}>
           <Reveal y={20} delay={0}>
             <div style={{ textAlign: 'center', marginBottom: '56px', maxWidth: '520px', marginLeft: 'auto', marginRight: 'auto' }}>
               <p style={{
@@ -764,7 +764,7 @@ export default function Landing() {
         </section>
 
         {/* ── 6. FINAL CTA ── */}
-        <section style={{ padding: '120px 0 100px', textAlign: 'center', borderTop: '1px solid var(--border-soft)', position: 'relative' }}>
+        <section aria-labelledby="cta-heading" style={{ padding: '120px 0 100px', textAlign: 'center', borderTop: '1px solid var(--border-soft)', position: 'relative' }}>
           {/* Subtle background accent */}
           <div style={{
             position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
