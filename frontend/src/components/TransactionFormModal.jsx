@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
-import { Modal, Field, ConfirmDialog } from './ui'
+import { Modal, ResponsiveModal, Field, ConfirmDialog } from './ui'
 import { useModalForm } from '../lib/useModalForm'
 
 const TYPES = ['expense', 'income']
@@ -37,7 +37,7 @@ export default function TransactionFormModal({ transaction, onClose, onSave }) {
   }, [])
 
   return (
-    <Modal className="max-w-480" open title={isEdit ? 'Edit Transaction' : 'Add Transaction'} onClose={onClose} >
+    <ResponsiveModal className="max-w-480" open title={isEdit ? 'Edit Transaction' : 'Add Transaction'} onClose={onClose} >
       {error && <div className="alert-inline" >{error}</div>}
 
       <form className="col-g14" onSubmit={handleSubmit} >
@@ -105,6 +105,6 @@ export default function TransactionFormModal({ transaction, onClose, onSave }) {
         onConfirm={handleDelete}
         onCancel={() => setConfirming(false)}
       />
-    </Modal>
+    </ResponsiveModal>
   )
 }

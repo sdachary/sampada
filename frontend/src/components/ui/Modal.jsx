@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
-export default function Modal({ open, onClose, title, children, style }) {
+// Standard Modal - centered on all devices
+export function Modal({ open, onClose, title, children, style, className }) {
   const overlayRef = useRef(null)
 
   useEffect(() => {
@@ -42,3 +43,58 @@ export default function Modal({ open, onClose, title, children, style }) {
     </div>
   )
 }
+
+// Responsive modal - centered on desktop, bottom sheet on mobile
+export function ResponsiveModal({ open, onClose, title, children, style, className }) {
+  const overlayRef = useRef(null)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    if (!open) return
+    const checkMobile = () => setIsMobile(window.innerWidth < 640)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [open])
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [open, onClose])
+
+  useEffect(() => {
+    if (!open) return
+    const prev = document.activeElement
+    const el = overlayRef.current?.querySelector('input, select, textarea, button, [tabindex]')
+    el?.focus()
+    return () => prev?.focus()
+  }, [open])
+
+  if (!open) return null
+
+  return (
+    <div ref={overlayRef} style={{
+      position: 'fixed', inset: 0, zIndex: 1000,
+      display: 'flex', alignItems: isMobile ? 'flex-end' : 'center', justifyContent: 'center',
+      background: 'rgba(21,20,15,0.35)', backdropFilter: 'blur(4px)',
+      padding: isMobile ? 0 : 16,
+    }} onClick={onClose}>
+      <div style={{
+        background: 'var(--paper-card)', borderRadius: isMobile ? '16px 16px 0 0' : 16, padding: 28,
+        width: '100%', maxWidth: isMobile ? '100%' : 480, maxHeight: isMobile ? '85dvh' : '90dvh', overflowY: 'auto',
+        border: '1px solid var(--line)', boxShadow: '0 24px 80px rgba(21,20,15,0.2)',
+        ...style,
+      }} onClick={e => e.stopPropagation()}>
+        <div className="spread-mb20" >
+          <h2 className="h-600-18" >{title}</h2>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: 'var(--ink-mute)', padding: 4 }}>✕</button>
+        </div>
+        {children}
+      </div>
+    </div>
+  )
+}
+
+export default Modal
