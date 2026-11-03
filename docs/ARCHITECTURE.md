@@ -13,7 +13,7 @@ Sampada is a **Rails 8.1 (API-only) backend** + **React 19 SPA frontend**. Rails
 | Frontend | React 19 + Vite SPA (`frontend/`), hand-rolled CSS (no Tailwind), recharts + lucide-react |
 | Background | Sidekiq (Redis) + Sidekiq-Cron (host-networked on oradb) |
 | Auth | Better-Auth shared identity service — JWT verified per request |
-| Authorization | Pundit policies |
+| Authorization | Ownership scoping via `ScopedCrud` concern + household membership roles |
 | Rate limiting | Rack::Attack |
 | AI | OpenAI-compatible API (OpenRouter, Ollama, Claude) via `Ai::Provider` |
 | Market Data | Yahoo Finance (free, no API key) |
@@ -113,7 +113,7 @@ Rails serves no pages — the full surface is `/api/v1/*` under `config/routes.r
 ## Auth & Security
 
 - `Api::BaseController` includes `BetterAuthVerification` — every request resolves the session token through the shared Better-Auth service (`BETTER_AUTH_VERIFY_URL`, default `http://localhost:4000/api/auth/verify`), `BETTER_AUTH_APP_ID=sampada`, 300s cache.
-- Authorization is per-resource via Pundit policies. Rate limiting via Rack::Attack. Sensitive columns encrypted with Active Record `encrypts` (keys via env — not Rails credentials).
+- Authorization is per-resource via ownership scoping (`ScopedCrud`) and household membership roles. Rate limiting via Rack::Attack. Sensitive columns encrypted with Active Record `encrypts` (keys via env — not Rails credentials).
 - Frontend headers (CSP, HSTS, XFO, nosniff) served via `frontend/public/_headers` on Cloudflare Pages. Known gap: edge→origin HTTPS (see `SAMPADA_UAT_TRACKER.md` SEC-03).
 
 ## Configuration
