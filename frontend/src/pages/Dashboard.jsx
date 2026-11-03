@@ -155,12 +155,40 @@ export default function Dashboard() {
       {projection?.projection?.length > 1 ? (
         <Card>
           <p className="label-caps mb-4" >60-month projection</p>
-          <Chart data={projection.projection} xKey="month" xFormatter={(m) => `${m || ''}m`}
-            series={[
-              { key: 'debt', name: 'Debt', color: 'var(--accent)' },
-              { key: 'investments', name: 'Investments', color: 'var(--success)' },
-              { key: 'net_worth', name: 'Net Worth', color: 'var(--ink)' },
-            ]} height={180} />
+          <div role="img" aria-label="60-month projection chart showing debt decreasing, investments growing, and net worth increasing over time">
+            <Chart data={projection.projection} xKey="month" xFormatter={(m) => `${m || ''}m`}
+              series={[
+                { key: 'debt', name: 'Debt', color: 'var(--accent)' },
+                { key: 'investments', name: 'Investments', color: 'var(--success)' },
+                { key: 'net_worth', name: 'Net Worth', color: 'var(--ink)' },
+              ]} height={180} />
+          </div>
+          {/* Data table fallback for screen readers */}
+          <details style={{ marginTop: 12 }}>
+            <summary style={{ fontSize: 12, color: 'var(--muted)', cursor: 'pointer' }}>View projection data as table</summary>
+            <div style={{ overflowX: 'auto', marginTop: 8 }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                    <th style={{ textAlign: 'left', padding: '6px 8px' }}>Month</th>
+                    <th style={{ textAlign: 'right', padding: '6px 8px' }}>Debt</th>
+                    <th style={{ textAlign: 'right', padding: '6px 8px' }}>Investments</th>
+                    <th style={{ textAlign: 'right', padding: '6px 8px' }}>Net Worth</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {projection.projection.slice(0, 12).map((row, i) => (
+                    <tr key={i} style={{ borderBottom: '1px solid var(--border-soft)' }}>
+                      <td style={{ padding: '6px 8px' }}>{row.month || ''}m</td>
+                      <td style={{ padding: '6px 8px', textAlign: 'right', color: 'var(--accent)' }}>{fmtINR(row.debt || 0)}</td>
+                      <td style={{ padding: '6px 8px', textAlign: 'right', color: 'var(--success)' }}>{fmtINR(row.investments || 0)}</td>
+                      <td style={{ padding: '6px 8px', textAlign: 'right', color: 'var(--ink)' }}>{fmtINR(row.net_worth || 0)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </details>
         </Card>
       ) : null}
 

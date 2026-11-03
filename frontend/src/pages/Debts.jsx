@@ -4,11 +4,11 @@ import DebtFormModal from '../components/DebtFormModal'
 import { fmtINR } from '../lib/amounts'
 import { Card, Progress, Button, Skeleton, EmptyState, PageHeader, Badge } from '../components/ui'
 
-function DebtCard({ debt, onEdit, onDelete, navigate }) {
+function DebtCard({ debt, onEdit, onDelete, onView }) {
   const pct = debt.amount > 0 ? Math.round(((+debt.paid_amount || 0) / debt.amount) * 100) : 0
 
   return (
-    <Card interactive onClick={() => navigate(`/dashboard/debts/${debt.id}`)} style={{ padding: '18px 20px' }}>
+    <Card style={{ padding: '18px 20px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
         <div style={{ flex: 1 }}>
           <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)' }}>{debt.name}</p>
@@ -24,7 +24,8 @@ function DebtCard({ debt, onEdit, onDelete, navigate }) {
           {debt.status !== 'active' && <Badge variant="neutral" style={{ marginLeft: 8 }}>{debt.status.replace('_', ' ')}</Badge>}
         </span>
       </div>
-      <div style={{ display: 'flex', gap: 8, borderTop: '1px solid var(--border-soft)', paddingTop: 10 }} onClick={e => e.stopPropagation()}>
+      <div style={{ display: 'flex', gap: 8, borderTop: '1px solid var(--border-soft)', paddingTop: 10 }}>
+        <Button variant="ghost" size="sm" onClick={onView}>View</Button>
         <Button variant="ghost" size="sm" onClick={() => onEdit(debt)}>Edit</Button>
         <Button variant="ghost" size="sm" onClick={() => onDelete(debt)} style={{ color: 'var(--muted)' }}>Delete</Button>
       </div>
@@ -54,7 +55,7 @@ export default function Debts() {
           <div style={{ display: 'flex', gap: 8 }}>
             <Button onClick={() => setModal('new')}>+ Add</Button>
             <Link to="/dashboard/debt-payoffs">
-              <Button variant="ghost" size="sm">Plan</Button>
+              <Button variant="ghost" size="sm">Payoff plan</Button>
             </Link>
           </div>
         }
@@ -81,7 +82,7 @@ export default function Debts() {
               debt={d}
               onEdit={(debt) => setModal(debt)}
               onDelete={remove}
-              navigate={navigate}
+              onView={() => navigate(`/dashboard/debts/${d.id}`)}
             />
           ))}
         </div>
