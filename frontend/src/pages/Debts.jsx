@@ -50,7 +50,6 @@ export default function Debts() {
     <div style={{ display: 'grid', gap: 20 }}>
       <PageHeader
         title="Debts"
-        num="004 / 016"
         action={
           <div style={{ display: 'flex', gap: 8 }}>
             <Button onClick={() => setModal('new')}>+ Add</Button>
@@ -67,7 +66,7 @@ export default function Debts() {
 
       {debts.length === 0 ? (
         <EmptyState
-          icon={<span aria-hidden="true" style={{ fontSize: 48, color: 'var(--border)' }}>○</span>}
+          icon={<span aria-hidden="true" style={{ fontSize: 48, color: 'var(--border)' }}>📋</span>}
           title="No debts tracked yet"
           action="+ Add Debt"
           onAction={() => setModal('new')}

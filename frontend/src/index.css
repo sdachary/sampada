@@ -250,9 +250,13 @@ input, button, textarea { font-family: var(--body); }
 .landing-compare-table-desktop { display: block; }
 .landing-compare-cards-mobile { display: none; }
 
+/* Trust badges mobile stacking */
+.landing-trust-badges { display: flex; gap: 24; justify-content: center; flex-wrap: wrap; }
+
 @media (max-width: 640px) {
   .landing-compare-table-desktop { display: none; }
   .landing-compare-cards-mobile { display: flex; }
+  .landing-trust-badges { flex-direction: column; gap: 12; }
 }
 
 /* New landing page responsive rules */

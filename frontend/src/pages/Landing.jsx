@@ -129,8 +129,8 @@ export default function Landing() {
         </nav>
 
         {/* 1. Hero */}
-        <section aria-labelledby="hero-heading" style={{ padding: '80px 0 56px', textAlign: 'center' }}>
-          <Reveal>
+        <section aria-labelledby="hero-heading" style={{ padding: '100px 0 80px', textAlign: 'center' }}>
+          <Reveal delay={0}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 16px', background: 'var(--accent-bg)', border: '1px solid var(--accent)', borderRadius: 'var(--radius-pill)', marginBottom: 24 }}>
               <Sparkles size={12} color="var(--accent)" strokeWidth={2} />
               <span style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--accent)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Now with Rebalance v2</span>
@@ -144,6 +144,9 @@ export default function Landing() {
             </p>
             <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
               <PrimaryCTA href="/register"><Button>Get started free</Button></PrimaryCTA>
+              <Link to="/dashboard" style={{ textDecoration: 'none' }}>
+                <Button variant="secondary">See how it works</Button>
+              </Link>
             </div>
             <p style={{ fontSize: 12, color: 'var(--faint)', marginTop: 20, letterSpacing: '0.02em' }}>Open source · Apache 2.0 · Free forever</p>
           </Reveal>
@@ -154,7 +157,7 @@ export default function Landing() {
         </section>
 
         {/* 2. Debt → Zero → Wealth arc */}
-        <section aria-labelledby="arc-heading" style={{ padding: '60px 0' }}>
+        <section aria-labelledby="arc-heading" style={{ padding: '80px 0' }}>
           <Reveal delay={0.1}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 0, border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
               {[
@@ -179,12 +182,12 @@ export default function Landing() {
         </section>
 
         {/* 3. Feature grid */}
-        <section aria-labelledby="features-heading" style={{ padding: '40px 0 60px' }}>
-          <Reveal>
+        <section aria-labelledby="features-heading" style={{ padding: '100px 0 80px' }}>
+          <Reveal delay={0.2}>
             <p style={{ textAlign: 'center', fontSize: 14, color: 'var(--muted)', maxWidth: 460, margin: '0 auto 36px', lineHeight: 1.6 }}>Not a budgeting app. Not an investment dashboard. The full arc, in one place.</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 20 }}>
-              {FEATURES.map((f) => (
-                <Reveal key={f.title} delay={0.1}>
+              {FEATURES.map((f, i) => (
+                <Reveal key={f.title} delay={0.2 + i * 0.05}>
                   <FeatureCard f={f} />
                 </Reveal>
               ))}
@@ -193,8 +196,8 @@ export default function Landing() {
         </section>
 
         {/* 4. Why Sampada (comparison — table on desktop, cards on mobile) */}
-        <section aria-labelledby="compare-heading" style={{ padding: '20px 0 60px' }}>
-          <Reveal>
+        <section aria-labelledby="compare-heading" style={{ padding: '80px 0' }}>
+          <Reveal delay={0.3}>
             <p style={{ textAlign: 'center', fontSize: 14, color: 'var(--muted)', maxWidth: 460, margin: '0 auto 8px', lineHeight: 1.6 }}>Mint shut down in March 2024. YNAB costs ~$15/month. Sampada is neither.</p>
 
             {/* Desktop: Table */}
@@ -249,8 +252,8 @@ export default function Landing() {
         </section>
 
         {/* 5. Hosted SaaS */}
-        <section aria-labelledby="cta-heading" style={{ padding: '20px 0 60px', textAlign: 'center' }}>
-          <Reveal>
+        <section aria-labelledby="cta-heading" style={{ padding: '80px 0 60px', textAlign: 'center' }}>
+          <Reveal delay={0.4}>
             <h2 id="cta-heading" style={{ fontSize: 22, fontWeight: 600, letterSpacing: '-0.025em', marginBottom: 10 }}>Hosted. Free. Forever.</h2>
             <p style={{ fontSize: 14, color: 'var(--muted)', maxWidth: 420, margin: '0 auto 24px', lineHeight: 1.6 }}>
               No installation needed. Sign up at <a href="https://sampada.vayalabs.in" target="_blank" rel="noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>sampada.vayalabs.in</a> and start in seconds.
@@ -262,9 +265,9 @@ export default function Landing() {
         </section>
 
         {/* 6. Trust badges */}
-        <section style={{ padding: '40px 0 60px', textAlign: 'center', borderTop: '1px solid var(--border-soft)' }}>
-          <Reveal>
-            <div style={{ display: 'flex', gap: 24, justifyContent: 'center', flexWrap: 'wrap' }}>
+        <section style={{ padding: '60px 0 60px', textAlign: 'center', borderTop: '1px solid var(--border-soft)' }}>
+          <Reveal delay={0.5}>
+            <div className="landing-trust-badges" style={{ display: 'flex', gap: 24, justifyContent: 'center', flexWrap: 'wrap' }}>
               <span style={{ fontSize: 12.5, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 6 }}><Lock size={13} strokeWidth={2} /> Apache 2.0</span>
               <span style={{ fontSize: 12.5, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 6 }}><Shield size={13} strokeWidth={2} /> DPDP compliant</span>
               <span style={{ fontSize: 12.5, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 6 }}><Zap size={13} strokeWidth={2} /> Self-hosted</span>
