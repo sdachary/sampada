@@ -51,7 +51,7 @@ export default function Debts() {
       <PageHeader
         title="Debts"
         action={
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <Button onClick={() => setModal('new')}>+ Add</Button>
             <Link to="/dashboard/debt-payoffs">
               <Button variant="ghost" size="sm">Payoff plan</Button>

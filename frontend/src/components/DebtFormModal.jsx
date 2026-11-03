@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Modal, Field, ConfirmDialog } from './ui'
+import { ResponsiveModal, Field, ConfirmDialog } from './ui'
 import { useModalForm } from '../lib/useModalForm'
 
 const CATEGORIES = ['credit_card', 'loan', 'personal', 'mortgage', 'education', 'other']
@@ -32,7 +32,7 @@ export default function DebtFormModal({ debt, onClose, onSave }) {
   const [confirming, setConfirming] = useState(false)
 
   return (
-    <Modal className="max-w-480" open title={isEdit ? 'Edit Debt' : 'Add Debt'} onClose={onClose} >
+    <ResponsiveModal className="max-w-480" open title={isEdit ? 'Edit Debt' : 'Add Debt'} onClose={onClose} >
       {error && <div className="alert-inline" >{error}</div>}
 
       <form className="col-g14" onSubmit={handleSubmit} >
@@ -101,6 +101,6 @@ export default function DebtFormModal({ debt, onClose, onSave }) {
         onConfirm={handleDelete}
         onCancel={() => setConfirming(false)}
       />
-    </Modal>
+    </ResponsiveModal>
   )
 }
