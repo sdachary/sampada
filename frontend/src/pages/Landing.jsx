@@ -1,69 +1,8 @@
-import { useEffect, useState, useRef, Suspense, lazy } from 'react'
 import { Link } from 'react-router-dom'
 import ThemeToggle from '../components/ThemeToggle'
 import { Reveal, PageTransition } from '../lib/motion-primitives'
-import { Check, X, TrendingDown, PiggyBank, RefreshCw, MessageSquare, AlertTriangle, Globe, Users, Cpu, Lock, Shield, Zap, Star, Sparkles } from 'lucide-react'
+import { Check, X, TrendingDown, PiggyBank, RefreshCw, MessageSquare, AlertTriangle, Globe, Users, Cpu, Lock, Shield, Zap, Star } from 'lucide-react'
 import { Button, Card } from '../components/ui'
-
-// 3D hero lazy import (Step 9) - loaded after first paint, landing route only
-const Hero3D = lazy(() => import('../landing/hero3d/Hero3D').then(m => ({ default: m.Hero3DWithFallback })))
-const HeroPoster = lazy(() => import('../landing/hero3d/HeroPoster'))
-
-function Hero3DLoader() {
-  const [show3D, setShow3D] = useState(false)
-  const [showPoster, setShowPoster] = useState(true)
-  const [can3D, setCan3D] = useState(null)
-  const canvasRef = useRef(null)
-
-  const canRender3D = () => {
-    if (typeof window === 'undefined') return false
-    const canvas = document.createElement('canvas')
-    const gl = canvas.getContext('webgl2') || canvas.getContext('webgl')
-    if (!gl) return false
-    if (window.innerWidth < 768) return false
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false
-    if (navigator.connection?.saveData === true) return false
-    if (navigator.hardwareConcurrency !== undefined && navigator.hardwareConcurrency <= 4) return false
-    return true
-  }
-
-  useEffect(() => {
-    const supported = canRender3D()
-    setCan3D(supported)
-    if (!supported) return
-    const timer = requestIdleCallback
-      ? requestIdleCallback(() => setShow3D(true), { timeout: 2000 })
-      : setTimeout(() => setShow3D(true), 1000)
-    return () => cancelIdleCallback?.(timer) || clearTimeout(timer)
-  }, [])
-
-  const handleCanvasReady = () => { setShowPoster(false) }
-
-  return (
-    <div id="landing-3d-slot" style={{ width: '100%', maxWidth: 400, aspectRatio: '1/1', margin: '48px auto 0', position: 'relative' }}>
-      {can3D === false && (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', textAlign: 'center', background: 'var(--border-soft)', borderRadius: 'var(--radius-lg)' }}>
-          <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--accent-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
-            <Sparkles size={32} color="var(--accent)" strokeWidth={2} />
-          </div>
-          <p style={{ fontSize: 13, color: 'var(--muted)', maxWidth: 280, margin: 0, lineHeight: 1.5 }}>
-            3D hero requires WebGL2, hardware acceleration, and a viewport ≥768px.
-            <br /><br />
-            Showing static poster instead.
-          </p>
-        </div>
-      )}
-      <Suspense fallback={<div style={{ width: '100%', aspectRatio: '1/1', background: 'var(--border-soft)', borderRadius: 'var(--radius-lg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} aria-hidden="true" />}>
-        <HeroPoster ref={showPoster ? undefined : null} style={{ position: 'absolute', inset: 0, transition: 'opacity 0.6s ease', opacity: showPoster && !show3D ? 1 : 0, pointerEvents: 'none' }} />
-      </Suspense>
-      {show3D && (
-        <Suspense fallback={<div style={{ position: 'absolute', inset: 0, background: 'var(--border-soft)', borderRadius: 'var(--radius-lg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} aria-hidden="true" />}>
-          <Hero3D ref={canvasRef} onLoad={handleCanvasReady} style={{ position: 'absolute', inset: 0, opacity: showPoster ? 0 : 1, transition: 'opacity 0.6s ease' }} aria-hidden="true" />
-        </Suspense>
-      )}
-    </div>
-  )
-}
 
 const FEATURES = [
   { icon: TrendingDown, accent: 'var(--accent)', title: 'Debt payoff tracker', body: 'Avalanche or snowball order, a full EMI calendar, and a month-by-month projection to your debt-free date.' },
@@ -96,11 +35,11 @@ function CompareCell({ value }) {
 function FeatureCard({ f }) {
   const Icon = f.icon
   return (
-    <Card style={{ padding: '22px 22px', height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Icon className="mb-12" size={20} color={f.accent} strokeWidth={1.75} />
+    <Card style={{ padding: '20px 20px', height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <Icon className="mb-10" size={20} color={f.accent} strokeWidth={1.75} />
       <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 600, letterSpacing: '-0.01em', marginBottom: 6 }}>{f.title}</h3>
       <p style={{ fontSize: 13.5, color: 'var(--muted)', lineHeight: 1.55, flex: 1 }}>{f.body}</p>
-      <div style={{ height: 3, width: '40px', background: f.accent, borderRadius: 2, marginTop: 16, opacity: 0.6 }} />
+      <div style={{ height: 3, width: '40px', background: f.accent, borderRadius: 2, marginTop: 14, opacity: 0.6 }} />
     </Card>
   )
 }
@@ -117,7 +56,7 @@ export default function Landing() {
   return (
     <PageTransition>
       <div style={{ maxWidth: 960, margin: '0 auto', padding: '0 24px' }}>
-        <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 0', borderBottom: '1px solid var(--border)' }}>
+        <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 0', borderBottom: '1px solid var(--border)' }}>
           <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 17, letterSpacing: '-0.02em', color: 'var(--ink)', textDecoration: 'none' }}>
             <img src="/brand-mark.png" alt="" width={22} height={22} style={{ borderRadius: 6 }} />Sampada
           </Link>
@@ -128,18 +67,13 @@ export default function Landing() {
           </div>
         </nav>
 
-        {/* 1. Hero */}
-        <section aria-labelledby="hero-heading" style={{ padding: '100px 0 80px', textAlign: 'center' }}>
+        {/* Hero - simplified */}
+        <section aria-labelledby="hero-heading" style={{ padding: '60px 0 40px', textAlign: 'center' }}>
           <Reveal delay={0}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 16px', background: 'var(--accent-bg)', border: '1px solid var(--accent)', borderRadius: 'var(--radius-pill)', marginBottom: 24 }}>
-              <Sparkles size={12} color="var(--accent)" strokeWidth={2} />
-              <span style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--accent)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Now with Rebalance v2</span>
-            </div>
-
-            <h1 id="hero-heading" style={{ fontSize: 44, fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.15, marginBottom: 16, fontFamily: 'var(--font-display)' }}>
+            <h1 id="hero-heading" style={{ fontSize: 40, fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.15, marginBottom: 16, fontFamily: 'var(--font-display)' }}>
               Zero is better than <em style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', color: 'var(--accent)' }}>negative</em>.
             </h1>
-            <p style={{ fontSize: 16, color: 'var(--muted)', maxWidth: 480, margin: '0 auto 32px', lineHeight: 1.6 }}>
+            <p style={{ fontSize: 16, color: 'var(--muted)', maxWidth: 480, margin: '0 auto 28px', lineHeight: 1.6 }}>
               Debt payoff, AI-guided SIPs, and portfolio rebalancing in one self-hosted app — built to clear what you owe before it grows what you keep.
             </p>
             <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -148,18 +82,14 @@ export default function Landing() {
                 <Button variant="secondary">See how it works</Button>
               </Link>
             </div>
-            <p style={{ fontSize: 12, color: 'var(--faint)', marginTop: 20, letterSpacing: '0.02em' }}>Open source · Apache 2.0 · Free forever</p>
-          </Reveal>
-
-          <Reveal delay={0.15}>
-            <Hero3DLoader />
+            <p style={{ fontSize: 12, color: 'var(--faint)', marginTop: 16, letterSpacing: '0.02em' }}>Open source · Apache 2.0 · Free forever</p>
           </Reveal>
         </section>
 
         {/* 2. Debt → Zero → Wealth arc */}
-        <section aria-labelledby="arc-heading" style={{ padding: '80px 0' }}>
+        <section aria-labelledby="arc-heading" style={{ padding: '48px 0' }}>
           <Reveal delay={0.1}>
-            <h2 id="arc-heading" style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 24, textAlign: 'center' }}>
+            <h2 id="arc-heading" style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 20, textAlign: 'center' }}>
               The journey
             </h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 0, border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
@@ -168,32 +98,32 @@ export default function Landing() {
                 { label: 'Zero', desc: 'Set a debt-free target. Watch your progress toward zero.', color: 'var(--ink)', pct: '33%' },
                 { label: 'Wealth', desc: 'Grow your net worth. Invest, save, and build your future.', color: 'var(--success)', pct: '34%' },
               ].map((s, i) => (
-                <div key={s.label} style={{ padding: '32px 20px', textAlign: 'center', background: i === 1 ? 'var(--surface)' : 'transparent', borderLeft: i > 0 ? '1px solid var(--border)' : 'none' }}>
+                <div key={s.label} style={{ padding: '24px 16px', textAlign: 'center', background: i === 1 ? 'var(--surface)' : 'transparent', borderLeft: i > 0 ? '1px solid var(--border)' : 'none' }}>
                   <p style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Stage {i + 1}</p>
-                  <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 600, letterSpacing: '-0.02em', color: s.color, marginBottom: 6 }}>{s.label}</div>
-                  <div style={{ height: 3, width: s.pct, background: s.color, borderRadius: 2, margin: '0 auto 10px' }} />
+                  <div style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: s.color, marginBottom: 6 }}>{s.label}</div>
+                  <div style={{ height: 3, width: s.pct, background: s.color, borderRadius: 2, margin: '0 auto 8px' }} />
                   <p style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.5, maxWidth: 200, margin: '0 auto' }}>{s.desc}</p>
                 </div>
               ))}
             </div>
           </Reveal>
           <Reveal delay={0.2}>
-            <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--muted)', maxWidth: 420, margin: '14px auto 40px', lineHeight: 1.6 }}>
+            <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--muted)', maxWidth: 420, margin: '12px auto 32px', lineHeight: 1.6 }}>
               Set a goal like <em style={{ fontStyle: 'italic', color: 'var(--faint)' }}>"₹25,000/month passive income by 2030"</em> — Sampada reverse-engineers the SIP amount, stock picks, and rebalance cadence to get there.
             </p>
           </Reveal>
         </section>
 
         {/* 3. Feature grid */}
-        <section aria-labelledby="features-heading" style={{ padding: '100px 0 80px' }}>
+        <section aria-labelledby="features-heading" style={{ padding: '56px 0' }}>
           <Reveal delay={0.2}>
-            <h2 id="features-heading" style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 24, textAlign: 'center' }}>
+            <h2 id="features-heading" style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 20, textAlign: 'center' }}>
               Capabilities
             </h2>
-            <p style={{ textAlign: 'center', fontSize: 14, color: 'var(--muted)', maxWidth: 460, margin: '0 auto 36px', lineHeight: 1.6 }}>Not a budgeting app. Not an investment dashboard. The full arc, in one place.</p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 20 }}>
+            <p style={{ textAlign: 'center', fontSize: 14, color: 'var(--muted)', maxWidth: 460, margin: '0 auto 28px', lineHeight: 1.6 }}>Not a budgeting app. Not an investment dashboard. The full arc, in one place.</p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
               {FEATURES.map((f, i) => (
-                <Reveal key={f.title} delay={0.2 + i * 0.05}>
+                <Reveal key={f.title} delay={0.2 + i * 0.04}>
                   <FeatureCard f={f} />
                 </Reveal>
               ))}
@@ -202,9 +132,9 @@ export default function Landing() {
         </section>
 
         {/* 4. Why Sampada (comparison table) */}
-        <section aria-labelledby="compare-heading" style={{ padding: '80px 0' }}>
+        <section aria-labelledby="compare-heading" style={{ padding: '48px 0' }}>
           <Reveal delay={0.3}>
-            <h2 id="compare-heading" style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 24, textAlign: 'center' }}>
+            <h2 id="compare-heading" style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 20, textAlign: 'center' }}>
               Why Sampada
             </h2>
             <p style={{ textAlign: 'center', fontSize: 14, color: 'var(--muted)', maxWidth: 460, margin: '0 auto 8px', lineHeight: 1.6 }}>Mint shut down in March 2024. YNAB costs ~$15/month. Sampada is neither.</p>
@@ -235,22 +165,22 @@ export default function Landing() {
         </section>
 
         {/* 5. Hosted SaaS */}
-        <section aria-labelledby="cta-heading" style={{ padding: '80px 0 60px', textAlign: 'center' }}>
+        <section aria-labelledby="cta-heading" style={{ padding: '56px 0 40px', textAlign: 'center' }}>
           <Reveal delay={0.4}>
-            <h2 id="cta-heading" style={{ fontSize: 22, fontWeight: 600, letterSpacing: '-0.025em', marginBottom: 10 }}>Hosted. Free. Forever.</h2>
-            <p style={{ fontSize: 14, color: 'var(--muted)', maxWidth: 420, margin: '0 auto 24px', lineHeight: 1.6 }}>
+            <h2 id="cta-heading" style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.025em', marginBottom: 10 }}>Hosted. Free. Forever.</h2>
+            <p style={{ fontSize: 14, color: 'var(--muted)', maxWidth: 420, margin: '0 auto 20px', lineHeight: 1.6 }}>
               No installation needed. Sign up at <a href="https://sampada.vayalabs.in" target="_blank" rel="noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>sampada.vayalabs.in</a> and start in seconds.
             </p>
-            <p style={{ fontSize: 12.5, marginTop: 14 }}>
+            <p style={{ fontSize: 12.5, marginTop: 12 }}>
               <a href="https://github.com/sdachary/sampada" target="_blank" rel="noreferrer" style={{ color: 'var(--faint)', textDecoration: 'none' }}>View source on GitHub →</a>
             </p>
           </Reveal>
         </section>
 
         {/* 6. Trust badges */}
-        <section style={{ padding: '60px 0 60px', textAlign: 'center', borderTop: '1px solid var(--border-soft)' }}>
+        <section style={{ padding: '40px 0 40px', textAlign: 'center', borderTop: '1px solid var(--border-soft)' }}>
           <Reveal delay={0.5}>
-            <div className="landing-trust-badges" style={{ display: 'flex', gap: 24, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <div className="landing-trust-badges" style={{ display: 'flex', gap: 20, justifyContent: 'center', flexWrap: 'wrap' }}>
               <span style={{ fontSize: 12.5, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 6 }}><Lock size={13} strokeWidth={2} /> Apache 2.0</span>
               <span style={{ fontSize: 12.5, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 6 }}><Shield size={13} strokeWidth={2} /> DPDP compliant</span>
               <span style={{ fontSize: 12.5, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 6 }}><Zap size={13} strokeWidth={2} /> Self-hosted</span>
@@ -259,7 +189,7 @@ export default function Landing() {
           </Reveal>
         </section>
 
-        <footer style={{ padding: '20px 0', borderTop: '1px solid var(--border-soft)', fontSize: 12, color: 'var(--faint)', textAlign: 'center' }}>
+        <footer style={{ padding: '16px 0', borderTop: '1px solid var(--border-soft)', fontSize: 12, color: 'var(--faint)', textAlign: 'center' }}>
           Sampada — financial clarity · <a href="/privacy.html" style={{ color: 'var(--faint)', textDecoration: 'none' }}>Privacy</a> · <a href="/terms.html" style={{ color: 'var(--faint)', textDecoration: 'none' }}>Terms</a>
         </footer>
       </div>
