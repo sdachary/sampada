@@ -159,6 +159,9 @@ export default function Landing() {
         {/* 2. Debt → Zero → Wealth arc */}
         <section aria-labelledby="arc-heading" style={{ padding: '80px 0' }}>
           <Reveal delay={0.1}>
+            <h2 id="arc-heading" style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 24, textAlign: 'center' }}>
+              The journey
+            </h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 0, border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
               {[
                 { label: 'Negative', desc: 'Track everything you owe. See the full picture of your debt.', color: 'var(--accent)', pct: '33%' },
@@ -184,6 +187,9 @@ export default function Landing() {
         {/* 3. Feature grid */}
         <section aria-labelledby="features-heading" style={{ padding: '100px 0 80px' }}>
           <Reveal delay={0.2}>
+            <h2 id="features-heading" style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 24, textAlign: 'center' }}>
+              Capabilities
+            </h2>
             <p style={{ textAlign: 'center', fontSize: 14, color: 'var(--muted)', maxWidth: 460, margin: '0 auto 36px', lineHeight: 1.6 }}>Not a budgeting app. Not an investment dashboard. The full arc, in one place.</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 20 }}>
               {FEATURES.map((f, i) => (
@@ -198,6 +204,9 @@ export default function Landing() {
         {/* 4. Why Sampada (comparison table) */}
         <section aria-labelledby="compare-heading" style={{ padding: '80px 0' }}>
           <Reveal delay={0.3}>
+            <h2 id="compare-heading" style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 24, textAlign: 'center' }}>
+              Why Sampada
+            </h2>
             <p style={{ textAlign: 'center', fontSize: 14, color: 'var(--muted)', maxWidth: 460, margin: '0 auto 8px', lineHeight: 1.6 }}>Mint shut down in March 2024. YNAB costs ~$15/month. Sampada is neither.</p>
 
             <Card style={{ padding: '8px 4px', overflowX: 'auto' }}>
