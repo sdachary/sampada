@@ -17,10 +17,6 @@
     {
       "path": "dist/assets/index-*.js",
       "limit": "500 KB"
-    },
-    {
-      "path": "dist/assets/Hero3D-*.js",
-      "limit": "1000 KB"
     }
   ],
   "dependencies": {
