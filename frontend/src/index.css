@@ -246,16 +246,10 @@ input, button, textarea { font-family: var(--body); }
 .landing-stage-grid { display: grid; }
 .landing-compare-table th, .landing-compare-table td { white-space: nowrap; }
 
-/* Comparison table: desktop table, mobile cards */
+/* Comparison table: responsive with horizontal scroll on mobile */
 .landing-compare-table-desktop { display: block; }
-.landing-compare-cards-mobile { display: none; }
-
-/* Trust badges mobile stacking */
-.landing-trust-badges { display: flex; gap: 24; justify-content: center; flex-wrap: wrap; }
 
 @media (max-width: 640px) {
-  .landing-compare-table-desktop { display: none; }
-  .landing-compare-cards-mobile { display: flex; }
   .landing-trust-badges { flex-direction: column; gap: 12; }
 }
 
