@@ -5,7 +5,7 @@ import { Stat, Progress, Button, Card, Skeleton, EmptyState, ToastHost, toast } 
 import Chart from '../components/Chart'
 import QuickLogSheet from '../components/QuickLogSheet'
 import useOnline from '../lib/useOnline'
-import { Plus, AlertCircle } from 'lucide-react'
+import { Plus, AlertCircle, CreditCard, ArrowUp } from 'lucide-react'
 import { fmtINR } from '../lib/amounts'
 import PageHeader from '../components/ui/PageHeader'
 
@@ -98,7 +98,6 @@ export default function Dashboard() {
     <div style={{ display: 'grid', gap: 24 }}>
       <PageHeader
         title="Dashboard"
-        num="001 / 016"
         action={
           <Button variant="secondary" size="sm" onClick={downloadSnapshot}>
             Download snapshot
@@ -128,10 +127,20 @@ export default function Dashboard() {
         <p className="fin" style={{ fontFamily: 'var(--font-display)', fontSize: 36, fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.1 }}>
           {fmtINR(nw)}
         </p>
+        {snapshots.length >= 2 && (() => {
+          const prev = snapshots[snapshots.length - 2]?.net_worth || 0
+          const change = nw - prev
+          const pct = prev ? ((change / Math.abs(prev)) * 100).toFixed(1) : 0
+          return (
+            <p style={{ fontSize: 12, color: change >= 0 ? 'var(--success)' : 'var(--danger)', marginTop: 6, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
+              {change >= 0 ? '▲' : '▼'} {Math.abs(change) > 0 ? fmtINR(Math.abs(change)) : '0'} ({pct}%)
+            </p>
+          )
+        })()}
       </Card>
 
       {/* Stat grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px,1fr))', gap: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px,1fr))', gap: 12 }}>
         <Stat label="Total debt" value={fmtINR(debt)} countUp delta={data?.debt_delta} subtext={data?.debt_count > 0 ? `${data.debt_count} loan${data.debt_count > 1 ? 's' : ''}` : null} />
         <Stat label="Investments" value={fmtINR(inv)} countUp subtext={data?.portfolio_count > 0 ? `${data.portfolio_count} portfolio${data.portfolio_count > 1 ? 's' : ''}` : null} />
         <Stat label="Monthly expenses" value={fmtINR(data?.monthly_expenses || 0)} />
@@ -208,10 +217,10 @@ export default function Dashboard() {
       {/* Quick actions */}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         <Link to="/dashboard/transactions">
-          <Button variant="ghost" size="sm">+ Add transaction</Button>
+          <Button variant="ghost" size="sm"><Plus size={14} strokeWidth={2} /> Add transaction</Button>
         </Link>
         <Link to="/dashboard/debts">
-          <Button variant="ghost" size="sm">+ Log payment</Button>
+          <Button variant="ghost" size="sm"><CreditCard size={14} strokeWidth={2} /> Log payment</Button>
         </Link>
         {data?.unread_notifications > 0 && (
           <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--accent)' }}>
