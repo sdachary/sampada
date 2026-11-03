@@ -12,6 +12,7 @@ const HeroPoster = lazy(() => import('../landing/hero3d/HeroPoster'))
 function Hero3DLoader() {
   const [show3D, setShow3D] = useState(false)
   const [showPoster, setShowPoster] = useState(true)
+  const [can3D, setCan3D] = useState(null)
   const canvasRef = useRef(null)
 
   const canRender3D = () => {
@@ -27,7 +28,9 @@ function Hero3DLoader() {
   }
 
   useEffect(() => {
-    if (!canRender3D()) return
+    const supported = canRender3D()
+    setCan3D(supported)
+    if (!supported) return
     const timer = requestIdleCallback
       ? requestIdleCallback(() => setShow3D(true), { timeout: 2000 })
       : setTimeout(() => setShow3D(true), 1000)
@@ -38,6 +41,18 @@ function Hero3DLoader() {
 
   return (
     <div id="landing-3d-slot" style={{ width: '100%', maxWidth: 400, aspectRatio: '1/1', margin: '48px auto 0', position: 'relative' }}>
+      {can3D === false && (
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', textAlign: 'center', background: 'var(--border-soft)', borderRadius: 'var(--radius-lg)' }}>
+          <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--accent-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+            <Sparkles size={32} color="var(--accent)" strokeWidth={2} />
+          </div>
+          <p style={{ fontSize: 13, color: 'var(--muted)', maxWidth: 280, margin: 0, lineHeight: 1.5 }}>
+            3D hero requires WebGL2, hardware acceleration, and a viewport ≥768px.
+            <br /><br />
+            Showing static poster instead.
+          </p>
+        </div>
+      )}
       <Suspense fallback={<div style={{ width: '100%', aspectRatio: '1/1', background: 'var(--border-soft)', borderRadius: 'var(--radius-lg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} aria-hidden="true" />}>
         <HeroPoster ref={showPoster ? undefined : null} style={{ position: 'absolute', inset: 0, transition: 'opacity 0.6s ease', opacity: showPoster && !show3D ? 1 : 0, pointerEvents: 'none' }} />
       </Suspense>
@@ -51,14 +66,14 @@ function Hero3DLoader() {
 }
 
 const FEATURES = [
-  { icon: TrendingDown, title: 'Debt payoff tracker', body: 'Avalanche or snowball order, a full EMI calendar, and a month-by-month projection to your debt-free date.' },
-  { icon: PiggyBank, title: 'Dividend SIP planner', body: 'Set an income target and timeline. Sampada\'s AI picks 2–3 dividend stocks to match.' },
-  { icon: RefreshCw, title: 'Portfolio rebalancing v2', body: 'Buy-only contribution engine with guard rails, reason chips, CSV import, holdings drawer, and V1 compare.' },
-  { icon: MessageSquare, title: 'Natural-language entries', body: '"I spent ₹500 on groceries" becomes a categorized transaction, no forms.' },
-  { icon: AlertTriangle, title: 'Anomaly detection', body: 'A 3-sigma algorithm flags spending that breaks your normal pattern, automatically.' },
-  { icon: Globe, title: 'Multi-currency, global markets', body: '32 currencies with live rates. NYSE, NASDAQ, LSE, TSE, ASX — plus native NSE/BSE support.' },
-  { icon: Users, title: 'Household sharing', body: 'Add family members with role-based access and one shared household dashboard.' },
-  { icon: Cpu, title: 'Free AI, by default', body: 'Runs on OpenRouter\'s free models or fully local via Ollama. No AI paywall, ever.' },
+  { icon: TrendingDown, accent: 'var(--accent)', title: 'Debt payoff tracker', body: 'Avalanche or snowball order, a full EMI calendar, and a month-by-month projection to your debt-free date.' },
+  { icon: PiggyBank, accent: 'var(--success)', title: 'Dividend SIP planner', body: 'Set an income target and timeline. Sampada\'s AI picks 2–3 dividend stocks to match.' },
+  { icon: RefreshCw, accent: 'var(--warning)', title: 'Portfolio rebalancing v2', body: 'Buy-only contribution engine with guard rails, reason chips, CSV import, holdings drawer, and V1 compare.' },
+  { icon: MessageSquare, accent: 'var(--accent)', title: 'Natural-language entries', body: '"I spent ₹500 on groceries" becomes a categorized transaction, no forms.' },
+  { icon: AlertTriangle, accent: 'var(--danger)', title: 'Anomaly detection', body: 'A 3-sigma algorithm flags spending that breaks your normal pattern, automatically.' },
+  { icon: Globe, accent: 'var(--success)', title: 'Multi-currency, global markets', body: '32 currencies with live rates. NYSE, NASDAQ, LSE, TSE, ASX — plus native NSE/BSE support.' },
+  { icon: Users, accent: 'var(--warning)', title: 'Household sharing', body: 'Add family members with role-based access and one shared household dashboard.' },
+  { icon: Cpu, accent: 'var(--danger)', title: 'Free AI, by default', body: 'Runs on OpenRouter\'s free models or fully local via Ollama. No AI paywall, ever.' },
 ]
 
 const COMPARE_ROWS = [
@@ -82,9 +97,10 @@ function FeatureCard({ f }) {
   const Icon = f.icon
   return (
     <Card style={{ padding: '22px 22px', height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Icon className="mb-12" size={20} color="var(--accent)" strokeWidth={1.75} />
+      <Icon className="mb-12" size={20} color={f.accent} strokeWidth={1.75} />
       <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 600, letterSpacing: '-0.01em', marginBottom: 6 }}>{f.title}</h3>
       <p style={{ fontSize: 13.5, color: 'var(--muted)', lineHeight: 1.55, flex: 1 }}>{f.body}</p>
+      <div style={{ height: 3, width: '40px', background: f.accent, borderRadius: 2, marginTop: 16, opacity: 0.6 }} />
     </Card>
   )
 }
@@ -165,7 +181,6 @@ export default function Landing() {
         {/* 3. Feature grid */}
         <section aria-labelledby="features-heading" style={{ padding: '40px 0 60px' }}>
           <Reveal>
-            <p style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6, textAlign: 'center' }}>002 / 005</p>
             <p style={{ textAlign: 'center', fontSize: 14, color: 'var(--muted)', maxWidth: 460, margin: '0 auto 36px', lineHeight: 1.6 }}>Not a budgeting app. Not an investment dashboard. The full arc, in one place.</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 20 }}>
               {FEATURES.map((f) => (
@@ -180,7 +195,6 @@ export default function Landing() {
         {/* 4. Why Sampada (comparison — table on desktop, cards on mobile) */}
         <section aria-labelledby="compare-heading" style={{ padding: '20px 0 60px' }}>
           <Reveal>
-            <p style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6, textAlign: 'center' }}>003 / 005</p>
             <p style={{ textAlign: 'center', fontSize: 14, color: 'var(--muted)', maxWidth: 460, margin: '0 auto 8px', lineHeight: 1.6 }}>Mint shut down in March 2024. YNAB costs ~$15/month. Sampada is neither.</p>
 
             {/* Desktop: Table */}
@@ -237,7 +251,6 @@ export default function Landing() {
         {/* 5. Hosted SaaS */}
         <section aria-labelledby="cta-heading" style={{ padding: '20px 0 60px', textAlign: 'center' }}>
           <Reveal>
-            <p style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 12 }}>004 / 005</p>
             <h2 id="cta-heading" style={{ fontSize: 22, fontWeight: 600, letterSpacing: '-0.025em', marginBottom: 10 }}>Hosted. Free. Forever.</h2>
             <p style={{ fontSize: 14, color: 'var(--muted)', maxWidth: 420, margin: '0 auto 24px', lineHeight: 1.6 }}>
               No installation needed. Sign up at <a href="https://sampada.vayalabs.in" target="_blank" rel="noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>sampada.vayalabs.in</a> and start in seconds.
