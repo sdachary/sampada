@@ -143,7 +143,7 @@ export default function Landing() {
               Debt payoff, AI-guided SIPs, and portfolio rebalancing in one self-hosted app — built to clear what you owe before it grows what you keep.
             </p>
             <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-              <PrimaryCTA href="/register"><Button>Get started free</Button></PrimaryCTA>
+              <PrimaryCTA href="/register">Get started free</PrimaryCTA>
               <Link to="/dashboard" style={{ textDecoration: 'none' }}>
                 <Button variant="secondary">See how it works</Button>
               </Link>
