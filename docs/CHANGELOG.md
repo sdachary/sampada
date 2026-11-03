@@ -2,6 +2,45 @@
 
 All notable changes to Sampada are documented in this file.
 
+## [Unreleased]
+
+### Added
+- **Rebalance v2** (#27): buy-only contribution engine — target modes (equal/current/invested/per-stock weight), guard rails (max position 10%, max sector 25%, 30% sleeve-pool cap, ₹500 min order, max 8 orders, per-stock pause), opt-in dip boost with conviction/trend checks, whole-share buying with leftover-cash sweep, fee reserve, explainable reason chip on every row. Plus: CSV import with preview/validation, holdings drawer with full CRUD, sector view, one-click "compare with v1" toggle, concentration (top-1/top-5/HHI) + drift metrics. Golden engine tests (10/10) + unit tests (7/7).
+- **UI modernization** (#27): design tokens (`tokens.css`, AA contrast), self-hosted variable fonts, motion foundation (LazyMotion/Reveal/PageTransition), primitive component library + dev-only `/styleguide`, responsive app shell (sidebar ≥1024px, bottom nav below), themed Recharts palette, landing page rebuild, lazy hardware-gated Three.js hero (250 KB separate chunk), CI quality gates (Lighthouse CI, size-limit, axe, visual smoke).
+- **Mount smoke test** (#30): Playwright assertion that `#root` mounts, renders the landing h1, and stays populated through lazy-chunk settle with zero pageerrors — hard-gated in CI so a render crash fails the build.
+
+### Changed
+- Frontend deps (dependabot #26): React 19.2, Vite 8, React Router 7, Recharts 3, three/R3F, motion 14, lucide-react 1.65.
+- Backend deps (dependabot #25, #19–#22): rack 3.2.8 (GHSA-5v64-555j-wjxm), redis 6, webpush 1.1, simplecov 1.3.2, bundler group.
+- Refactors: `ScopedCrud` concern (goals/portfolios/budgets), `useResource`/`useFormModal` hooks, shared `fmtINR` formatters, zero oxlint warnings + no-undef guard, CI on pull requests (Node 24 / actions v7).
+
+### Fixed
+- **Landing white-page crash** (#28/#29): `FeatureCard` called `React.lazy()` during render with promises resolving to the icon itself (no `.default`) → React threw "Element type is invalid" and unmounted the tree. Replaced with a static lucide icon map.
+- Sign-out force-clears `__Secure-*` better-auth cookies and sends a JSON body so the session actually clears; landing never auto-redirects after auth.
+- `useModalForm` refactor regressions; 10 RuboCop offenses on `recurring_expense`; smoke test authenticates via Better-Auth (removed Rails login route).
+
+### Security
+- Explicit ActiveRecord encryption keys stored in sops (were derived from `SECRET_KEY_BASE`).
+- Rails 8.1.4 + Ruby 3.3.13 base; `source-map-js` 1.2.2 (npm audit high); frontend lockfile refresh.
+
+## [2.6.0] - 2026-09-25
+
+### Added
+- **Recurring auto-log**: recurring expenses write their transaction on the due date — unique index + idempotent `ExpenseReminderJob#log_due_transaction!`.
+- **Net-worth overview**: dashboard snapshot exposes `total_assets`/`total_liabilities`; hero shows net worth with stage + debt-free target; downloadable SVG snapshot.
+- **Budget health strip** via `GET /api/v1/budgets/overview`.
+- Shared `ThemeToggle` on landing + auth shell; coral-S brand mark, paper theme, head meta.
+- SEO: `robots.txt` + sitemap (landing only, app disallowed).
+
+### Changed
+- Auth/API hosts: oradb primary with `api.vayalabs.in` fallback; CSP `connect-src` updated; smoke test hits the canonical domain.
+- Docs: canonical `*.vayalabs.in` domains, stale MASTER_SPEC/IMPLEMENTATION_PLAN archived, `CONTEXT.md` session history.
+
+### Fixed
+- DPDP: consent withdrawal actually works, dead credential columns dropped, signup honeypot, legal pages (privacy/terms) restored.
+- Deploy: `deploy.sh` migrates after converge (was running the old image's migrations and skipping new ones).
+- Recurring expense JSON (`monthly_amount`, `next_due_days`).
+
 ## [2.5.0] - 2026-08-11
 
 ### Added
