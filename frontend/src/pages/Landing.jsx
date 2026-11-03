@@ -177,33 +177,60 @@ export default function Landing() {
           </Reveal>
         </section>
 
-        {/* 4. Why Sampada (comparison table) */}
+        {/* 4. Why Sampada (comparison — table on desktop, cards on mobile) */}
         <section aria-labelledby="compare-heading" style={{ padding: '20px 0 60px' }}>
           <Reveal>
             <p style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6, textAlign: 'center' }}>003 / 005</p>
             <p style={{ textAlign: 'center', fontSize: 14, color: 'var(--muted)', maxWidth: 460, margin: '0 auto 8px', lineHeight: 1.6 }}>Mint shut down in March 2024. YNAB costs ~$15/month. Sampada is neither.</p>
-            <Card style={{ padding: '8px 4px', overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, minWidth: 420 }}>
-                <thead>
-                  <tr>
-                    <th style={{ textAlign: 'left', padding: '10px 14px', fontSize: 11, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--faint)' }}></th>
-                    <th style={{ padding: '10px 14px', fontSize: 12.5, fontWeight: 700, color: 'var(--accent)' }}>Sampada</th>
-                    <th style={{ padding: '10px 14px', fontSize: 12.5, fontWeight: 600, color: 'var(--muted)' }}>YNAB</th>
-                    <th style={{ padding: '10px 14px', fontSize: 12.5, fontWeight: 600, color: 'var(--muted)' }}>Mint</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {COMPARE_ROWS.map(([label, sampada, ynab, mint]) => (
-                    <tr key={label}>
-                      <td style={{ padding: '9px 14px', borderTop: '1px solid var(--border-soft)', color: 'var(--ink-soft)' }}>{label}</td>
-                      <td style={{ padding: '9px 14px', borderTop: '1px solid var(--border-soft)', textAlign: 'center' }}><CompareCell value={sampada} /></td>
-                      <td style={{ padding: '9px 14px', borderTop: '1px solid var(--border-soft)', textAlign: 'center' }}><CompareCell value={ynab} /></td>
-                      <td style={{ padding: '9px 14px', borderTop: '1px solid var(--border-soft)', textAlign: 'center' }}><CompareCell value={mint} /></td>
+
+            {/* Desktop: Table */}
+            <div style={{ display: 'none' }} className="landing-compare-table-desktop">
+              <Card style={{ padding: '8px 4px', overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, minWidth: 420 }}>
+                  <thead>
+                    <tr>
+                      <th style={{ textAlign: 'left', padding: '10px 14px', fontSize: 11, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--faint)' }}></th>
+                      <th style={{ padding: '10px 14px', fontSize: 12.5, fontWeight: 700, color: 'var(--accent)' }}>Sampada</th>
+                      <th style={{ padding: '10px 14px', fontSize: 12.5, fontWeight: 600, color: 'var(--muted)' }}>YNAB</th>
+                      <th style={{ padding: '10px 14px', fontSize: 12.5, fontWeight: 600, color: 'var(--muted)' }}>Mint</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </Card>
+                  </thead>
+                  <tbody>
+                    {COMPARE_ROWS.map(([label, sampada, ynab, mint]) => (
+                      <tr key={label}>
+                        <td style={{ padding: '9px 14px', borderTop: '1px solid var(--border-soft)', color: 'var(--ink-soft)' }}>{label}</td>
+                        <td style={{ padding: '9px 14px', borderTop: '1px solid var(--border-soft)', textAlign: 'center' }}><CompareCell value={sampada} /></td>
+                        <td style={{ padding: '9px 14px', borderTop: '1px solid var(--border-soft)', textAlign: 'center' }}><CompareCell value={ynab} /></td>
+                        <td style={{ padding: '9px 14px', borderTop: '1px solid var(--border-soft)', textAlign: 'center' }}><CompareCell value={mint} /></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </Card>
+            </div>
+
+            {/* Mobile: Cards */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }} className="landing-compare-cards-mobile">
+              {COMPARE_ROWS.map(([label, sampada, ynab, mint]) => (
+                <Card key={label} style={{ padding: '16px 20px' }}>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)', marginBottom: 12 }}>{label}</p>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', background: 'var(--success-bg)', borderRadius: 'var(--radius-pill)', fontSize: 12, fontWeight: 600 }}>
+                      <span style={{ color: 'var(--success)' }}>Sampada</span>
+                      <CompareCell value={sampada} />
+                    </span>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', background: 'var(--border-soft)', borderRadius: 'var(--radius-pill)', fontSize: 12, fontWeight: 500 }}>
+                      <span style={{ color: 'var(--muted)' }}>YNAB</span>
+                      <CompareCell value={ynab} />
+                    </span>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', background: 'var(--border-soft)', borderRadius: 'var(--radius-pill)', fontSize: 12, fontWeight: 500 }}>
+                      <span style={{ color: 'var(--muted)' }}>Mint</span>
+                      <CompareCell value={mint} />
+                    </span>
+                  </div>
+                </Card>
+              ))}
+            </div>
           </Reveal>
         </section>
 
@@ -224,11 +251,11 @@ export default function Landing() {
         {/* 6. Trust badges */}
         <section style={{ padding: '40px 0 60px', textAlign: 'center', borderTop: '1px solid var(--border-soft)' }}>
           <Reveal>
-            <div style={{ display: 'flex', gap: 24, justifyContent: 'center', flexWrap: 'wrap', opacity: 0.6 }}>
-              <span style={{ fontSize: 12.5, color: 'var(--ink)', display: 'flex', alignItems: 'center', gap: 6 }}><Lock size={13} strokeWidth={2} /> Apache 2.0</span>
-              <span style={{ fontSize: 12.5, color: 'var(--ink)', display: 'flex', alignItems: 'center', gap: 6 }}><Shield size={13} strokeWidth={2} /> DPDP compliant</span>
-              <span style={{ fontSize: 12.5, color: 'var(--ink)', display: 'flex', alignItems: 'center', gap: 6 }}><Zap size={13} strokeWidth={2} /> Self-hosted</span>
-              <span style={{ fontSize: 12.5, color: 'var(--ink)', display: 'flex', alignItems: 'center', gap: 6 }}><Star size={13} strokeWidth={2} /> No paywalls</span>
+            <div style={{ display: 'flex', gap: 24, justifyContent: 'center', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: 12.5, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 6 }}><Lock size={13} strokeWidth={2} /> Apache 2.0</span>
+              <span style={{ fontSize: 12.5, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 6 }}><Shield size={13} strokeWidth={2} /> DPDP compliant</span>
+              <span style={{ fontSize: 12.5, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 6 }}><Zap size={13} strokeWidth={2} /> Self-hosted</span>
+              <span style={{ fontSize: 12.5, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 6 }}><Star size={13} strokeWidth={2} /> No paywalls</span>
             </div>
           </Reveal>
         </section>

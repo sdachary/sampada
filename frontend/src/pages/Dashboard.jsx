@@ -17,6 +17,18 @@ export default function Dashboard() {
   const [hideAmt, setHideAmt] = useState(true)
   const [quickOpen, setQuickOpen] = useState(false)
 
+  // Keyboard shortcut: Alt+Q to open quick log
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (e.altKey && e.key === 'q') {
+        e.preventDefault()
+        setQuickOpen(true)
+      }
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [])
+
   const load = useCallback(() => {
     return Promise.all([
       api.dashboard(),
@@ -188,13 +200,22 @@ export default function Dashboard() {
       </div>
 
       {/* Floating quick-log action */}
-      <button onClick={() => setQuickOpen(true)} aria-label="Quick log transaction" title="Quick log"
+      <button
+        onClick={() => setQuickOpen(true)}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setQuickOpen(true); }}}
+        tabIndex={0}
+        aria-label="Quick log transaction"
+        title="Quick log (Alt+Q)"
         style={{
           position: 'fixed', right: 20, bottom: 'calc(84px + env(safe-area-inset-bottom))', zIndex: 120,
           width: 56, height: 56, borderRadius: '50%', border: 'none', cursor: 'pointer',
           background: 'var(--accent)', color: 'var(--ink)', display: 'flex', alignItems: 'center', justifyContent: 'center',
           boxShadow: '0 8px 24px rgba(237,111,92,0.4)', opacity: isOnline ? 1 : 0.5,
-        }}>
+          outline: 'none',
+        }}
+        onFocus={(e) => { e.currentTarget.style.boxShadow = '0 0 0 3px var(--accent-bg), 0 8px 24px rgba(237,111,92,0.4)'; }}
+        onBlur={(e) => { e.currentTarget.style.boxShadow = '0 8px 24px rgba(237,111,92,0.4)'; }}
+      >
         <Plus size={26} strokeWidth={2.5} />
       </button>
 
