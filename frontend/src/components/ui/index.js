@@ -1,7 +1,7 @@
 export { default as Label } from './Label'
 export { default as Field } from './Field'
 export { default as StatCard } from './StatCard'
-export { default as Modal } from './Modal'
+export { Modal, ResponsiveModal } from './Modal'
 export { default as ConfirmDialog } from './ConfirmDialog'
 export { default as Button } from './Button'
 export { default as Card } from './Card'

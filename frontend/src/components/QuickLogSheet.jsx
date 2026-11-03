@@ -36,6 +36,15 @@ export default function QuickLogSheet({ open, onClose, onSaved, online }) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
   const inputRef = useRef(null)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    if (!open) return
+    const checkMobile = () => setIsMobile(window.innerWidth < 640)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [open])
 
   useEffect(() => {
     if (open) {
@@ -101,15 +110,29 @@ export default function QuickLogSheet({ open, onClose, onSaved, online }) {
 
   if (!open) return null
 
-  return (
-    <>
-      <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(21,20,15,0.4)', zIndex: 130 }} />
-      <form onSubmit={handleSubmit} style={{
+  const overlayStyle = isMobile
+    ? { position: 'fixed', inset: 0, background: 'rgba(21,20,15,0.4)', zIndex: 130 }
+    : { position: 'fixed', inset: 0, background: 'rgba(21,20,15,0.4)', zIndex: 130, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }
+
+  const formStyle = isMobile
+    ? {
         position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 131,
         background: 'var(--paper-card)', borderTop: '1px solid var(--line)',
         borderRadius: '16px 16px 0 0', padding: '20px 20px calc(20px + env(safe-area-inset-bottom))',
         boxShadow: '0 -8px 30px rgba(21,20,15,0.2)', maxWidth: 480, margin: '0 auto',
-      }}>
+      }
+    : {
+        position: 'fixed', zIndex: 131,
+        background: 'var(--paper-card)', border: '1px solid var(--line)',
+        borderRadius: 16, padding: '24px 24px 28px',
+        boxShadow: '0 8px 30px rgba(21,20,15,0.2)', maxWidth: 480,
+        top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+      }
+
+  return (
+    <>
+      <div onClick={onClose} style={overlayStyle} />
+      <form onSubmit={handleSubmit} style={formStyle}>
         <div className="spread-mb16" >
           <p style={{ fontSize: 15, fontWeight: 600, letterSpacing: '-0.01em' }}>Quick log</p>
           <button type="button" onClick={onClose} aria-label="Close"

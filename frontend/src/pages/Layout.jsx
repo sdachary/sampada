@@ -83,7 +83,7 @@ const moreItems = [
 ]
 
 function NavLink({ item, current, depth, onNav }) {
-  const active = item.path === current || (item.path && current.startsWith(item.path))
+  const active = item.path === current
   return (
     <Link to={item.path} onClick={onNav}
       style={{
