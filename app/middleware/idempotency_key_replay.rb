@@ -68,7 +68,7 @@ class IdempotencyKeyReplay
 
   def replay(cached)
     payload = JSON.parse(cached)
-    [payload['status'], { 'Content-Type' => payload['content_type'].to_s }, payload['body'].to_s]
+    [payload['status'], { 'Content-Type' => payload['content_type'].to_s }, [payload['body'].to_s]]
   end
 
   def conflict
