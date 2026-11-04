@@ -108,6 +108,13 @@ export default function Layout() {
   const { user, logout } = useAuth()
   const { theme, toggle: toggleTheme } = useTheme()
   const { isOnline } = useOnline()
+  const [queued, setQueued] = useState(0)
+
+  useEffect(() => {
+    const update = (e) => setQueued(e.detail?.pending ?? 0)
+    window.addEventListener('sampada:queue', update)
+    return () => window.removeEventListener('sampada:queue', update)
+  }, [])
   const navigate = useNavigate()
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
@@ -342,7 +349,7 @@ export default function Layout() {
             borderRadius: 10, background: 'var(--ink)', color: 'var(--paper)', fontSize: 12.5,
           }}>
             <WifiOff size={14} aria-hidden="true" />
-            <span>Offline — viewing cached data, edits disabled</span>
+            <span>{queued > 0 ? `Offline — ${queued} ${queued === 1 ? 'change' : 'changes'} queued, will sync` : 'Offline — viewing cached data, edits disabled'}</span>
           </div>
         )}
         <PageTransition>
