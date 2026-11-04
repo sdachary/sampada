@@ -1,4 +1,5 @@
 require_relative 'boot'
+require_relative '../app/middleware/idempotency_key_replay'
 require 'rails/all'
 Bundler.require(*Rails.groups)
 
