@@ -1,9 +1,9 @@
-const CACHE_NAME = 'sampada-v1';
-const OFFLINE_URLS = ['/', '/offline.html'];
+const CACHE_NAME = 'sampada-v2';
+const SHELL_URLS = ['/', '/manifest.webmanifest'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(OFFLINE_URLS))
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(SHELL_URLS))
   );
   self.skipWaiting();
 });
@@ -17,10 +17,58 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+async function fetchWithTimeout(request, ms) {
+  return Promise.race([
+    fetch(request),
+    new Promise((resolve) => setTimeout(() => resolve(undefined), ms)),
+  ]);
+}
+
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin) return;
+
+  // API calls: network-first with a 3s timeout, cached response as fallback.
+  // Only 2xx responses are ever cached, so auth failures are never replayed.
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(
+      fetchWithTimeout(event.request, 3000).then(async (response) => {
+        if (response && response.ok) {
+          const cache = await caches.open(CACHE_NAME);
+          cache.put(event.request, response.clone());
+          return response;
+        }
+        const cached = await caches.match(event.request);
+        return cached || response || new Response(JSON.stringify({ success: false, message: 'Offline' }), {
+          status: 503,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      })
+    );
+    return;
+  }
+
+  // Hashed assets and fonts: immutable — cache-first, then network + cache.
+  if (url.pathname.startsWith('/assets/') || url.pathname.startsWith('/fonts/')) {
+    event.respondWith(
+      caches.match(event.request).then((cached) => cached || fetch(event.request).then(async (response) => {
+        if (response.ok) {
+          const cache = await caches.open(CACHE_NAME);
+          cache.put(event.request, response.clone());
+        }
+        return response;
+      }))
+    );
+    return;
+  }
+
+  // Navigation and everything else: network-first, offline serves the cache or the app shell.
   event.respondWith(
-    fetch(event.request).catch(() => caches.match(event.request).then((r) => r || caches.match('/offline.html')))
+    fetchWithTimeout(event.request, 3000).then(async (response) => {
+      if (response) return response;
+      return (await caches.match(event.request)) || caches.match('/');
+    })
   );
 });
 
