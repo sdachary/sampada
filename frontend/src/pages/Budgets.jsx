@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
+import { Button, Card, Skeleton, EmptyState, PageHeader, Stat } from '../components/ui'
 import { fmtINR } from '../lib/amounts'
 import BudgetFormModal from '../components/BudgetFormModal'
 
-const ENVELOPE_COLORS = ['#ef4444','#f97316','#eab308','#22c55e','#14b8a6','#06b6d4','#6366f1','#a855f7','#ec4899','#f43f5e']
+const ENVELOPE_COLORS = ['var(--danger)', 'var(--warning)', 'var(--accent)', 'var(--success)', 'var(--success)', 'var(--accent)', 'var(--accent)', 'var(--accent)', 'var(--danger)', 'var(--danger)']
 
 export default function Budgets() {
   const [budgets, setBudgets] = useState([])
@@ -39,7 +40,7 @@ export default function Budgets() {
           <span className="emoji">□</span>
           <p>No budgets set yet</p>
           <p className="text-12-faint" >Create a budget to track spending by category.</p>
-          <button onClick={() => setModal('new')} className="btn btn-primary" style={{ marginTop: 16 }}>+ Add Budget</button>
+          <Button variant="primary" onClick={() => setModal('new')} style={{ marginTop: 16 }}>+ Add Budget</Button>
         </div>
       )
     }
@@ -52,7 +53,7 @@ export default function Budgets() {
             const over = pct > 100
             const color = ENVELOPE_COLORS[i % ENVELOPE_COLORS.length]
             return (
-              <div key={b.id} className="card" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 8, borderTop: `3px solid ${color}` }}>
+              <Card key={b.id} style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 8, borderTop: `3px solid ${color}` }}>
                 <div className="spread" >
                   <span style={{ fontWeight: 600, fontSize: 14 }}>{b.category_name || `Category #${b.budget_category_id}`}</span>
                   <span className="fs-18" >✉</span>
@@ -61,17 +62,17 @@ export default function Budgets() {
                   <span className="text-mute" >Limit</span>
                   <span className="fin h-600-14" >{fmtINR(+b.monthly_limit || 0)}</span>
                 </div>
-                <div className="progress" style={{ height: 10, background: 'rgba(0,0,0,0.06)' }}>
-                  <div className={`progress-fill${over ? '' : ' green'}`} style={{ width: `${Math.min(pct, 100)}%`, background: over ? 'var(--coral)' : color }} />
+                <div className="progress" style={{ height: 10, background: 'var(--border-soft)' }}>
+                  <div className={`progress-fill${over ? '' : ' green'}`} style={{ width: `${Math.min(pct, 100)}%`, background: over ? 'var(--danger)' : color }} />
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--ink-faint)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--faint)' }}>
                   <span>{fmtINR(+b.spent || 0)}</span>
-                  <span style={{ color: over ? 'var(--coral)' : 'var(--emerald)', fontWeight: 500 }}>{pct.toFixed(0)}%</span>
+                  <span style={{ color: over ? 'var(--danger)' : 'var(--success)', fontWeight: 500 }}>{pct.toFixed(0)}%</span>
                 </div>
-                <div style={{ fontSize: 10, color: 'var(--ink-faint)', textAlign: 'center', padding: '2px 0', borderTop: '1px solid var(--line-soft)' }}>
+                <div style={{ fontSize: 10, color: 'var(--faint)', textAlign: 'center', padding: '2px 0', borderTop: '1px solid var(--border-soft)' }}>
                   {over ? '⚠ Over budget' : b.on_track ? '✓ On track' : '⚠ Nearing limit'}
                 </div>
-              </div>
+              </Card>
             )
           })}
         </div>
@@ -83,7 +84,7 @@ export default function Budgets() {
         const pct = +b.usage_pct || 0
         const over = pct > 100
         return (
-          <div key={b.id} className="card" style={{ padding: '16px 18px', marginBottom: 8 }}>
+          <Card key={b.id} style={{ padding: '16px 18px', marginBottom: 8 }}>
             <div className="spread-top-mb8" >
               <div>
                 <p className="row-600-14" >{b.category_name || `Category #${b.budget_category_id}`}</p>
@@ -91,18 +92,18 @@ export default function Budgets() {
               </div>
               <div className="table-cell-num-plain" >
                 <p className="fin h-600-15" >{fmtINR(+b.monthly_limit || 0)}</p>
-                <p className="fin" style={{ fontSize: 12, color: over ? 'var(--coral)' : 'var(--ink-mute)' }}>{fmtINR(+b.spent || 0)} spent</p>
+                <p className="fin" style={{ fontSize: 12, color: over ? 'var(--danger)' : 'var(--muted)' }}>{fmtINR(+b.spent || 0)} spent</p>
               </div>
             </div>
             <div className="progress" style={{ height: 6, marginBottom: 6 }}>
               <div className={`progress-fill${over ? '' : ' green'}`} style={{ width: `${Math.min(pct, 100)}%` }} />
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--ink-faint)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--faint)' }}>
               <span>{pct.toFixed(0)}% used</span>
-              <span>{b.on_track ? <span style={{ color: 'var(--emerald)' }}>on track</span> : <span className="text-coral" >over budget</span>}</span>
+              <span>{b.on_track ? <span style={{ color: 'var(--success)' }}>on track</span> : <span className="text-danger" >over budget</span>}</span>
               <span>{fmtINR(+b.remaining || 0)} left</span>
             </div>
-          </div>
+          </Card>
         )
       })
     )
@@ -114,26 +115,32 @@ export default function Budgets() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
         <h1 className="page-title-no-mb" >Budgets</h1>
         <div style={{ display: 'flex', gap: 4 }}>
-          <button onClick={() => setView('envelope')} style={{ padding: '3px 10px', borderRadius: 6, fontSize: 11, border: '1px solid var(--line)', background: view === 'envelope' ? 'var(--coral)' : 'transparent', color: view === 'envelope' ? '#fff' : 'var(--ink)', cursor: 'pointer' }}>Envelopes</button>
-          <button onClick={() => setView('list')} style={{ padding: '3px 10px', borderRadius: 6, fontSize: 11, border: '1px solid var(--line)', background: view === 'list' ? 'var(--coral)' : 'transparent', color: view === 'list' ? '#fff' : 'var(--ink)', cursor: 'pointer' }}>List</button>
-          <button onClick={() => setModal('new')} className="btn btn-primary" style={{ fontSize: 12, padding: '4px 12px', marginLeft: 8 }}>+ Add Budget</button>
+          <Button variant={view === 'envelope' ? 'primary' : 'ghost'} size="sm" onClick={() => setView('envelope')}>Envelopes</Button>
+          <Button variant={view === 'list' ? 'primary' : 'ghost'} size="sm" onClick={() => setView('list')}>List</Button>
+          <Button variant="primary" size="sm" onClick={() => setModal('new')}>+ Add Budget</Button>
         </div>
       </div>
       <p className="text-13-5-muted-sm" >Set limits and stay on track.</p>
 
-      <div className="card card-pad-mb16" >
-        <div className="flex-g20-wrap" >
-          <div><span className="label-caps-sm" >Total Budget</span>
-            <p className="fin h-600-16" >{fmtINR(totalBudget)}</p></div>
-          <div><span className="label-caps-sm" >Spent</span>
-            <p className="fin amt-out" >{fmtINR(totalSpent)}</p></div>
-          <div><span className="label-caps-sm" >On Track</span>
-            <p className="amt-in" >{onTrack}/{budgets.length}</p></div>
+      <Card>
+        <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <span className="label-caps-sm" >Total Budget</span>
+            <p className="fin h-600-16" >{fmtINR(totalBudget)}</p>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <span className="label-caps-sm" >Spent</span>
+            <p className="fin amt-out" >{fmtINR(totalSpent)}</p>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <span className="label-caps-sm" >On Track</span>
+            <p className="amt-in" >{onTrack}/{budgets.length}</p>
+          </div>
         </div>
         <div className="progress" style={{ height: 8, marginTop: 10 }}>
           <div className={`progress-fill${totalSpent <= totalBudget ? ' green' : ''}`} style={{ width: `${Math.min((totalSpent / (totalBudget || 1)) * 100, 100)}%` }} />
         </div>
-      </div>
+      </Card>
 
       {renderContent()}
 
