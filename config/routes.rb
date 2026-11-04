@@ -54,6 +54,8 @@ Rails.application.routes.draw do
       get :net_worth
     end
     resource :ai_settings, only: %i[show update destroy], controller: 'ai_settings'
+    get 'feature_flags', to: 'feature_flags#index'
+    patch 'feature_flags/:key', to: 'feature_flags#update'
     resources :net_worth_snapshots, only: %i[index show]
     resources :recurring_expenses, only: %i[index show create update destroy] do
       collection do
