@@ -30,7 +30,9 @@ export default function Journey() {
         <span className="emoji">→</span>
         <p>Start your financial journey</p>
         <p className="text-12-faint" >Track your first debt or investment to see your journey unfold.</p>
-        <button onClick={() => window.location.href = '/dashboard/onboarding'} className="btn btn-primary" style={{ marginTop: 16 }}>Start your journey</button>
+        <Link to="/dashboard/onboarding">
+          <Button variant="primary" style={{ marginTop: 16 }}>Start your journey</Button>
+        </Link>
       </div>
     </div>
   )

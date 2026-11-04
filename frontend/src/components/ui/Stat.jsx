@@ -10,9 +10,9 @@ export default function Stat({ label, value, countUp, delta, footnote, style, cl
   const [showFootnote, setShowFootnote] = useState(false)
 
   return (
-    <div className={className} style={style} tabIndex={footnote ? 0 : undefined} onFocus={() => setShowFootnote(true)} onBlur={() => setShowFootnote(false)} onMouseEnter={() => setShowFootnote(true)} onMouseLeave={() => setShowFootnote(false)}>
+    <div className={className} style={{ ...style, minWidth: 0, minWidth: '160px', overflow: 'hidden' }} tabIndex={footnote ? 0 : undefined} onFocus={() => setShowFootnote(true)} onBlur={() => setShowFootnote(false)} onMouseEnter={() => setShowFootnote(true)} onMouseLeave={() => setShowFootnote(false)}>
       <p className="label-caps mb-4">{label}</p>
-      <p className="fin h-700-22" ref={ref} style={{ fontFamily: 'var(--font-display)' }}>{shown}</p>
+      <p className="fin h-700-22" ref={ref} style={{ fontFamily: 'var(--font-display)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{shown}</p>
       {delta != null && (
         <p className="fin" style={{ fontSize: 13, fontWeight: 600, marginTop: 2, color: delta >= 0 ? 'var(--success)' : 'var(--danger)' }}>
           {delta >= 0 ? '▲' : '▼'} {fmtINR(Math.abs(delta))}
