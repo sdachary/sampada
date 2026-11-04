@@ -70,12 +70,12 @@ export default function Dashboard() {
       <rect width="600" height="340" fill="var(--bg)" rx="16"/>
       <rect x="0" y="0" width="600" height="6" fill="var(--accent)"/>
       <text x="40" y="60" font-family="'Inter Tight',sans-serif" font-size="12" font-weight="600" fill="var(--muted)" letter-spacing="2">SAMPADA</text>
-      <text x="40" y="90" font-family="'Inter Tight',sans-serif" font-size="11" fill="var(--ink-mute)">Financial snapshot</text>
+      <text x="40" y="90" font-family="'Inter Tight',sans-serif" font-size="11" fill="var(--muted)">Financial snapshot</text>
       <text x="40" y="160" font-family="'Inter Tight',sans-serif" font-size="13" fill="var(--muted)" letter-spacing="1">Net worth</text>
       <text x="40" y="210" font-family="'Inter Tight',sans-serif" font-size="40" font-weight="700" fill="var(--ink)" letter-spacing="-1">${val}</text>
       <rect x="40" y="230" width="60" height="3" fill="var(--accent)" rx="1.5"/>
-      <text x="40" y="265" font-family="'Inter Tight',sans-serif" font-size="12" fill="var(--ink-mute)">Stage: <tspan fill="var(--ink)">${stage}</tspan></text>
-      ${data?.debt_free_date ? `<text x="40" y="290" font-family="'Inter Tight',sans-serif" font-size="12" fill="var(--ink-mute)">Debt-free target: <tspan fill="var(--ink)">${data.debt_free_date}</tspan></text>` : ''}
+      <text x="40" y="265" font-family="'Inter Tight',sans-serif" font-size="12" fill="var(--muted)">Stage: <tspan fill="var(--ink)">${stage}</tspan></text>
+      ${data?.debt_free_date ? `<text x="40" y="290" font-family="'Inter Tight',sans-serif" font-size="12" fill="var(--muted)">Debt-free target: <tspan fill="var(--ink)">${data.debt_free_date}</tspan></text>` : ''}
       <text x="560" y="320" font-family="'Playfair Display',Georgia,serif" font-style="italic" font-size="13" fill="var(--muted)" text-anchor="end">sampada.app</text>
     </svg>`
     const blob = new Blob([svg], { type: 'image/svg+xml' })

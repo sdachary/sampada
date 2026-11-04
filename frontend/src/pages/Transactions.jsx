@@ -3,6 +3,7 @@ import { api } from '../lib/api'
 import TransactionFormModal from '../components/TransactionFormModal'
 import useOnline from '../lib/useOnline'
 import { fmtINR } from '../lib/amounts'
+import { Button, Card, EmptyState, Badge } from '../components/ui'
 
 export default function Transactions() {
   const { isOnline } = useOnline()
@@ -76,12 +77,12 @@ export default function Transactions() {
 
       <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
         {monthTotals.map(m => (
-          <div key={m.month} className="card" style={{ flex: '1 0 160px', padding: '14px 16px' }}>
-            <p style={{ fontSize: 11, color: 'var(--ink-mute)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{m.label}</p>
+          <Card key={m.month} style={{ flex: '1 0 160px', padding: '14px 16px' }}>
+            <p style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{m.label}</p>
             <p className="fin amt-in-15" >+{fmtINR(+m.income)}</p>
             <p className="fin amt-out-15" >-{fmtINR(+m.expenses)}</p>
-            <p className="fin" style={{ fontSize: 13, fontWeight: 500, color: +m.net >= 0 ? 'var(--emerald)' : 'var(--coral)' }}>={fmtINR(+m.net)}</p>
-          </div>
+            <p className="fin" style={{ fontSize: 13, fontWeight: 500, color: +m.net >= 0 ? 'var(--success)' : 'var(--danger)' }}>={fmtINR(+m.net)}</p>
+          </Card>
         ))}
       </div>
 
@@ -102,63 +103,65 @@ export default function Transactions() {
       </div>
 
       {importResult && (
-        <div className="card" style={{ padding: '10px 16px', marginBottom: 12, fontSize: 12.5, borderLeft: `3px solid ${importResult.error ? 'var(--coral)' : 'var(--emerald)'}` }}>
+        <Card style={{ padding: '10px 16px', marginBottom: 12, fontSize: 12.5, borderLeft: `3px solid ${importResult.error ? 'var(--danger)' : 'var(--success)'}` }}>
           {importResult.error
-            ? <span className="text-coral" >Import failed: {importResult.error}</span>
-            : <span style={{ color: 'var(--ink-soft)' }}>
+            ? <span className="text-danger" >Import failed: {importResult.error}</span>
+            : <span style={{ color: 'var(--muted)' }}>
                 Imported <b>{importResult.imported}</b> transaction{importResult.imported === 1 ? '' : 's'}
                 {importResult.errors?.length > 0 && ` · ${importResult.errors.length} skipped`}
               </span>}
-        </div>
+        </Card>
       )}
 
       {txns.length === 0 ? (
-        <div className="empty-state">
-          <span className="emoji">↗</span>
-          <p>No transactions yet</p>
-          <p className="text-12-faint" >Start tracking your spending to see patterns emerge.</p>
-          <button onClick={() => openModal(null)} disabled={!isOnline} className="btn btn-primary"
-            style={{ marginTop: 12, opacity: isOnline ? 1 : 0.5, cursor: isOnline ? 'pointer' : 'not-allowed' }}>+ Add Transaction</button>
-        </div>
+        <EmptyState
+          icon={<span className="emoji">↗</span>}
+          title="No transactions yet"
+          action="Add Transaction"
+          onAction={() => openModal(null)}
+        >
+          Start tracking your spending to see patterns emerge.
+          <Button variant="primary" onClick={() => openModal(null)} disabled={!isOnline} style={{ marginTop: 12, opacity: isOnline ? 1 : 0.5, cursor: isOnline ? 'pointer' : 'not-allowed' }}>
+            + Add Transaction
+          </Button>
+        </EmptyState>
       ) : (
         <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
-          <div className="card card-pad-10-16" >
+          <Card style={{ flex: '1 0 160px', padding: '14px 16px' }}>
             <p className="label-caps-sm" >Total Income</p>
             <p className="fin amt-in" >{fmtINR(totalIncome)}</p>
-          </div>
-          <div className="card card-pad-10-16" >
+          </Card>
+          <Card style={{ flex: '1 0 160px', padding: '14px 16px' }}>
             <p className="label-caps-sm" >Total Expenses</p>
             <p className="fin amt-out" >{fmtINR(totalExpenses)}</p>
-          </div>
-          <div className="card card-pad-10-16" >
+          </Card>
+          <Card style={{ flex: '1 0 160px', padding: '14px 16px' }}>
             <p className="label-caps-sm" >Net</p>
-            <p className="fin" style={{ fontSize: 16, fontWeight: 600, color: totalIncome - totalExpenses >= 0 ? 'var(--emerald)' : 'var(--coral)' }}>{fmtINR(totalIncome - totalExpenses)}</p>
-          </div>
+            <p className="fin" style={{ fontSize: 16, fontWeight: 600, color: totalIncome - totalExpenses >= 0 ? 'var(--success)' : 'var(--danger)' }}>{fmtINR(totalIncome - totalExpenses)}</p>
+          </Card>
         </div>
       )}
 
       {txns.map(t => (
-        <div key={t.id} className="card" style={{ padding: '14px 18px', marginBottom: 6, borderLeft: `3px solid ${t.transaction_type === 'expense' ? 'var(--coral)' : 'var(--emerald)'}` }}>
+        <Card key={t.id} style={{ padding: '14px 18px', marginBottom: 6, borderLeft: `3px solid ${t.transaction_type === 'expense' ? 'var(--danger)' : 'var(--success)'}` }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div className="flex-1" >
               <p className="row-600-14" >{t.description}</p>
               <p className="text-11-5-muted" >
-                {t.category_name && <span style={{ color: 'var(--ink-soft)' }}>{t.category_name} · </span>}
+                {t.category_name && <span style={{ color: 'var(--muted)' }}>{t.category_name} · </span>}
                 {t.transaction_date} {t.merchant && <span>· {t.merchant}</span>}
-                {t.recurring && <span className="tag" style={{ marginLeft: 6, fontSize: 9 }}>recurring</span>}
+                {t.recurring && <span className="badge" style={{ marginLeft: 6, fontSize: 9 }}>recurring</span>}
               </p>
             </div>
-            <p className="fin" style={{ fontFamily: 'var(--sans)', fontSize: 17, fontWeight: 600, color: t.transaction_type === 'expense' ? 'var(--coral)' : 'var(--emerald)', whiteSpace: 'nowrap', marginLeft: 12 }}>
+            <p className="fin" style={{ fontFamily: 'var(--font-display)', fontSize: 17, fontWeight: 600, color: t.transaction_type === 'expense' ? 'var(--danger)' : 'var(--success)', whiteSpace: 'nowrap', marginLeft: 12 }}>
               {t.transaction_type === 'expense' ? '-' : '+'}{fmtINR(+t.amount)}
             </p>
           </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-            <button onClick={() => openModal(t)} disabled={!isOnline}
-              style={{ fontSize: 11.5, padding: '3px 10px', background: 'none', border: '1px solid var(--line)', borderRadius: 999, color: 'var(--ink-soft)', cursor: isOnline ? 'pointer' : 'not-allowed', opacity: isOnline ? 1 : 0.4 }}>Edit</button>
-            <button onClick={() => { if (confirm(`Delete "${t.description}"?`)) { api.request(`/api/v1/transactions/${t.id}`, { method: 'DELETE' }).then(() => load(filter || '')) } }} disabled={!isOnline}
-              style={{ fontSize: 11.5, padding: '3px 10px', background: 'none', border: '1px solid var(--line)', borderRadius: 999, color: 'var(--ink-faint)', cursor: isOnline ? 'pointer' : 'not-allowed', opacity: isOnline ? 1 : 0.4 }}>Delete</button>
+            <Button variant="ghost" size="sm" onClick={() => openModal(t)} disabled={!isOnline} style={{ opacity: isOnline ? 1 : 0.5, cursor: isOnline ? 'pointer' : 'not-allowed' }}>Edit</Button>
+            <Button variant="ghost" size="sm" onClick={() => { if (confirm(`Delete "${t.description}"?`)) { api.request(`/api/v1/transactions/${t.id}`, { method: 'DELETE' }).then(() => load(filter || '')) } }} disabled={!isOnline} style={{ color: 'var(--muted)', opacity: isOnline ? 1 : 0.5, cursor: isOnline ? 'pointer' : 'not-allowed' }}>Delete</Button>
           </div>
-        </div>
+        </Card>
       ))}
 
       {modal && (
