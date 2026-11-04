@@ -1,12 +1,24 @@
+import { enqueue } from './offlineQueue'
+
 const API = import.meta.env.VITE_API_URL || ''
 // Same-origin path — served by the CF Pages Functions proxy in functions/[[path]].js
 const BETTER_AUTH_URL = import.meta.env.VITE_BETTER_AUTH_URL || '/api/auth'
 
 async function request(path, options = {}) {
-  const res = await fetch(`${API}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...options.headers },
-    ...options,
-  })
+  let res
+  try {
+    res = await fetch(`${API}${path}`, {
+      headers: { 'Content-Type': 'application/json', ...options.headers },
+      ...options,
+    })
+  } catch (err) {
+    // Mutating call with no network while offline — queue it for replay.
+    if (options.method && options.method !== 'GET' && !navigator.onLine) {
+      await enqueue(options.method, path, options.body)
+      throw new Error('Offline — change queued, will sync when back online')
+    }
+    throw err
+  }
   if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || res.statusText)
   return res.status === 204 ? null : res.json()
 }
