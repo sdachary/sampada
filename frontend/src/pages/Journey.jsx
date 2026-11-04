@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { api } from '../lib/api'
 import { fmtINR } from '../lib/amounts'
+import { Button } from '../components/ui'
 
 export default function Journey() {
   const [journey, setJourney] = useState(null)

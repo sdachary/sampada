@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 // Standard Modal - centered on all devices
-export function Modal({ open, onClose, title, children, style, className }) {
+export function Modal({ open, onClose, title, children, style }) {
   const overlayRef = useRef(null)
 
   useEffect(() => {
@@ -45,7 +45,7 @@ export function Modal({ open, onClose, title, children, style, className }) {
 }
 
 // Responsive modal - centered on desktop, bottom sheet on mobile
-export function ResponsiveModal({ open, onClose, title, children, style, className }) {
+export function ResponsiveModal({ open, onClose, title, children, style }) {
   const overlayRef = useRef(null)
   const [isMobile, setIsMobile] = useState(false)
 
