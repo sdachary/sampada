@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
-import { Modal, ResponsiveModal, Field, ConfirmDialog } from './ui'
+import { ResponsiveModal, Field, ConfirmDialog } from './ui'
 import { useModalForm } from '../lib/useModalForm'
 
 const TYPES = ['expense', 'income']

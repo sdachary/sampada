@@ -14,16 +14,7 @@ const variants = {
   bordered: 'card card--bordered',
 }
 
-function CardComponent(parameters, ref) {
-  const {
-    variant = 'default',
-    className = '',
-    style,
-    children,
-    padded = true,
-    padding = 'base',
-    ...restProps
-  } = parameters
+function CardComponent({ variant = 'default', className = '', style, children, padded = true, padding = 'base', ...restProps }, ref) {
 
   const variantClass = variants[variant] || variants.default
 
