@@ -32,6 +32,8 @@ sampada/
 │   ├── models/            # 30+ ActiveRecord models
 │   ├── services/          # Business logic services
 │   │   └── providers/     # Yahoo Finance adapter, market data
+│   ├── lib/               # feature_flags.rb (Setting-backed kill switches)
+│   ├── middleware/        # idempotency_key_replay.rb (offline queue replay)
 │   └── views/             # Mailer views only (no HTML views)
 ├── config/
 │   ├── initializers/      # sidekiq_schedule.rb (cron), rack_attack.rb, cors.rb, auth.rb
@@ -41,7 +43,7 @@ sampada/
 │   └── schema.rb          # Current database schema (generated — do not hand-edit)
 ├── frontend/              # React 19 SPA (Vite) — NOT under app/
 │   ├── src/               # pages/ components/ lib/ i18n/
-│   ├── public/            # _headers (CSP/HSTS), sw.js, manifest, legal pages
+│   ├── public/            # _headers (CSP/HSTS), sw.js (offline cache v2), manifest, legal pages
 │   ├── wrangler.toml      # Cloudflare Pages config
 │   └── vite.config.js     # dev proxy → http://localhost:3002
 ├── lib/                   # Money, AiResponse, Semver, SystemDetector
@@ -107,7 +109,7 @@ Rails serves no pages — the full surface is `/api/v1/*` under `config/routes.r
 - **Tracking**: `transactions` (+`monthly_totals`, `bulk_create`), `budgets` (+`overview`), `budget_categories` (+`seed`), `dashboard` (+`projection`), `reports/*`
 - **Collaboration**: `households` (+`members`, `invite`, `dashboard`), `trips` + nested membership/expenses/settlements
 - **AI chat**: `conversations` + nested `messages`
-- **Misc**: `ai_settings`, `notifications` (+`mark_all_read`), `push_subscriptions` (+`vapid_public_key`), `api_credentials`, `onboarding/*`, `exports/*`
+- **Misc**: `ai_settings`, `notifications` (+`mark_all_read`), `push_subscriptions` (+`vapid_public_key`), `api_credentials`, `onboarding/*`, `exports/*`, `feature_flags` (+`feature_flags/:key` toggle)
 - **Ops**: `GET /up`, `/sidekiq`
 
 ## Auth & Security

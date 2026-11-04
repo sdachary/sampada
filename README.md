@@ -195,7 +195,7 @@ Full plan: [`docs/roadmap-updated.md`](docs/roadmap-updated.md). Everything alre
 
 **Upcoming (no locked date):**
 
-- 🔜 **PWA polish** — full offline support beyond the read-only indicator (shipped v2.5), true offline queueing
+- ✅ **PWA polish** — offline caching + offline mutation queue with idempotent replay (shipped, #54/#55)
 - 🔜 **Biometric auth** — platform biometrics on supported devices
 
 **Won't do:**
