@@ -9,6 +9,7 @@ gem 'bootsnap', require: false
 gem 'dotenv-rails'
 gem 'faraday'
 gem 'faraday-retry'
+gem 'pdf-reader'
 gem 'rack-attack'
 gem 'rack-cors'
 gem 'redis', '~> 6.0'
