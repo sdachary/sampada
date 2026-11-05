@@ -7,6 +7,7 @@ queues:
   - [maintenance, 2]
   - [low_priority, 1]
   - [default, 1]
+  - [imports, 2]
 
 :schedule:
   process_deletions:

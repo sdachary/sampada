@@ -1,45 +1,57 @@
 # 1.1 Backend — Bank Statement PDF Import
 
-Status: ready · Free · Est: 18 pts · Flag: `pdf_import`
+Status: shipped (parser + API) · Free · Est: 18 pts · Flag: `pdf_import`
 
 ## What
 User uploads a bank statement PDF (max 10 MB, 4 pages typical). We extract transactions,
 score confidence, and return them for review before anything is saved.
 
 ## Dependencies
-- **New gem:** `pdf-reader` (pure Ruby, no native deps, MIT). Add to Gemfile.
+- **New gem:** `pdf-reader` (pure Ruby, no native deps, MIT). Added in #61.
 - Rails + Sidekiq only. No AI, no external service, no ML.
 
 ## Architecture
 ```
 POST /api/v1/imports/bank-statement        (auth required, multipart, PDF)
-  → Import::BankStatementController#create validates mime/size
-  → enqueues ImportStatementJob, returns { import_id, status: "queued" }
+  → Api::ImportsController#create validates mime/size/content
+  → stores the bytes as an ActiveStorage attachment, enqueues ImportStatementJob
+  → returns { import_id, status: "queued" }
 GET  /api/v1/imports/:id                    (poll, 2s interval)
-  → { status: done|failed, transactions: [...], duplicate_count, bank, period }
+  → { status: queued|processing|done|failed, bank, trust, transactions: [...],
+      duplicate_count, period: {from,to} }
 
-POST /api/v1/imports/:id/confirm            (idempotent via Idempotency-Key header)
+POST /api/v1/imports/:id/confirm
   → body: { transactions: [ {transaction_date, description, merchant?, amount,
-            transaction_type, category_id?, skip? } ] }
-  → creates Transactions in bulk, links import, returns created count
+             transaction_type, category_id?, skip? } ] }
+  → creates Transactions in bulk, marks the import confirmed, returns the counts
 ```
+The flag `pdf_import` is checked first: when it is off the endpoints answer **501** and the
+frontend hides the entry.
 
 ## New table (migration)
 ```ruby
 create_table :statement_imports, id: :uuid do |t|
-  t.references :user, type: :uuid, null: false
+  t.references :user, type: :uuid, null: false, foreign_key: true
   t.string  :status, null: false, default: "queued"  # queued|processing|done|failed
-  t.string  :bank, null: false                        # icici|hdfc|sbi|axis|kotak|unknown
+  t.string  :bank, null: false, default: "unknown"   # icici|hdfc|sbi|axis|kotak|unknown
   t.string  :file_digest, null: false                 # sha256, dedupe
   t.integer :file_size, null: false
-  t.jsonb   :result, default: {}                      # parsed rows + confidence
+  t.jsonb   :result, default: {}                      # parsed rows + confidence + trust
   t.jsonb   :error, default: {}
+  t.datetime :confirmed_at                            # server-side idempotency
+  t.integer :confirmed_count, null: 0, default: 0
   t.timestamps
 end
 add_index :statement_imports, [:user_id, :file_digest], unique: true
 ```
-Re-run of the same file returns the existing import (no new job). Ponnytail note:
-`# ponytail: single digest index, per-bank dedupe only if users import multiple banks' fixes often`.
+Re-upload of the same file returns the existing import (no new row, no new job). Ponytail note:
+`# ponytail: one digest index — add a per-bank index only if users import many banks' statements`.
+
+## Raw bytes — ActiveStorage, never the database
+The uploaded PDF is an ActiveStorage attachment (`has_one_attached :source_file`), not a
+column. `ImportStatementJob` purges it as soon as the parse finishes — success or handled
+failure. A parse that *raises* keeps the file so Sidekiq can retry it. The attachment is
+purged again by `CleanupStatementImportsJob` for imports that never got parsed.
 
 ## Parser design — `app/services/import/bank_pdf_parser.rb`
 - 1 archetype: **tabular credit/debit columns** (ICICI, SBI, Axis variations of it) +
@@ -63,23 +75,39 @@ Re-run of the same file returns the existing import (no new job). Ponnytail note
   - −0.5 amount parsed with regex fallback (comma/spacing weirdness)
   - Rows < 0.6 still returned but pre-flagged in the UI for manual edit — never silently dropped.
 - Unknown bank ⇒ still try generic parser; mark `bank: "unknown"`, confidence shave ×0.7.
-- Job: `ImportStatementJob` (Sidekiq, queue `imports`, retry 1, hard cap 2 min via parse timeout
-  `Timeout.timeout(90)`; on timeout write `result.error = "parse_timeout"` and mark failed).
-- **Do not ever store the raw PDF bytes after parse** — expunge after `result` is written
-  (privacy/limits: parsed only, then delete file). 24h retention on `done` imports, then cleanup
-  by sidekiq-cron.
+- Job: `ImportStatementJob` (Sidekiq, queue `imports`, retry 1, hard cap via parse timeout
+  `Timeout.timeout(90)`; on timeout write `error = "parse_timeout"` and mark failed).
+- **Never keep the raw PDF bytes after the parse** — expunge after `result` is written
+  (privacy/limits: parsed only, then delete file). 24h retention on `done`/`failed` imports,
+  then cleanup by sidekiq-cron (`CleanupStatementImportsJob`, hourly at :45).
+
+## Duplicate detection
+The parser is handed the user's **20 000 most recent transactions** — not date-filtered, a
+statement may cover any period — and compares on
+`(transaction_date, amount, normalized merchant prefix 12 chars)` in memory. `duplicate_count`
+is reported and the rows are flagged, never blocked. Ponytail note:
+`# ponytail: the duplicate index is bounded by the newest rows — index the rest if statements
+older than 20k rows ever arrive`.
+
+## Confirm is idempotent on the server
+The import row itself carries the state: `confirmed_at` + `confirmed_count`. A second confirm
+answers `{created: <count>, already_confirmed: true}` and writes nothing — the guarantee does
+not depend on a client header being replayed.
 
 ## Error handling (API contract)
 | Case | Code | Body |
 |---|---|---|
-| Not PDF / >10 MB | 422 | `{error: "invalid_file", reason}` |
-| Wrong mime but pdf ext | 422 | `{error: "not_a_pdf"}` |
-| Encrypted PDF | 422 | `{error: "encrypted_pdf", hint: "Save without password"}` |
+| No file | 422 | `{error: "invalid_file", reason: "missing_file"}` |
+| >10 MB | 422 | `{error: "invalid_file", reason: "too_large"}` |
+| Right mime/name, wrong bytes | 422 | `{error: "invalid_file", reason: "not_a_pdf"}` |
+| Not a PDF at all | 422 | `{error: "not_a_pdf"}` |
+| Encrypted PDF | 200 `failed` | `{error: "encrypted_pdf"}` |
 | Parse timeout / 0 txns | 200 `done` | `{status: done, transactions: []}` (UI shows "couldn't find table") |
-| Duplicate hash re-upload | 200 | existing import record (status whatever it was) |
-Duplicate transactions vs DB: compare on
-`(user_id, transaction_date, amount, normalized merchant prefix 12 chars)` in-memory set during
-parse; `duplicate_count` reported, rows flagged not blocked.
+| Duplicate hash re-upload | 200 | existing import record (`duplicate: true`) |
+| Feature flag off | 501 | flag contract (see #57) |
+
+A row the user confirms that we cannot make sense of is **rejected on its own** — the import
+still succeeds and the response lists `{index, reason: "invalid"}` for that row.
 
 ## Tests (RSpec)
 - `spec/services/import/bank_pdf_parser_spec.rb`: the statements are **generated, not committed**
@@ -88,9 +116,12 @@ parse; `duplicate_count` reported, rows flagged not blocked.
   (Prawn) is needed. Cases: ICICI-shaped table, other column labels (SBI), unknown bank,
   encrypted PDF, garbage bytes, a page without a header row, fuzzy date, fallback amount,
   duplicate rows, a balance that does not add up, rows that cannot be read.
-- `request_spec.rb`: happy path (upload→poll→confirm 0 dup), duplicate re-upload returns same id,
-  confirm idempotency (two same confirms ⇒ one row set), unauthorized 401, oversized 422.
-- `job_spec.rb`: enqueue on create, failure marks failed with error json.
+- `spec/requests/statement_imports_api_spec.rb`: happy path (upload→poll→confirm 0 dup),
+  duplicate re-upload returns same id, confirm idempotency (two same confirms ⇒ one row set),
+  unauthorized 401, oversized 422, flag off 501, a foreign import 404.
+- `spec/jobs/import_statement_job_spec.rb`: parse + result, the file is purged after the parse,
+  an encrypted file fails, a file it cannot read fails, the rows the user already has are
+  flagged, an import is not parsed twice.
 
 ## Rollback
 Feature flag hides FE entry & endpoint returns 501 when off. Migration is additive only
