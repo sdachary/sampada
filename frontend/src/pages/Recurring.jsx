@@ -178,7 +178,7 @@ export default function Recurring() {
         title="Recurring Expenses"
         num="008 / 016"
         action={
-          <button onClick={() => setModal('new')} className="btn btn-primary" style={{ fontSize: 12, padding: '4px 12px' }}>+ Add</button>
+          <Button size="sm" onClick={() => setModal('new')}>+ Add</Button>
         }
       >
         <p style={{ fontSize: 13, color: 'var(--muted)' }}>Subscriptions, EMIs, and regular bills.</p>
@@ -196,12 +196,11 @@ export default function Recurring() {
               We scan your transactions for subscriptions and bills you might have missed.
             </p>
           </div>
-          <button className="btn btn-primary" style={{ fontSize: 12 }} disabled={detecting}
-            onClick={pendingCount > 0 ? () => setSuggestionsOpen(true) : detect}>
+          <Button size="sm" disabled={detecting} onClick={pendingCount > 0 ? () => setSuggestionsOpen(true) : detect}>
             {pendingCount > 0
               ? `Review ${pendingCount} pattern${pendingCount > 1 ? 's' : ''}`
               : detecting ? 'Scanning…' : 'Detect recurring'}
-          </button>
+          </Button>
         </Card>
       )}
 
