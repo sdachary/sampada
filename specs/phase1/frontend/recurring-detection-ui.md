@@ -5,7 +5,7 @@ No new npm deps. Reuses existing `Recurring.jsx` page + `RecurringFormModal.jsx`
 `ResponsiveModal` + `Badge`.
 
 ## Entry points
-1. Recurring page banner (above list, only when `feature-recurring-detection` on and
+1. Recurring page banner (above list, only when `recurring_detection` on and
    transactions exist): Card —
    "You've been logging for a while. Let me find patterns." + `Detect recurring` Button.
 2. After bank import completes (same banner appears on Recurring page post-import).

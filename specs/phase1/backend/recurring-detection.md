@@ -1,6 +1,6 @@
 # 1.2 Backend — Recurring Transaction Detection
 
-Status: ready · FREE · Est: 13 pts · Flag: `feature-recurring-detection`
+Status: ready · FREE · Est: 13 pts · Flag: `recurring_detection`
 Infra cost: $0 (pure SQL/Ruby over existing data).
 
 ## What

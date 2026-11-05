@@ -1,6 +1,6 @@
 # 1.3 Backend — Passkeys (WebAuthn)
 
-Status: ready · FREE · Est: 15 pts · Flag: `feature-passkeys`
+Status: ready · FREE · Est: 15 pts · Flag: `passkeys`
 Infra cost: $0 (WebAuthn is browser-native; no attestation service needed for discoverable
 credentials).
 

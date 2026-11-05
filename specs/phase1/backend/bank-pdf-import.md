@@ -1,6 +1,6 @@
 # 1.1 Backend — Bank Statement PDF Import
 
-Status: ready · Free · Est: 18 pts · Flag: `feature-bank-pdf-import`
+Status: ready · Free · Est: 18 pts · Flag: `pdf_import`
 
 ## What
 User uploads a bank statement PDF (max 10 MB, 4 pages typical). We extract transactions,
