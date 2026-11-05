@@ -45,13 +45,20 @@ Re-run of the same file returns the existing import (no new job). Ponnytail note
 - 1 archetype: **tabular credit/debit columns** (ICICI, SBI, Axis variations of it) +
   datetime/amount regex bank map. Start with a generic table-row parser + per-bank regex map —
   not one class per bank; add a bank class only when a statement won't parse generically.
-- Extraction per row: `{date, description, ref_no?, debit?, credit?, balance}` where debit is
-  present (nil) ⇒ amount sign. Type = debit ? :expense : :income. Prune interest/charges noise
-  via metadata (`source: "bank_pdf"`, original page).
+- The table is found from its **header row**: the labels map to columns
+  (`date`, `description`, `debit`, `credit`, `balance`) through a label map, so "Withdrawal /
+  Deposit / Particulars / Closing Balance" parse like "Debit / Credit / Description / Balance".
+  A cell belongs to the nearest header to its left (statements left-align their columns).
+- Extraction per row: `{transaction_date, description, merchant, amount, transaction_type,
+  confidence, duplicate, source: "bank_pdf", page}` — a `Import::BankPdfParser::Transaction`
+  struct. The debit column present ⇒ `expense`, the credit column ⇒ `income`. Interest/charges
+  rows are **not** pruned: the metadata (`source`, page) lets the UI flag them, and a row the
+  parser cannot read is skipped rather than guessed.
 - Statement-level integrity check: if balance deltas match row amounts in ≥90% of rows, trust
   level high; else cut global base confidence (UI shows "verify carefully" banner).
 - Confidence per row `0.0–1.0`:
   - +0.9 base for a clean tabular row whose `balance[i] − balance[i-1]` equals the row amount
+  - +0.7 when there is no balance to compare against (first row, or no balance column)
   - −0.3 fuzzy date parse (e.g. "01 Apr, 24" format quirks)
   - −0.5 amount parsed with regex fallback (comma/spacing weirdness)
   - Rows < 0.6 still returned but pre-flagged in the UI for manual edit — never silently dropped.
@@ -75,9 +82,12 @@ Duplicate transactions vs DB: compare on
 parse; `duplicate_count` reported, rows flagged not blocked.
 
 ## Tests (RSpec)
-- `parser_spec.rb`: fixtures in `spec/fixtures/statements/` — one real-ish PDF per bank (generate
-  via script in `lib/tasks/statement_fixtures.rake` using Prawn in dev only) — ICICI, SBI, unknown
-  bank, encrypted, garbage-text PDF.
+- `spec/services/import/bank_pdf_parser_spec.rb`: the statements are **generated, not committed**
+  — `spec/support/pdf_statement_builder.rb` writes a minimal but valid PDF (one page, Helvetica,
+  positioned cells) so the fixture content stays readable inside the spec and no extra gem
+  (Prawn) is needed. Cases: ICICI-shaped table, other column labels (SBI), unknown bank,
+  encrypted PDF, garbage bytes, a page without a header row, fuzzy date, fallback amount,
+  duplicate rows, a balance that does not add up, rows that cannot be read.
 - `request_spec.rb`: happy path (upload→poll→confirm 0 dup), duplicate re-upload returns same id,
   confirm idempotency (two same confirms ⇒ one row set), unauthorized 401, oversized 422.
 - `job_spec.rb`: enqueue on create, failure marks failed with error json.

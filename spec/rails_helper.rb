@@ -13,6 +13,9 @@ abort('The Rails environment is running in production mode!') if Rails.env.produ
 require 'rspec/rails'
 require 'webmock/rspec'
 
+# Plain Ruby helpers shared by the specs (bank statement fixtures, ...)
+Rails.root.glob('spec/support/**/*.rb').each { |file| require file }
+
 WebMock.disable_net_connect!(allow_localhost: true)
 
 begin
