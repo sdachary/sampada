@@ -1,6 +1,6 @@
 import { useId } from 'react'
 
-// Progress primitive: 6px bar, fills on mount only (transform, reduced-motion safe).
+// Progress primitive: 6px bar, fills to the value (width transition).
 // Variants: accent (default) | success. 0–100.
 export default function Progress({ value = 0, variant = 'accent', label, _ariaLevel, ...props } = {}) {
   const id = useId()
@@ -13,11 +13,11 @@ export default function Progress({ value = 0, variant = 'accent', label, _ariaLe
       aria-valuemin={0}
       aria-valuemax={100}
       aria-label={label}
-      className="p-progress"
+      className="progress"
       {...props}
     >
       <div
-        className={`p-progress__fill${variant === 'success' ? ' p-progress__fill--success' : ''}`}
+        className={`progress-fill${variant === 'success' ? ' green' : ''}`}
         style={{ width: `${pct}%` }}
       />
     </div>

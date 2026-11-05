@@ -3,6 +3,7 @@ import ThemeToggle from '../components/ThemeToggle'
 import { Reveal, PageTransition } from '../lib/motion-primitives'
 import { Check, X, TrendingDown, PiggyBank, RefreshCw, MessageSquare, AlertTriangle, Globe, Users, Cpu, Lock, Shield, Zap, Star } from 'lucide-react'
 import { Button, Card } from '../components/ui'
+import HeroVisual from '../landing/hero3d/HeroVisual'
 
 const FEATURES = [
   { icon: TrendingDown, accent: 'var(--accent)', title: 'Debt payoff tracker', body: 'Avalanche or snowball order, a full EMI calendar, and a month-by-month projection to your debt-free date.' },
@@ -67,23 +68,30 @@ export default function Landing() {
           </div>
         </nav>
 
-        {/* Hero - simplified */}
-        <section aria-labelledby="hero-heading" style={{ padding: '60px 0 40px', textAlign: 'center' }}>
-          <Reveal delay={0}>
-            <h1 id="hero-heading" style={{ fontSize: 40, fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.15, marginBottom: 16, fontFamily: 'var(--font-display)' }}>
-              Zero is better than <em style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', color: 'var(--accent)' }}>negative</em>.
-            </h1>
-            <p style={{ fontSize: 16, color: 'var(--muted)', maxWidth: 480, margin: '0 auto 28px', lineHeight: 1.6 }}>
-              Debt payoff, AI-guided SIPs, and portfolio rebalancing in one self-hosted app — built to clear what you owe before it grows what you keep.
-            </p>
-            <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-              <PrimaryCTA href="/register">Get started free</PrimaryCTA>
-              <Link to="/dashboard" style={{ textDecoration: 'none' }}>
-                <Button variant="secondary">See how it works</Button>
-              </Link>
-            </div>
-            <p style={{ fontSize: 12, color: 'var(--faint)', marginTop: 16, letterSpacing: '0.02em' }}>Open source · Apache 2.0 · Free forever</p>
-          </Reveal>
+        {/* Hero - with 3D visual */}
+        <section aria-labelledby="hero-heading" style={{ padding: '60px 0 40px', position: 'relative' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', alignItems: 'center' }}>
+            <Reveal delay={0}>
+              <h1 id="hero-heading" style={{ fontSize: 40, fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.15, marginBottom: 16, fontFamily: 'var(--font-display)' }}>
+                Zero is better than <em style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', color: 'var(--accent)' }}>negative</em>.
+              </h1>
+              <p style={{ fontSize: 16, color: 'var(--muted)', maxWidth: 480, margin: '0 auto 28px', lineHeight: 1.6 }}>
+                Debt payoff, AI-guided SIPs, and portfolio rebalancing in one self-hosted app — built to clear what you owe before it grows what you keep.
+              </p>
+              <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-start', flexWrap: 'wrap' }}>
+                <PrimaryCTA href="/register">Get started free</PrimaryCTA>
+                <Link to="/dashboard" style={{ textDecoration: 'none' }}>
+                  <Button variant="secondary">See how it works</Button>
+                </Link>
+              </div>
+              <p style={{ fontSize: 12, color: 'var(--faint)', marginTop: 16, letterSpacing: '0.02em' }}>Open source · Apache 2.0 · Free forever</p>
+            </Reveal>
+            <Reveal delay={0.1}>
+              <div id="landing-hero" style={{ width: '100%', maxWidth: 400, margin: '0 auto' }}>
+                <HeroVisual />
+              </div>
+            </Reveal>
+          </div>
         </section>
 
         {/* 2. Debt → Zero → Wealth arc */}

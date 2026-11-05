@@ -1,5 +1,5 @@
 // Badge primitive: neutral | success | warning | danger | accent. No left stripes.
-const VARIANTS = { neutral: '', success: 'p-badge--success', warning: 'p-badge--warning', danger: 'p-badge--danger', accent: 'p-badge--accent' }
+const VARIANTS = { neutral: '', success: 'badge--success', warning: 'badge--warning', danger: 'badge--danger', accent: 'badge--accent' }
 export default function Badge({ variant = 'neutral', children, ...props } = {}) {
-  return <span className={`p-badge ${VARIANTS[variant] || ''}`.trim()} {...props}>{children}</span>
+  return <span className={`badge ${VARIANTS[variant] || ''}`.trim()} {...props}>{children}</span>
 }

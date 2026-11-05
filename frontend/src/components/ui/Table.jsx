@@ -1,9 +1,9 @@
-// Table primitive: sticky header, right-aligned numeric columns (add .p-table__num),
+// Table primitive: sticky header, right-aligned numeric columns (add .fin),
 // row hover, responsive horizontal scroll wrapper.
 export function Table({ columns, rows, ariaLabel } = {}) {
   return (
-    <div className="p-table-wrap">
-      <table className="p-table" aria-label={ariaLabel}>
+    <div className="table-wrap">
+      <table className="table" aria-label={ariaLabel}>
         {columns && (
           <thead>
             <tr>
@@ -19,7 +19,7 @@ export function Table({ columns, rows, ariaLabel } = {}) {
           {rows.map((row, i) => (
             <tr key={row.id ?? i}>
               {columns.map(c => (
-                <td key={c.key} className={c.align === 'right' ? 'p-table__num' : undefined}>
+                <td key={c.key} className={c.align === 'right' ? 'fin' : undefined}>
                   {row.cells[c.key]}
                 </td>
               ))}
