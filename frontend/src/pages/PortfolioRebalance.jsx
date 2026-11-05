@@ -10,7 +10,7 @@ import { rebalanceV2, rebalanceV1 } from '../lib/rebalance'
 import { portfolioToHoldings } from '../lib/rebalance/mapping'
 import {
   PageHeader, Card, Button, Input, Select, Progress, Badge, Table,
-  InputField, Dialog, ToastHost, toast, Skeleton, EmptyState
+  InputField, Dialog, toast, Skeleton, EmptyState
 } from '../components/ui'
 import HoldingsDrawer from '../components/Rebalance/HoldingsDrawer'
 import ImportPreviewDialog from '../components/Rebalance/ImportPreviewDialog'
@@ -520,8 +520,6 @@ export default function PortfolioRebalance() {
         sectors={sectors}
         onSave={() => setEditingHolding(null)}
       />
-
-      <ToastHost />
 
       <footer style={{ padding: '20px 0', borderTop: '1px solid var(--border-soft)', fontSize: 12, color: 'var(--faint)', textAlign: 'center' }}>
         Suggestions only. Check live prices and charges before ordering. Not investment advice.

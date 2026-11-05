@@ -1,11 +1,24 @@
-const CACHE_NAME = 'sampada-v2';
+const CACHE_NAME = 'sampada-v3';
 const SHELL_URLS = ['/', '/manifest.webmanifest'];
 
+// Precaches the app shell plus the hashed build assets the current index.html
+// references, so a first-visit install works offline. One bad asset must not
+// fail the whole install — each asset is cached on its own.
+async function precache() {
+  const cache = await caches.open(CACHE_NAME);
+  await cache.addAll(SHELL_URLS);
+  try {
+    const response = await fetch('/', { cache: 'no-cache' });
+    const html = await response.text();
+    const assets = [...new Set(html.match(/\/assets\/[A-Za-z0-9._-]+/g) || [])];
+    await Promise.allSettled(assets.map((url) => cache.add(url)));
+  } catch {
+    // the shell is precached; assets fall back to cache-on-first-use
+  }
+}
+
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(SHELL_URLS))
-  );
-  self.skipWaiting();
+  event.waitUntil(precache());
 });
 
 self.addEventListener('activate', (event) => {
@@ -15,6 +28,14 @@ self.addEventListener('activate', (event) => {
     )
   );
   self.clients.claim();
+});
+
+// The new worker waits until the user accepts the update (the UI sends
+// SKIP_WAITING), so nobody is swapped out mid-session.
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 async function fetchWithTimeout(request, ms) {

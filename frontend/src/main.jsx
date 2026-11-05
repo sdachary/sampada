@@ -6,6 +6,7 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './lib/auth'
 import { registerServiceWorker } from './lib/push'
+import { initServiceWorkerUpdates } from './lib/swUpdate'
 import { MotionProvider } from './lib/motion'
 import App from './App.jsx'
 import './styles/tokens.css'
@@ -15,6 +16,8 @@ import './styles/primitives.css'
 import './index.css'
 
 registerServiceWorker()
+  .then((registration) => initServiceWorkerUpdates(registration))
+  .catch(() => {}) // a failed SW registration must never break the app
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
