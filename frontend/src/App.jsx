@@ -1,6 +1,8 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { lazy, Suspense } from 'react'
 import { useAuth } from './lib/useAuth'
+import { ToastHost } from './components/ui'
+import ServiceWorkerUpdate from './components/ServiceWorkerUpdate'
 import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -42,7 +44,10 @@ function ProtectedRoute({ children }) {
 
 export default function App() {
   return (
-    <Suspense fallback={null}>
+    <>
+      <ToastHost />
+      <ServiceWorkerUpdate />
+      <Suspense fallback={null}>
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
@@ -76,6 +81,7 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
         {Styleguide && <Route path="/styleguide" element={<Styleguide />} />}
       </Routes>
-    </Suspense>
+      </Suspense>
+    </>
   )
 }
