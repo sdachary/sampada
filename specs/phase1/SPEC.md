@@ -38,6 +38,10 @@ on the imported rows — implement 1.2 first to avoid a stub.
 ## Quality gates (unchanged repo gates +)
 - Rails: `bundle exec rspec` green, `rubocop` clean for touched files.
 - Frontend: build passes, oxlint 0 errors, size-limit < 500 KB, mount smoke test green.
-- Feature flags: `feature-bank-pdf-import`, `feature-recurring-detection`, `feature-passkeys`
-  (env / Setting rows; kill = hide UI + reject endpoint).
+- Feature flags: `pdf_import`, `recurring_detection`, `passkeys` — **the shipped names** from
+  `app/lib/feature_flags.rb` (shipped in #53). Per-user `Setting` row `<flag>_enabled`:
+  `'off'` disables, anything else (or absent) enables. Contract, enforced by each feature's
+  own PR: flag off ⇒ the feature's endpoints return **501 Not Implemented** and the frontend
+  hides the entry point (`GET /api/v1/feature_flags` is the single source of truth; the FE
+  helper `frontend/src/lib/flags.js` caches it for offline use).
 - Every PR: one branch per feature, CI green, squash-merge to main.

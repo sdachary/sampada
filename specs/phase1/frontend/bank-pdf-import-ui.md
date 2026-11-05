@@ -1,6 +1,6 @@
 # 1.1 Frontend — Bank PDF Import UI
 
-Status: ready · FREE · Est: 13 pts · Flag: `feature-bank-pdf-import`
+Status: ready · FREE · Est: 13 pts · Flag: `pdf_import`
 No new npm deps. `<input type="file" accept=".pdf">` + drag events (no react-dropzone).
 
 ## Entry points
