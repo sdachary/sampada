@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts'
 import { CHART_COLORS, PIE_COLORS, AXIS_DEFAULTS, GRID_DEFAULTS, fmtINR, ChartTooltip } from '../lib/chartTheme'
+import { Card, Button, Badge, Skeleton, EmptyState, PageHeader, Input, Select, Progress, InputField } from '../components/ui'
 
 const ALLOCATIONS = ['conservative', 'moderate', 'aggressive']
 const TOP_UP_OPTIONS = ['none', 'monthly', 'quarterly', 'yearly']
@@ -53,33 +54,34 @@ export default function Goals() {
   }
 
   if (loading) return (
-    <div>
-      {[1, 2].map(i => <div key={i} className="skeleton" style={{ height: 130, marginBottom: 8, borderRadius: 'var(--radius)' }} />)}
+    <div style={{ display: 'grid', gap: 8 }}>
+      {[1, 2].map(i => <Skeleton key={i} style={{ height: 130, marginBottom: 8, borderRadius: 'var(--radius-md)' }} />)}
     </div>
   )
 
   return (
-    <div>
-      <p className="page-num mb-4" >00<em>13</em> / 016</p>
-      <div className="spread-mb16" >
-        <div>
-          <h1 className="page-title-no-mb" >Goals</h1>
-          <p className="text-13-5-muted" >Plan and track your savings goals.</p>
-        </div>
-        <button onClick={openNew} className="btn btn-primary btn-sm-ghost" >+ Add</button>
-      </div>
+    <div style={{ display: 'grid', gap: 20 }}>
+      <PageHeader
+        title="Goals"
+        num="013 / 016"
+        action={<Button onClick={openNew}>+ Add</Button>}
+      >
+        <p style={{ fontSize: 13, color: 'var(--muted)' }}>Plan and track your savings goals.</p>
+      </PageHeader>
 
       {goals.length === 0 && !form && (
-        <div className="empty-state">
-          <span className="emoji">◎</span>
-          <p>No goals yet</p>
-          <p className="text-12-faint" >Set a savings goal to see projected growth and risk comparisons.</p>
-          <button onClick={openNew} className="btn btn-primary mt-12" >+ Add Goal</button>
-        </div>
+        <EmptyState
+          icon={<span aria-hidden="true" style={{ fontSize: 48, color: 'var(--border)' }}>◎</span>}
+          title="No goals yet"
+          action="+ Add Goal"
+          onAction={openNew}
+        >
+          Set a savings goal to see projected growth and risk comparisons.
+        </EmptyState>
       )}
 
       {goals.length > 0 && !form && (
-        <div>
+        <div style={{ display: 'grid', gap: 12 }}>
           {goals.map(g => {
             const preset = { conservative: { equity: 30, debt: 50, gold: 20 }, moderate: { equity: 50, debt: 30, gold: 20 }, aggressive: { equity: 70, debt: 20, gold: 10 } }
             const alloc = preset[g.allocation]
@@ -87,56 +89,54 @@ export default function Goals() {
             const onTrack = progressPct >= 100
 
             return (
-              <div key={g.id} className="card card-pad-lg" >
-                <div className="spread-top-mb8" >
+              <Card key={g.id} style={{ padding: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                   <div>
-                    <p className="row-600-15" >{g.name}</p>
-                    <p className="text-11-5-muted" >
+                    <p style={{ fontSize: 15, fontWeight: 600, color: 'var(--ink)' }}>{g.name}</p>
+                    <p style={{ fontSize: 11.5, color: 'var(--muted)' }}>
                       Target {formatINR(g.target_amount)} by {g.target_year} · {g.allocation}
                     </p>
                   </div>
-                  <div className="flex-g6" >
-                    <button onClick={() => openEdit(g)} style={{ fontSize: 10.5, padding: '2px 8px', background: 'none', border: '1px solid var(--line)', borderRadius: 999, color: 'var(--ink-soft)', cursor: 'pointer' }}>Edit</button>
-                    <button onClick={() => deleteGoal(g)} style={{ fontSize: 10.5, padding: '2px 8px', background: 'none', border: '1px solid var(--line)', borderRadius: 999, color: 'var(--ink-faint)', cursor: 'pointer' }}>Delete</button>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <Button variant="ghost" size="sm" onClick={() => openEdit(g)}>Edit</Button>
+                    <Button variant="ghost" size="sm" onClick={() => deleteGoal(g)} style={{ color: 'var(--faint)' }}>Delete</Button>
                   </div>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 10, marginBottom: 10 }}>
                   <div>
-                    <p className="label-caps-sm mb-3" >Monthly SIP</p>
-                    <p className="fin h-600-14" >{formatINR(g.monthly_sip)}/mo</p>
+                    <p style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Monthly SIP</p>
+                    <p className="fin" style={{ fontSize: 14 }}>{formatINR(g.monthly_sip)}/mo</p>
                   </div>
                   <div>
-                    <p className="label-caps-sm mb-3" >Projected Corpus</p>
-                    <p className="fin" style={{ fontSize: 14, fontWeight: 600, color: onTrack ? 'var(--emerald)' : 'var(--ink)' }}>{formatINR(g.final_corpus)}</p>
+                    <p style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Projected Corpus</p>
+                    <p className="fin" style={{ fontSize: 14, fontWeight: 600, color: onTrack ? 'var(--success)' : 'var(--ink)' }}>{formatINR(g.final_corpus)}</p>
                   </div>
                   <div>
-                    <p className="label-caps-sm mb-3" >Blended CAGR</p>
-                    <p className="fin h-600-14" >{g.risk_comparison?.[g.allocation]?.blended_cagr || 0}%</p>
+                    <p style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Blended CAGR</p>
+                    <p className="fin" style={{ fontSize: 14 }}>{g.risk_comparison?.[g.allocation]?.blended_cagr || 0}%</p>
                   </div>
                 </div>
 
-                <div className="mb-4" >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 2 }}>
-                    <span className="text-mute" >{formatINR(g.target_amount)} target</span>
-                    <span style={{ color: onTrack ? 'var(--emerald)' : 'var(--coral)', fontWeight: 500 }}>{progressPct.toFixed(0)}%</span>
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 4 }}>
+                    <span style={{ color: 'var(--muted)' }}>{formatINR(g.target_amount)} target</span>
+                    <span style={{ color: onTrack ? 'var(--success)' : 'var(--danger)', fontWeight: 500 }}>{progressPct.toFixed(0)}%</span>
                   </div>
-                  <div className="progress" style={{ height: 6 }}>
-                    <div className="progress-fill" style={{ width: `${Math.min(progressPct, 100)}%`, background: onTrack ? 'var(--emerald)' : 'var(--coral)' }} />
-                  </div>
+                  <Progress value={Math.min(progressPct, 100)} variant={onTrack ? 'success' : 'danger'} />
                 </div>
 
                 {alloc && (
                   <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 8 }}>
-                    <span className="tag fs-10" >Equity {alloc.equity}%</span>
-                    <span className="tag fs-10" >Debt {alloc.debt}%</span>
-                    <span className="tag fs-10" >Gold {alloc.gold}%</span>
+                    <Badge variant="neutral" style={{ fontSize: 10 }}>Equity {alloc.equity}%</Badge>
+                    <Badge variant="neutral" style={{ fontSize: 10 }}>Debt {alloc.debt}%</Badge>
+                    <Badge variant="neutral" style={{ fontSize: 10 }}>Gold {alloc.gold}%</Badge>
                   </div>
                 )}
 
                 {g.projection && g.projection.length > 1 && (
-                  <div className="mt-12" >
-                    <p className="h-600-11 mb-6" >Corpus Projection vs Target</p>
+                  <div style={{ marginTop: 16 }}>
+                    <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted)', marginBottom: 6 }}>Corpus Projection vs Target</p>
                     <ResponsiveContainer width="100%" height={180}>
                       <LineChart data={g.projection} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
                         <CartesianGrid {...GRID_DEFAULTS} strokeDasharray="3 3" />
@@ -151,8 +151,8 @@ export default function Goals() {
                 )}
 
                 {g.risk_comparison && Object.keys(g.risk_comparison).length > 1 && (
-                  <div className="mt-12" >
-                    <p className="h-600-11 mb-6" >Risk Mix Comparison</p>
+                  <div style={{ marginTop: 16 }}>
+                    <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted)', marginBottom: 6 }}>Risk Mix Comparison</p>
                     <ResponsiveContainer width="100%" height={180}>
                       <LineChart data={(() => {
                         const years = [...new Set(Object.values(g.risk_comparison).flatMap(r => r.points.map(p => p.year)))].sort()
@@ -189,95 +189,43 @@ export default function Goals() {
                         </Pie>
                       </PieChart>
                     </ResponsiveContainer>
-                    <div style={{ fontSize: 10, color: 'var(--ink-mute)', lineHeight: 1.6 }}>
+                    <div style={{ fontSize: 10, color: 'var(--ink-soft)', lineHeight: 1.6 }}>
                       <p>Equity {alloc.equity}% · Debt {alloc.debt}% · Gold {alloc.gold}%</p>
                     </div>
                   </div>
                 )}
-              </div>
+              </Card>
             )
           })}
         </div>
       )}
 
       {form && (
-        <div className="card card-pad-lg" >
+        <Card style={{ padding: '24px' }}>
           <h2 style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>{form.id ? 'Edit Goal' : 'New Goal'}</h2>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
-            <label className="h-500-12" >
-              <span className="center-block" >Goal Name</span>
-              <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
-                placeholder="e.g. Retirement Corpus" style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--line)', background: 'var(--paper-card)', fontSize: 13, boxSizing: 'border-box' }} />
-            </label>
-            <label className="h-500-12" >
-              <span className="center-block" >Target Amount (₹)</span>
-              <input type="number" value={form.target_amount} onChange={e => setForm({ ...form, target_amount: e.target.value })}
-                placeholder="5000000" style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--line)', background: 'var(--paper-card)', fontSize: 13, boxSizing: 'border-box' }} />
-            </label>
-            <label className="h-500-12" >
-              <span className="center-block" >Target Year</span>
-              <input type="number" value={form.target_year} onChange={e => setForm({ ...form, target_year: e.target.value })}
-                style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--line)', background: 'var(--paper-card)', fontSize: 13, boxSizing: 'border-box' }} />
-            </label>
-            <label className="h-500-12" >
-              <span className="center-block" >Monthly SIP (₹)</span>
-              <input type="number" value={form.monthly_sip} onChange={e => setForm({ ...form, monthly_sip: e.target.value })}
-                placeholder="25000" style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--line)', background: 'var(--paper-card)', fontSize: 13, boxSizing: 'border-box' }} />
-            </label>
-            <label className="h-500-12" >
-              <span className="center-block" >Top-up Amount (₹)</span>
-              <input type="number" value={form.top_up_amount} onChange={e => setForm({ ...form, top_up_amount: e.target.value })}
-                style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--line)', background: 'var(--paper-card)', fontSize: 13, boxSizing: 'border-box' }} />
-            </label>
-            <label className="h-500-12" >
-              <span className="center-block" >Top-up Frequency</span>
-              <select value={form.top_up_frequency} onChange={e => setForm({ ...form, top_up_frequency: e.target.value })}
-                style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--line)', background: 'var(--paper-card)', fontSize: 13, boxSizing: 'border-box' }}>
-                {TOP_UP_OPTIONS.map(f => <option key={f} value={f}>{f === 'none' ? 'None' : f.charAt(0).toUpperCase() + f.slice(1)}</option>)}
-              </select>
-            </label>
-            <label className="h-500-12" >
-              <span className="center-block" >Allocation</span>
-              <select value={form.allocation} onChange={e => setForm({ ...form, allocation: e.target.value })}
-                style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--line)', background: 'var(--paper-card)', fontSize: 13, boxSizing: 'border-box' }}>
-                {ALLOCATIONS.map(a => <option key={a} value={a}>{a.charAt(0).toUpperCase() + a.slice(1)}</option>)}
-              </select>
-            </label>
-            <label className="h-500-12" >
-              <span className="center-block" >Currency</span>
-              <select value={form.currency_code} onChange={e => setForm({ ...form, currency_code: e.target.value })}
-                style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--line)', background: 'var(--paper-card)', fontSize: 13, boxSizing: 'border-box' }}>
-                {['INR', 'USD', 'EUR', 'GBP', 'JPY'].map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </label>
+            <InputField label="Goal Name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="e.g. Retirement Corpus" />
+            <InputField label="Target Amount (₹)" value={form.target_amount} onChange={e => setForm({ ...form, target_amount: e.target.value })} placeholder="5000000" type="number" />
+            <InputField label="Target Year" value={form.target_year} onChange={e => setForm({ ...form, target_year: e.target.value })} type="number" />
+            <InputField label="Monthly SIP (₹)" value={form.monthly_sip} onChange={e => setForm({ ...form, monthly_sip: e.target.value })} placeholder="25000" type="number" />
+            <InputField label="Top-up Amount (₹)" value={form.top_up_amount} onChange={e => setForm({ ...form, top_up_amount: e.target.value })} type="number" />
+            <Select value={form.top_up_frequency} onChange={e => setForm({ ...form, top_up_frequency: e.target.value })} options={TOP_UP_OPTIONS.map(f => ({ value: f, label: f === 'none' ? 'None' : f.charAt(0).toUpperCase() + f.slice(1) }))} placeholder="Top-up Frequency" />
+            <Select value={form.allocation} onChange={e => setForm({ ...form, allocation: e.target.value })} options={ALLOCATIONS.map(a => ({ value: a, label: a.charAt(0).toUpperCase() + a.slice(1) }))} placeholder="Allocation" />
+            <Select value={form.currency_code} onChange={e => setForm({ ...form, currency_code: e.target.value })} options={['INR', 'USD', 'EUR', 'GBP', 'JPY'].map(c => ({ value: c, label: c }))} placeholder="Currency" />
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginTop: 12 }}>
-            <label className="h-500-12" >
-              <span className="center-block" >Equity Growth %</span>
-              <input type="number" step="0.1" value={form.equity_growth} onChange={e => setForm({ ...form, equity_growth: e.target.value })}
-                style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--line)', background: 'var(--paper-card)', fontSize: 13, boxSizing: 'border-box' }} />
-            </label>
-            <label className="h-500-12" >
-              <span className="center-block" >Debt Growth %</span>
-              <input type="number" step="0.1" value={form.debt_growth} onChange={e => setForm({ ...form, debt_growth: e.target.value })}
-                style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--line)', background: 'var(--paper-card)', fontSize: 13, boxSizing: 'border-box' }} />
-            </label>
-            <label className="h-500-12" >
-              <span className="center-block" >Gold Growth %</span>
-              <input type="number" step="0.1" value={form.gold_growth} onChange={e => setForm({ ...form, gold_growth: e.target.value })}
-                style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--line)', background: 'var(--paper-card)', fontSize: 13, boxSizing: 'border-box' }} />
-            </label>
+            <InputField label="Equity Growth %" value={form.equity_growth} onChange={e => setForm({ ...form, equity_growth: e.target.value })} type="number" step="0.1" />
+            <InputField label="Debt Growth %" value={form.debt_growth} onChange={e => setForm({ ...form, debt_growth: e.target.value })} type="number" step="0.1" />
+            <InputField label="Gold Growth %" value={form.gold_growth} onChange={e => setForm({ ...form, gold_growth: e.target.value })} type="number" step="0.1" />
           </div>
 
           <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
-            <button onClick={saveGoal} disabled={saving} className="btn btn-primary btn-sm-ghost" >
-              {saving ? 'Saving…' : form.id ? 'Update' : 'Create'}
-            </button>
-            <button onClick={() => setForm(null)} style={{ fontSize: 12.5, padding: '7px 16px', borderRadius: 999, border: '1px solid var(--line)', background: 'none', cursor: 'pointer', color: 'var(--ink-mute)' }}>Cancel</button>
+            <Button onClick={saveGoal} loading={saving} disabled={saving}>{saving ? 'Saving…' : form.id ? 'Update' : 'Create'}</Button>
+            <Button variant="ghost" onClick={() => setForm(null)}>Cancel</Button>
           </div>
-        </div>
+        </Card>
       )}
     </div>
   )

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
+import { Card, Button, Input, Skeleton, EmptyState, PageHeader, Badge } from '../components/ui'
 
 export default function Conversations() {
   const [convs, setConvs] = useState([])
@@ -60,62 +61,86 @@ export default function Conversations() {
   }
 
   if (selected) return (
-    <div>
-      <p className="page-num mb-4" >00<em>14</em> / 016</p>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-        <button onClick={() => { setSelected(null); setMessages([]) }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, padding: 0, color: 'var(--ink-soft)' }}>←</button>
-        <h1 className="page-title-no-mb" >{selected.title}</h1>
-      </div>
-      {selected.summary && <p style={{ fontSize: 12, color: 'var(--ink-mute)', marginBottom: 16 }}>{selected.summary}</p>}
+    <div style={{ display: 'grid', gap: 16 }}>
+      <PageHeader
+        title={selected.title}
+        num="014 / 016"
+        action={
+          <Button variant="ghost" size="sm" onClick={() => { setSelected(null); setMessages([]) }}>
+            ← Back
+          </Button>
+        }
+      >
+        {selected.summary && <p style={{ fontSize: 12, color: 'var(--ink-soft)' }}>{selected.summary}</p>}
+      </PageHeader>
+
       {messages.length === 0 ? (
-        <div className="empty-state"><span className="emoji">◉</span><p>No messages — ask a question below</p></div>
-      ) : messages.map(m => m.metadata?.pending ? (
-        <div key="pending" className="card" style={{ padding: '12px 16px', marginBottom: 6, borderLeft: '3px solid var(--emerald)' }}>
-          <p style={{ fontSize: 11, color: 'var(--ink-mute)', marginBottom: 4, textTransform: 'capitalize' }}>assistant</p>
-          <p style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--ink-mute)' }}>…</p>
-        </div>
+        <EmptyState
+          icon={<span aria-hidden="true" style={{ fontSize: 48, color: 'var(--border)' }}>◉</span>}
+          title="No messages — ask a question below"
+        />
       ) : (
-        <div key={m.id} className="card" style={{ padding: '12px 16px', marginBottom: 6, borderLeft: `3px solid ${m.role === 'user' ? 'var(--coral)' : 'var(--emerald)'}` }}>
-          <p style={{ fontSize: 11, color: 'var(--ink-mute)', marginBottom: 4, textTransform: 'capitalize' }}>{m.role}</p>
-          <p style={{ fontSize: 13, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{m.content}</p>
-          <p style={{ fontSize: 10, color: 'var(--ink-faint)', marginTop: 4 }}>{m.created_at ? new Date(m.created_at).toLocaleString() : ''}</p>
+        <div style={{ display: 'grid', gap: 8 }}>
+          {messages.map(m => m.metadata?.pending ? (
+            <Card key="pending" style={{ padding: '12px 16px', borderLeft: '3px solid var(--success)' }}>
+              <p style={{ fontSize: 11, color: 'var(--ink-soft)', marginBottom: 4, textTransform: 'capitalize' }}>assistant</p>
+              <p style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--ink-soft)' }}>…</p>
+            </Card>
+          ) : (
+            <Card key={m.id} style={{ padding: '12px 16px', borderLeft: `3px solid ${m.role === 'user' ? 'var(--accent)' : 'var(--success)'}` }}>
+              <p style={{ fontSize: 11, color: 'var(--ink-soft)', marginBottom: 4, textTransform: 'capitalize' }}>{m.role}</p>
+              <p style={{ fontSize: 13, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{m.content}</p>
+              <p style={{ fontSize: 10, color: 'var(--faint)', marginTop: 4 }}>{m.created_at ? new Date(m.created_at).toLocaleString() : ''}</p>
+            </Card>
+          ))}
         </div>
-      ))}
+      )}
+
       <form onSubmit={sendMessage} style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-        <input value={draft} onChange={e => setDraft(e.target.value)} placeholder="Ask Sampada about your finances…"
-          className="input" style={{ flex: 1, padding: '9px 12px', fontSize: 13 }} />
-        <button type="submit" disabled={!draft.trim() || sending} className="btn btn-primary btn-sm-ghost" >Send</button>
+        <Input value={draft} onChange={e => setDraft(e.target.value)} placeholder="Ask Sampada about your finances…" style={{ flex: 1 }} />
+        <Button type="submit" loading={sending} disabled={!draft.trim() || sending}>Send</Button>
       </form>
     </div>
   )
 
-  if (loading) return <div><div className="skeleton h-200"  /></div>
+  if (loading) return <Skeleton style={{ height: 200, borderRadius: 'var(--radius-md)' }} />
 
   return (
-    <div>
-      <p className="page-num mb-4" >00<em>14</em> / 016</p>
-      <h1 className="page-title" >Conversations</h1>
-      <p className="text-13-5-muted-sm" >Chat with household members.</p>
+    <div style={{ display: 'grid', gap: 20 }}>
+      <PageHeader
+        title="Conversations"
+        num="014 / 016"
+      >
+        <p style={{ fontSize: 13, color: 'var(--muted)' }}>Chat with household members.</p>
+      </PageHeader>
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-        <input value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="New conversation title…"
-          className="input" style={{ flex: 1, padding: '9px 12px', fontSize: 13 }} />
-        <button onClick={createConv} disabled={!newTitle.trim()} className="btn btn-primary btn-sm-ghost" >Create</button>
+        <Input value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="New conversation title…" style={{ flex: 1 }} />
+        <Button onClick={createConv} disabled={!newTitle.trim()}>Create</Button>
       </div>
 
       {convs.length === 0 ? (
-        <div className="empty-state"><span className="emoji">◉</span><p>No conversations yet</p></div>
-      ) : convs.map(c => (
-        <div key={c.id} className="card" style={{ padding: '14px 18px', marginBottom: 6, cursor: 'pointer' }} onClick={() => openConv(c.id)}>
-          <div className="spread" >
-            <div>
-              <p className="row-600-14" >{c.title}</p>
-              {c.summary && <p className="text-12-muted" >{c.summary}</p>}
-            </div>
-            <span style={{ fontSize: 16, color: 'var(--ink-faint)' }}>→</span>
-          </div>
+        <EmptyState
+          icon={<span aria-hidden="true" style={{ fontSize: 48, color: 'var(--border)' }}>◉</span>}
+          title="No conversations yet"
+          action="+ Create"
+          onAction={createConv}
+        />
+      ) : (
+        <div style={{ display: 'grid', gap: 8 }}>
+          {convs.map(c => (
+            <Card key={c.id} interactive onClick={() => openConv(c.id)} style={{ padding: '14px 18px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)' }}>{c.title}</p>
+                  {c.summary && <p style={{ fontSize: 12, color: 'var(--muted)' }}>{c.summary}</p>}
+                </div>
+                <span style={{ fontSize: 16, color: 'var(--faint)' }}>→</span>
+              </div>
+            </Card>
+          ))}
         </div>
-      ))}
+      )}
     </div>
   )
 }
