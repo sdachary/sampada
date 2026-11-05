@@ -70,6 +70,21 @@ RSpec.describe 'Recurring detection API', type: :request do
     expect(response).to have_http_status(:conflict)
   end
 
+  it 'applies the user-edited values when accepting' do
+    monthly_transactions
+    post '/api/v1/recurring_detection/detect'
+    put '/api/v1/recurring_detection/suggestions/0', params: {
+      status: 'edited', name: 'Netflix Premium', amount: '799', frequency: 'monthly',
+      next_due_date: (1.month.from_now).to_date.to_s, category: 'Entertainment'
+    }
+
+    expect(response).to have_http_status(:success)
+    expense = user.recurring_expenses.last
+    expect(expense.name).to eq('Netflix Premium')
+    expect(expense.amount.to_f).to be_within(1).of(799)
+    expect(expense.category).to eq('Entertainment')
+  end
+
   it 'rejects a suggestion without creating anything' do
     monthly_transactions
     post '/api/v1/recurring_detection/detect'

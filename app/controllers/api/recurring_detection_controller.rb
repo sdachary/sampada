@@ -86,7 +86,9 @@ module Api
     end
 
     def edit_params
-      params.permit(:name, :amount, :frequency, :next_due_date).to_h.compact
+      edits = params.permit(:name, :amount, :frequency, :next_due_date, :category).to_h.compact
+      edits['amount_avg'] = edits['amount'].to_f if edits.key?('amount')
+      edits
     end
 
     def create_expense(suggestion)
@@ -96,6 +98,7 @@ module Api
           amount: suggestion['amount_avg'],
           frequency: suggestion['frequency'],
           next_due_date: suggestion['next_due_date'],
+          category: suggestion['category'],
           active: true
         )
         current_user.transactions.where(id: suggestion['example_tx_ids']).update_all(

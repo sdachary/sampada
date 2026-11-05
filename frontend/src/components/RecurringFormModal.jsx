@@ -5,18 +5,19 @@ import { useModalForm } from '../lib/useModalForm'
 
 const FREQS = ['monthly', 'weekly', 'daily', 'yearly', 'quarterly']
 
-export default function RecurringFormModal({ expense, onClose, onSave }) {
+export default function RecurringFormModal({ expense, prefill, onClose, onSave, onSubmit }) {
   const isEdit = !!expense
+  const initial = expense || prefill || {}
   const [categories, setCategories] = useState([])
 
   const { form, set, saving, error, handleSubmit, handleDelete } = useModalForm({
-    name: expense?.name || '',
-    amount: expense?.amount || '',
-    frequency: expense?.frequency || 'monthly',
-    category: expense?.category || '',
-    next_due_date: expense?.next_due_date || '',
-    auto_debit: expense?.auto_debit || false,
-    notes: expense?.notes || '',
+    name: initial.name || '',
+    amount: initial.amount || '',
+    frequency: initial.frequency || 'monthly',
+    category: initial.category || '',
+    next_due_date: initial.next_due_date || '',
+    auto_debit: initial.auto_debit || false,
+    notes: initial.notes || '',
   }, {
     basePath: '/api/v1/recurring_expenses',
     id: expense?.id,
@@ -25,6 +26,7 @@ export default function RecurringFormModal({ expense, onClose, onSave }) {
       amount: parseFloat(b.amount) || 0,
     }),
     onSave,
+    submit: onSubmit,
   })
 
   const [confirming, setConfirming] = useState(false)
