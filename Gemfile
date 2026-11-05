@@ -17,6 +17,7 @@ gem 'ruby-openai'
 gem 'sidekiq'
 gem 'sidekiq-cron'
 gem 'webpush'
+gem 'webauthn-ruby'
 
 group :development, :test do
   gem 'brakeman', require: false

@@ -9,6 +9,15 @@ Rails.application.routes.draw do
   scope '/api/v1', module: 'api' do
     get 'auth/me', to: 'auth#me'
     patch 'auth/profile', to: 'auth#update_profile'
+
+    scope 'auth/passkeys', module: 'auth' do
+      get 'register/options', to: 'passkeys#register_options'
+      post 'register', to: 'passkeys#register'
+      get 'auth/options', to: 'passkeys#auth_options'
+      post 'auth/verify', to: 'passkeys#auth_verify'
+      get '/', to: 'passkeys#index'
+      delete '/:id', to: 'passkeys#destroy'
+    end
   end
 
   # DPDP
