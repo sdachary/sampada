@@ -57,6 +57,9 @@ Rails.application.routes.draw do
     get 'feature_flags', to: 'feature_flags#index'
     patch 'feature_flags/:key', to: 'feature_flags#update'
     resources :net_worth_snapshots, only: %i[index show]
+    get 'recurring_detection', to: 'recurring_detection#index'
+    post 'recurring_detection/detect', to: 'recurring_detection#detect'
+    put 'recurring_detection/suggestions/:idx', to: 'recurring_detection#update_suggestion'
     resources :recurring_expenses, only: %i[index show create update destroy] do
       collection do
         get :calendar
