@@ -30,7 +30,7 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: .ruby-version
-          # Disable built-in bundler cache — we handle it manually to allow Gemfile.lock updates
+# Disable built-in bundler cache — we handle it manually to allow Gemfile.lock updates
           bundler-cache: false
       - name: Install dependencies (with lockfile update)
         run: |
