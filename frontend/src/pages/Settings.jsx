@@ -3,7 +3,8 @@ import { useAuth } from '../lib/useAuth'
 import { api } from '../lib/api'
 import { useNavigate } from 'react-router-dom'
 import { registerServiceWorker, subscribeToPush, unsubscribeFromPush, isPushSupported, isPushSubscribed } from '../lib/push'
-import { Card, Button, Input, Select, InputField, Badge, Skeleton, PageHeader, ToastHost, toast } from '../components/ui'
+import { Card, Button, Input, Select, InputField, Badge, PageHeader, ToastHost, toast } from '../components/ui'
+import { credentialToJSON, jsonToCredentialOptions, isPasskeySupported } from '../lib/passkeys'
 
 const PROVIDERS = [
   { value: 'zerodha', label: 'Zerodha' },
@@ -20,7 +21,6 @@ export default function Settings() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [editing, setEditing] = useState(false)
-  const [msg, setMsg] = useState('')
   const [form, setForm] = useState({
     first_name: user?.first_name || '',
     last_name: user?.last_name || '',
@@ -36,6 +36,21 @@ export default function Settings() {
   const [pushSupported, setPushSupported] = useState(false)
   const [pushSubscribed, setPushSubscribed] = useState(false)
   const [swReg, setSwReg] = useState(null)
+
+  // Passkeys
+  const [passkeys, setPasskeys] = useState([])
+  const [passkeySupported, setPasskeySupported] = useState(false)
+  const [addingPasskey, setAddingPasskey] = useState(false)
+  const [newPasskeyLabel, setNewPasskeyLabel] = useState('')
+
+  const fetchPasskeys = async () => {
+    try {
+      const { credentials } = await api.request('/api/v1/auth/passkeys')
+      setPasskeys(credentials)
+    } catch (e) {
+      if (e.status !== 501) console.error('Failed to fetch passkeys:', e)
+    }
+  }
 
   useEffect(() => { fetchCredentials() }, [])
 
@@ -56,7 +71,12 @@ export default function Settings() {
         })
       }
     })
+    isPasskeySupported().then(setPasskeySupported)
   }, [])
+
+  useEffect(() => {
+    if (passkeySupported) fetchPasskeys()
+  }, [passkeySupported])
 
   const togglePush = async () => {
     if (!swReg) return
@@ -147,6 +167,45 @@ export default function Settings() {
     } catch (e) { toast(e.message) }
   }
 
+  const addPasskey = async () => {
+    if (!passkeySupported) return
+    setAddingPasskey(true)
+    try {
+      const { options } = await api.request('/api/v1/auth/passkeys/register/options')
+      const publicKey = jsonToCredentialOptions(options)
+      const credential = await navigator.credentials.create({ publicKey })
+      if (!credential) {
+        setAddingPasskey(false)
+        return
+      }
+      const credentialJSON = credentialToJSON(credential)
+      const label = newPasskeyLabel || 'This device'
+      await api.request('/api/v1/auth/passkeys/register', {
+        method: 'POST',
+        body: JSON.stringify({ credential: credentialJSON, label })
+      })
+      setNewPasskeyLabel('')
+      setAddingPasskey(false)
+      toast('Passkey added')
+      fetchPasskeys()
+    } catch (err) {
+      if (err.name === 'NotAllowedError' || err.name === 'AbortError') {
+        // User dismissed - silent
+      } else {
+        toast(err.message || 'Failed to add passkey')
+      }
+      setAddingPasskey(false)
+    }
+  }
+
+  const deletePasskey = async (id) => {
+    try {
+      await api.request(`/api/v1/auth/passkeys/${id}`, { method: 'DELETE' })
+      toast('Passkey removed')
+      fetchPasskeys()
+    } catch (e) { toast(e.message) }
+  }
+
   return (
     <div style={{ display: 'grid', gap: 20 }}>
       <PageHeader
@@ -155,8 +214,6 @@ export default function Settings() {
       >
         <p style={{ fontSize: 13, color: 'var(--muted)' }}>Account preferences and profile.</p>
       </PageHeader>
-
-      {msg && <Card style={{ padding: '10px 16px', fontSize: 13, color: msg.startsWith('Error') || msg.includes('fail') ? 'var(--accent)' : 'var(--success)' }}>{msg}</Card>}
 
       <Card>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
@@ -235,6 +292,66 @@ export default function Settings() {
         </div>
         {aiError && <p style={{ fontSize: 12, color: 'var(--accent)', marginBottom: 8 }}>{aiError}</p>}
       </Card>
+
+      {passkeySupported && (
+        <Card>
+          <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)', marginBottom: 8 }}>Security</p>
+          <p style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 12 }}>Passkeys let you sign in without a password using your device's biometrics or PIN.</p>
+
+          {passkeys.length === 0 ? (
+            <p style={{ fontSize: 12.5, color: 'var(--muted)', marginBottom: 8 }}>No passkeys registered yet.</p>
+          ) : (
+            <div style={{ display: 'grid', gap: 8, marginBottom: 12 }}>
+              {passkeys.map(p => (
+                <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: 'var(--bg)', borderRadius: 6 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ fontSize: 16 }}>🔐</span>
+                    <div>
+                      <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--ink)' }}>{p.label}</p>
+                      <p style={{ fontSize: 11, color: 'var(--muted)' }}>
+                        {p.transport === 'platform' ? 'Built into this device' : 'Security key'}
+                        {p.last_used_at && ` · Last used ${new Date(p.last_used_at).toLocaleDateString()}`}
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => deletePasskey(p.id)}
+                    style={{ color: 'var(--accent)', borderColor: 'var(--accent)' }}
+                    disabled={passkeys.length <= 1}
+                  >
+                    Remove
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!addingPasskey ? (
+            <Button variant="secondary" size="sm" onClick={() => setAddingPasskey(true)} style={{ alignSelf: 'flex-start' }}>
+              Add passkey
+            </Button>
+          ) : (
+            <div style={{ display: 'grid', gap: 8, marginTop: 8 }}>
+              <InputField
+                label="Label (optional)"
+                placeholder="e.g. MacBook Pro, YubiKey"
+                value={newPasskeyLabel}
+                onChange={e => setNewPasskeyLabel(e.target.value)}
+              />
+              <div style={{ display: 'flex', gap: 8 }}>
+                <Button size="sm" onClick={addPasskey} loading={addingPasskey}>
+                  {addingPasskey ? 'Registering…' : 'Continue'}
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => { setAddingPasskey(false); setNewPasskeyLabel('') }}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+        </Card>
+      )}
 
       <Card>
         <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)', marginBottom: 8 }}>Data & Privacy</p>

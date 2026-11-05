@@ -1,6 +1,7 @@
 class User < ApplicationRecord
   has_one :tenant, dependent: :destroy
   has_many :api_credentials, dependent: :destroy
+  has_many :webauthn_credentials, dependent: :destroy
   has_many :conversations, dependent: :destroy
   has_many :consent_records, dependent: :destroy
   has_many :deletion_requests, dependent: :destroy

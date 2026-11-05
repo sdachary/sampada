@@ -117,13 +117,11 @@ export default function Transactions() {
         <EmptyState
           icon={<span className="emoji">↗</span>}
           title="No transactions yet"
-          action="Add Transaction"
+          action="+ Add Transaction"
+          actionDisabled={!isOnline}
           onAction={() => openModal(null)}
         >
           Start tracking your spending to see patterns emerge.
-          <Button variant="primary" onClick={() => openModal(null)} disabled={!isOnline} style={{ marginTop: 12, opacity: isOnline ? 1 : 0.5, cursor: isOnline ? 'pointer' : 'not-allowed' }}>
-            + Add Transaction
-          </Button>
         </EmptyState>
       ) : (
         <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>

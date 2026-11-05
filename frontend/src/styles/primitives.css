@@ -249,35 +249,15 @@
 ============================================================ */
 
 .card {
-  --card-bg-outer: var(--color-bg-deep);
-  --card-border-outer: var(--color-border);
-  --card-radius-outer: calc(var(--radius-lg) + 2px);
-  --card-bg: var(--color-surface);
-  --card-border: var(--color-border-soft);
-  --card-radius: var(--radius-lg);
-  --bezel-width: 2px;
-
-  background: var(--color-bg-deep);
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: calc(var(--radius-lg) + 2px);
-  padding: 2px;
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
 
   transition:
     box-shadow var(--transition-shadow),
     border-color var(--transition-color);
 }
-
-.card::before {
-  content: '';
-  display: block;
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border-soft);
-  box-shadow: inset 0 1px 1px oklch(1 0 0 / 0.1);
-  min-height: 100%;
-}
-
-.card > * { position: relative; z-index: 1; }
 
 .card--default { box-shadow: var(--shadow-xs); }
 .card--default:hover { box-shadow: var(--shadow-sm); }
@@ -488,7 +468,7 @@
 ============================================================ */
 
 .toast { background: var(--color-fg); color: var(--color-bg); padding: var(--space-3) var(--space-4); border-radius: var(--radius-lg); font-size: var(--text-sm); box-shadow: var(--shadow-modal); animation: toast-in 0.3s var(--ease-spring); }
-@keyframes toast-in { from { opacity: 0; transform: translateX(100%) translateY(-50%); } to { opacity: 1; transform: translateX(0) translateY(-50%); } }
+@keyframes toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
 /* ============================================================
    DIALOG / MODAL
@@ -517,22 +497,20 @@
 @keyframes tooltip-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 .tooltip::after { content: ''; position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); border: 4px solid transparent; border-top-color: var(--color-fg); }
 
-/* ============================================================
-   TABS
-============================================================ */
-
-.tabs { display: flex; gap: var(--space-1); border-bottom: 1px solid var(--color-border); }
-.tabs__tab { padding: var(--space-2) var(--space-4); border: none; background: none; cursor: pointer; font-family: var(--font-body); font-size: var(--text-base); color: var(--color-fg-muted); border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color var(--transition-color), border-color var(--transition-color); }
-.tabs__tab:hover { color: var(--color-fg); }
-.tabs__tab[aria-selected="true"] { color: var(--color-fg); border-bottom-color: var(--color-accent); font-weight: var(--weight-medium); }
+/* The tooltip bubble is positioned inline by the component; visibility is
+   CSS-driven so it shows on hover AND keyboard focus. */
+.tooltip-text { opacity: 0; pointer-events: none; transition: opacity var(--duration-fast) var(--ease-out); }
+.tooltip-anchor:hover .tooltip-text,
+.tooltip-anchor:focus-visible .tooltip-text { opacity: 1; }
 
 /* ============================================================
-   TOOLTIP
+   PAGE HEADER
 ============================================================ */
 
-.tooltip { position: absolute; z-index: var(--z-tooltip); padding: var(--space-2) var(--space-3); background: var(--color-fg); color: var(--color-bg); font-size: var(--text-xs); border-radius: var(--radius-sm); box-shadow: var(--shadow-lg); white-space: nowrap; animation: tooltip-in 0.15s var(--ease-out); }
-@keyframes tooltip-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-.tooltip::after { content: ''; position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); border: 4px solid transparent; border-top-color: var(--color-fg); }
+.page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap; margin-bottom: var(--space-6); }
+.page-header__title { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: var(--weight-bold); letter-spacing: var(--tracking-tight); line-height: var(--leading-tight); color: var(--color-fg); }
+.page-header__num { font-family: var(--font-mono); font-size: var(--text-2xs); letter-spacing: var(--tracking-wider); color: var(--color-fg-faint); margin-top: var(--space-1); }
+.page-header__actions { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
 
 /* ============================================================
    UTILITY: Focus visible

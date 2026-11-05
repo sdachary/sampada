@@ -355,6 +355,32 @@
   --line: var(--color-border);
   --line-soft: var(--color-border-soft);
   --shadow: var(--shadow-card);
+
+  /* Second alias set — the pre-OKLCH spelling. #48 renamed these tokens and
+     left ~400 style references (pages, components, index.css) pointing at the
+     old names, so every one of them silently resolved to nothing. Both
+     spellings now exist; the new one is the source of truth. */
+  --bg: var(--color-bg);
+  --surface: var(--color-surface);
+  --muted: var(--color-fg-muted);
+  --faint: var(--color-fg-faint);
+  --accent: var(--color-accent);
+  --accent-soft: var(--color-accent-soft);
+  --accent-bg: var(--color-accent-bg);
+  --success-bg: var(--color-success-bg);
+  --warning: var(--color-warning);
+  --overlay: var(--color-overlay);
+  --border: var(--color-border);
+  --border-soft: var(--color-border-soft);
+  --sans: var(--font-display);
+  --body: var(--font-body);
+  --serif: var(--font-serif);
+  --leading-body: var(--leading-normal);
+  --radius: var(--radius-md);
+  --radius-pill: var(--radius-full);
+  --shadow-hover: var(--shadow-lg);
+  --dur-fast: var(--duration-fast);
+  --ease: cubic-bezier(0.2, 0, 0, 1);
 }
 
 /* ============================================================

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 
 // Dialog primitive: focus trap, Esc to close, backdrop blur, sheet-on-mobile (CSS).
-// Mobile width ≤640px renders as a bottom sheet via .p-dialog-overlay media query.
+// Mobile width ≤640px renders as a bottom sheet via .dialog-overlay media query.
 export default function Dialog({ open, onClose, title, children, wide, style } = {}) {
   const overlayRef = useRef(null)
   const panelRef = useRef(null)
@@ -34,13 +34,13 @@ export default function Dialog({ open, onClose, title, children, wide, style } =
   if (!open) return null
 
   return (
-    <div className="p-dialog-overlay" ref={overlayRef} onClick={onClose}>
+    <div className="dialog-overlay" ref={overlayRef} onClick={onClose}>
       <div
         ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="p-dialog"
+        className="dialog"
         style={{ maxWidth: wide ? 720 : undefined, ...style }}
         onClick={e => e.stopPropagation()}
       >

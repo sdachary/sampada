@@ -18,7 +18,7 @@ export default function Tabs({ tabs, value, onChange } = {}) {
   }
 
   return (
-    <div className="p-tabs" role="tablist">
+    <div className="tabs" role="tablist">
       {tabs.map(t => (
         <button
           key={t.key}
@@ -29,7 +29,7 @@ export default function Tabs({ tabs, value, onChange } = {}) {
           tabIndex={current === t.key ? 0 : -1}
           onKeyDown={onKey}
           onClick={() => select(t.key)}
-          className="p-tabs__tab"
+          className="tabs__tab"
         >
           {t.label}
         </button>

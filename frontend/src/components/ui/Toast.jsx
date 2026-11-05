@@ -17,10 +17,10 @@ export function ToastHost() {
   const items = useSyncExternalStore(subscribe, getSnapshot)
   if (!items.length) return null
   return (
-    <div className="p-toast" role="status" aria-live="polite"
+    <div className="toast-host" role="status" aria-live="polite"
       style={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', zIndex: 'var(--z-toast)', display: 'grid', gap: 8 }}>
       {items.map(t => (
-        <div key={t.id}>
+        <div key={t.id} className="toast">
           {t.message}
           {t.action ? (
             <button type="button" onClick={t.action.onClick} style={{ marginLeft: 8, fontWeight: 600 }}>

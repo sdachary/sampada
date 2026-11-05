@@ -30,10 +30,10 @@ Method: Static code review of the full repository (controllers, models, auth mid
 | SEC-05 | Active Record encryption keys silently auto-derive from `SECRET_KEY_BASE` | Security / Crypto | Medium | Fixed |
 | SEC-06 | Dead `GoogleAuthService` code references a token flow that no longer exists | Security debt / Cleanup | Low | Fixed |
 | REL-01 | No authorization/negative-path tests exist for households (test suite only covers the "owner" happy path) | Reliability / Test coverage | Medium | Verified |
-| UX-01 | Auth forms (Login/Register) have no loading/disabled state on submit | UX | Low | In Progress |
-| UX-02 | Auth inputs missing `autoComplete` attributes | UX / Accessibility | Low | In Progress |
-| UX-03 | No password strength guidance shown at registration | UX | Low-Medium | In Progress |
-| UX-04 | Auth pages use ad-hoc inline styles instead of the app's design system | Frontend / Maintainability | Low | In Progress |
+| UX-01 | Auth forms (Login/Register) have no loading/disabled state on submit | UX | Low | Fixed |
+| UX-02 | Auth inputs missing `autoComplete` attributes | UX / Accessibility | Low | Fixed |
+| UX-03 | No password strength guidance shown at registration | UX | Low-Medium | Fixed |
+| UX-04 | Auth pages use ad-hoc inline styles instead of the app's design system | Frontend / Maintainability | Low | Fixed |
 | CFG-01 | Three-tier fallback for encryption keys, and the middle tier is dead | Config / Crypto | Medium | In Progress |
 | CFG-02 | Two parallel secret-management systems (Rails credentials vs sops) | Config / Secrets | Medium | In Progress |
 | CFG-03 | `docker-compose.yml` duplicates env vars across services, and silently overrides `.env` for 6 keys | Config / Deploy | Medium | In Progress |
@@ -225,7 +225,7 @@ Both the Better-Auth proxy and the Rails API proxy fall back to a **plaintext `h
 ---
 
 ### UX-01 — Auth forms have no loading/disabled state on submit
-**Status:** In Progress
+**Status:** Fixed
 **Severity:** Low
 **Area:** Frontend UX — `frontend/src/pages/Login.jsx`, `Register.jsx`
 
@@ -241,7 +241,7 @@ Both the Better-Auth proxy and the Rails API proxy fall back to a **plaintext `h
 ---
 
 ### UX-02 — Auth inputs missing `autoComplete` attributes
-**Status:** In Progress
+**Status:** Fixed
 **Severity:** Low
 **Area:** Frontend UX / Accessibility — `Login.jsx`, `Register.jsx`, `ResetPassword.jsx`
 
@@ -259,7 +259,7 @@ Both the Better-Auth proxy and the Rails API proxy fall back to a **plaintext `h
 ---
 
 ### UX-03 — No password strength guidance at registration
-**Status:** In Progress
+**Status:** Fixed
 **Severity:** Low-Medium
 **Area:** Frontend UX — `Register.jsx`
 
@@ -278,7 +278,7 @@ Both the Better-Auth proxy and the Rails API proxy fall back to a **plaintext `h
 ---
 
 ### UX-04 — Auth pages use ad-hoc inline styles instead of the design system
-**Status:** In Progress
+**Status:** Fixed
 **Severity:** Low
 **Area:** Frontend maintainability — `Login.jsx`, `Register.jsx`
 
