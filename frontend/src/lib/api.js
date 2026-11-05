@@ -19,7 +19,12 @@ async function request(path, options = {}) {
     }
     throw err
   }
-  if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || res.statusText)
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    const err = new Error(body.error || body.message || res.statusText)
+    err.status = res.status
+    throw err
+  }
   return res.status === 204 ? null : res.json()
 }
 

@@ -3,7 +3,7 @@ import { api } from './api'
 
 // ponytail: shared form-modal skeleton for all *FormModal components —
 // form state + field setter + saving/error + PATCH-if-edit/POST-else submit.
-export function useModalForm(initial, { basePath, id, toBody = (b) => b, onSave }) {
+export function useModalForm(initial, { basePath, id, toBody = (b) => b, onSave, submit }) {
   const [form, setForm] = useState(initial)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
@@ -19,7 +19,9 @@ export function useModalForm(initial, { basePath, id, toBody = (b) => b, onSave 
     setError(null)
     try {
       const body = toBody({ ...form })
-      if (id) {
+      if (submit) {
+        await submit(body)
+      } else if (id) {
         await api.request(`${basePath}/${id}`, { method: 'PATCH', body: JSON.stringify(body) })
       } else {
         await api.request(basePath, { method: 'POST', body: JSON.stringify(body) })
@@ -30,7 +32,7 @@ export function useModalForm(initial, { basePath, id, toBody = (b) => b, onSave 
     } finally {
       setSaving(false)
     }
-  }, [form, id, basePath, toBody, onSave])
+  }, [form, id, basePath, toBody, onSave, submit])
 
   const handleDelete = useCallback(async () => {
     if (!id) return

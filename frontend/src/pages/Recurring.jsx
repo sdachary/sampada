@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
-import { Card, Badge, Skeleton, EmptyState, PageHeader, Stat, fmtINR } from '../components/ui'
+import { Card, Badge, Skeleton, EmptyState, PageHeader, Stat, fmtINR, toast } from '../components/ui'
 import RecurringFormModal from '../components/RecurringFormModal'
+import RecurringSuggestionsModal from '../components/RecurringSuggestionsModal'
+import { fetchFlags, enabled } from '../lib/flags'
 
 function daysText(days) {
   if (days === null || days === undefined) return ''
@@ -15,16 +17,95 @@ export default function Recurring() {
   const [expenses, setExpenses] = useState([])
   const [loading, setLoading] = useState(true)
   const [modal, setModal] = useState(null)
+  const [flagOn, setFlagOn] = useState(false)
+  const [hasTransactions, setHasTransactions] = useState(false)
+  const [suggestions, setSuggestions] = useState([])
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false)
+  const [detecting, setDetecting] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [editing, setEditing] = useState(null)
+  const [acceptedCount, setAcceptedCount] = useState(0)
 
   useEffect(() => {
     api.request('/api/v1/recurring_expenses').then(d => setExpenses(Array.isArray(d) ? d : [])).catch(() => {}).finally(() => setLoading(false))
+    fetchFlags().then(f => setFlagOn(enabled('recurring_detection', f))).catch(() => {})
+    api.request('/api/v1/transactions?per=1').then(d => setHasTransactions((d.pagination?.total || 0) > 0)).catch(() => {})
+    api.request('/api/v1/recurring_detection').then(d => setSuggestions(d.suggestions || [])).catch(() => {})
   }, [])
 
+  const refreshExpenses = () => {
+    api.request('/api/v1/recurring_expenses').then(d => setExpenses(Array.isArray(d) ? d : [])).catch(() => {})
+  }
+
   const closeModal = (saved) => {
-    if (saved) {
-      api.request('/api/v1/recurring_expenses').then(d => setExpenses(Array.isArray(d) ? d : []))
-    }
+    if (saved) refreshExpenses()
     setModal(null)
+  }
+
+  const refreshSuggestions = async () => {
+    const d = await api.request('/api/v1/recurring_detection').catch(() => null)
+    const next = d?.suggestions || []
+    setSuggestions(next)
+    return next
+  }
+
+  const detect = async () => {
+    setDetecting(true)
+    try {
+      const d = await api.request('/api/v1/recurring_detection/detect', { method: 'POST' })
+      setSuggestions(d.suggestions || [])
+      setSuggestionsOpen(true)
+    } catch (err) {
+      if (err.status === 409) {
+        await refreshSuggestions()
+        setSuggestionsOpen(true)
+      } else if (err.status === 501) {
+        setFlagOn(false)
+      } else {
+        toast(err.message)
+      }
+    } finally {
+      setDetecting(false)
+    }
+  }
+
+  const rejectSuggestion = async (index) => {
+    setBusy(true)
+    try {
+      await api.request(`/api/v1/recurring_detection/suggestions/${index}`, {
+        method: 'PUT', body: JSON.stringify({ status: 'rejected' }),
+      })
+      await refreshSuggestions()
+    } catch (err) {
+      toast(err.message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const rejectAll = async () => {
+    setBusy(true)
+    try {
+      const pendingIndexes = suggestions.map((s, i) => (s.status === 'pending' ? i : -1)).filter(i => i >= 0)
+      for (const index of pendingIndexes) {
+        await api.request(`/api/v1/recurring_detection/suggestions/${index}`, {
+          method: 'PUT', body: JSON.stringify({ status: 'rejected' }),
+        })
+      }
+      const next = await refreshSuggestions()
+      if (!next.some(s => s.status === 'pending')) setSuggestionsOpen(false)
+    } catch (err) {
+      toast(err.message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  // Accept opens the edit form on top of the list; the list closes so the
+  // two overlays never stack.
+  const acceptSuggestion = (index, suggestion) => {
+    setSuggestionsOpen(false)
+    setEditing({ index, suggestion })
   }
 
   if (loading) return (
@@ -35,6 +116,7 @@ export default function Recurring() {
 
   const totalMonthly = expenses.reduce((s, e) => s + (+e.monthly_amount || 0), 0)
   const activeCount = expenses.filter(e => e.active).length
+  const pendingCount = suggestions.filter(s => s.status === 'pending').length
 
   const renderList = () => {
     if (expenses.length === 0) {
@@ -103,6 +185,26 @@ export default function Recurring() {
       </PageHeader>
 
       {renderStats()}
+
+      {flagOn && hasTransactions && (
+        <Card style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+          <div>
+            <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)' }}>
+              You've been logging for a while. Let me find patterns.
+            </p>
+            <p style={{ fontSize: 12, color: 'var(--muted)' }}>
+              We scan your transactions for subscriptions and bills you might have missed.
+            </p>
+          </div>
+          <button className="btn btn-primary" style={{ fontSize: 12 }} disabled={detecting}
+            onClick={pendingCount > 0 ? () => setSuggestionsOpen(true) : detect}>
+            {pendingCount > 0
+              ? `Review ${pendingCount} pattern${pendingCount > 1 ? 's' : ''}`
+              : detecting ? 'Scanning…' : 'Detect recurring'}
+          </button>
+        </Card>
+      )}
+
       {renderList()}
 
       {modal && (
@@ -110,6 +212,44 @@ export default function Recurring() {
           expense={modal === 'new' ? null : modal}
           onClose={() => setModal(null)}
           onSave={() => closeModal(true)}
+        />
+      )}
+
+      {suggestionsOpen && (
+        <RecurringSuggestionsModal
+          suggestions={suggestions}
+          busy={busy}
+          onClose={() => setSuggestionsOpen(false)}
+          onAccept={acceptSuggestion}
+          onReject={rejectSuggestion}
+          onRejectAll={rejectAll}
+        />
+      )}
+
+      {editing && (
+        <RecurringFormModal
+          prefill={{
+            name: editing.suggestion.name || editing.suggestion.merchant_norm,
+            amount: Number(editing.suggestion.amount_avg) || 0,
+            frequency: editing.suggestion.frequency,
+            next_due_date: editing.suggestion.next_due_date,
+          }}
+          onClose={() => setEditing(null)}
+          onSubmit={async (values) => {
+            await api.request(`/api/v1/recurring_detection/suggestions/${editing.index}`, {
+              method: 'PUT',
+              body: JSON.stringify({ status: 'edited', ...values }),
+            })
+          }}
+          onSave={async () => {
+            setEditing(null)
+            const count = acceptedCount + 1
+            setAcceptedCount(count)
+            const next = await refreshSuggestions()
+            refreshExpenses()
+            toast(`Added ${count} recurring expense${count > 1 ? 's' : ''}`)
+            if (next.some(s => s.status === 'pending')) setSuggestionsOpen(true)
+          }}
         />
       )}
     </div>
