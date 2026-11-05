@@ -4,6 +4,12 @@ import { auth } from '../lib/api'
 import AuthLayout from './AuthLayout'
 import { Input, Button, Card } from '../components/ui'
 
+const PwToggle = ({ show, setShow }) => (
+  <button type="button" onClick={() => setShow(!show)} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: 'var(--muted)', padding: 4 }} aria-label={show ? 'Hide password' : 'Show password'}>
+    {show ? '◔' : '◑'}
+  </button>
+)
+
 export default function ResetPassword() {
   const [searchParams] = useSearchParams()
   const [token, setToken] = useState('')
@@ -42,12 +48,6 @@ export default function ResetPassword() {
         <Button style={{ display: 'inline-flex', marginTop: 20, fontSize: 13, padding: '8px 20px' }}>Sign in</Button>
       </Link>
     </AuthLayout>
-  )
-
-  const PwToggle = ({ show, setShow }) => (
-    <button type="button" onClick={() => setShow(!show)} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: 'var(--muted)', padding: 4 }} aria-label={show ? 'Hide password' : 'Show password'}>
-      {show ? '◔' : '◑'}
-    </button>
   )
 
   return (

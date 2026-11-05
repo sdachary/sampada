@@ -19,6 +19,12 @@ function passwordStrength(pw) {
 
 const STRENGTH_LABEL = ['', 'Weak', 'Fair', 'Good', 'Strong']
 
+const PwToggle = ({ show, setShow }) => (
+  <button type="button" onClick={() => setShow(!show)} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: 'var(--muted)', padding: 4 }} aria-label={show ? 'Hide password' : 'Show password'}>
+    {show ? '◔' : '◑'}
+  </button>
+)
+
 export default function Register() {
   const { user, register } = useAuth()
   const navigate = useNavigate()
@@ -69,12 +75,6 @@ export default function Register() {
   }
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value })
-
-  const PwToggle = ({ show, setShow }) => (
-    <button type="button" onClick={() => setShow(!show)} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: 'var(--muted)', padding: 4 }} aria-label={show ? 'Hide password' : 'Show password'}>
-      {show ? '◔' : '◑'}
-    </button>
-  )
 
   return (
     <AuthLayout
