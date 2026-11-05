@@ -60,6 +60,9 @@ Rails.application.routes.draw do
     get 'recurring_detection', to: 'recurring_detection#index'
     post 'recurring_detection/detect', to: 'recurring_detection#detect'
     put 'recurring_detection/suggestions/:idx', to: 'recurring_detection#update_suggestion'
+    post 'imports/bank-statement', to: 'imports#create'
+    get 'imports/:id', to: 'imports#show'
+    post 'imports/:id/confirm', to: 'imports#confirm'
     resources :recurring_expenses, only: %i[index show create update destroy] do
       collection do
         get :calendar
