@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useEffect, useState, useImperativeHandle, forwardRef } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { Html, OrbitControls } from '@react-three/drei'
 
@@ -133,9 +133,10 @@ function Scene({ scrollProgress = 0, prefersReducedMotion = false }) {
 
     const progress = Math.max(0, Math.min(1, scrollProgress))
 
-    // Coin descends from y=3 to y=0 (ring level) as scroll goes 0→1
-    const startY = 3
-    const endY = 0.15 // Just above ring
+    // Coin starts at ring level (y=0) and descends slightly as scroll goes 0→1
+    // Matches poster: coin sits on the zero ring
+    const startY = 0
+    const endY = -0.3 // Slightly below ring level
     coinRef.current.position.y = startY + (endY - startY) * progress
 
     // Gentle tilt based on progress (swaying as it descends)
@@ -146,7 +147,7 @@ function Scene({ scrollProgress = 0, prefersReducedMotion = false }) {
     // Subtle rotation around Y (slow spin)
     coinRef.current.rotation.y += delta * 0.15
 
-    // Ring pulse when coin approaches
+    // Ring pulse when coin approaches bottom
     if (ringRef.current && progress > 0.7) {
       const pulse = 1 + Math.sin(state.clock.elapsedTime * 4) * 0.1 * (progress - 0.7) / 0.3
       ringRef.current.scale.setScalar(pulse)
@@ -194,7 +195,7 @@ function Hero3DCanvas({ scrollProgress, prefersReducedMotion }) {
 
   return (
     <Canvas
-      camera={{ position: [0, 1.5, 4], fov: 35 }}
+      camera={{ position: [0, 1.2, 3.5], fov: 30 }}
       gl={{ antialias: true, alpha: true, preserveDrawingBuffer: false }}
       dpr={[1, 1.5]}
       frameloop={prefersReducedMotion ? 'never' : 'demand'}
@@ -219,9 +220,15 @@ function Hero3DCanvas({ scrollProgress, prefersReducedMotion }) {
 }
 
 // Main Hero3D component with scroll tracking
-export default function Hero3D() {
+const Hero3DComponent = forwardRef((props, ref) => {
+  const { onReady, style, ...rest } = props
   const [scrollProgress, setScrollProgress] = useState(0)
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+  const canvasRef = useRef(null)
+
+  useImperativeHandle(ref, () => ({
+    canvas: canvasRef.current,
+  }))
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -254,13 +261,27 @@ export default function Hero3D() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // Call onReady when canvas is mounted
+  useEffect(() => {
+    if (onReady && canvasRef.current) {
+      onReady()
+    }
+  }, [onReady])
+
   return (
     <Hero3DCanvas
+      ref={canvasRef}
       scrollProgress={scrollProgress}
       prefersReducedMotion={prefersReducedMotion}
+      style={style}
+      {...rest}
     />
   )
-}
+})
+
+Hero3DComponent.displayName = 'Hero3D'
+
+export default Hero3DComponent
 
 // Error boundary wrapper
 export function Hero3DWithFallback() {
@@ -269,7 +290,7 @@ export function Hero3DWithFallback() {
   if (hasError) return null
 
   return (
-    <Hero3D
+    <Hero3DComponent
       onError={(e) => {
         console.error('Hero3D error:', e)
         setHasError(true)
