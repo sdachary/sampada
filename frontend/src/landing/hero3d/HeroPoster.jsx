@@ -1,7 +1,7 @@
 // HeroPoster - static SVG fallback for the 3D hero
 // Matches the composition: coin with "सं" above a zero ring
 
-export default function HeroPoster() {
+export default function HeroPoster({ style, className }) {
   return (
     <svg
       viewBox="0 0 400 400"
@@ -10,6 +10,8 @@ export default function HeroPoster() {
       preserveAspectRatio="xMidYMid meet"
       aria-hidden="true"
       role="img"
+      className={className}
+      style={style}
       aria-label="Sampada coin with Sanskrit mark सं above a zero ring — representing the journey from debt to wealth"
     >
       <defs>

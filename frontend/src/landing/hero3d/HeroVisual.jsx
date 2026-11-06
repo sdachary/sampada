@@ -1,6 +1,6 @@
 // HeroVisual — lazy-loads the 3D hero, shows static poster first (LCP element)
 // Cross-fades to 3D on first frame. Mirrors Appendix C of SAMPADA_UI_MODERNIZATION.md
-import { lazy, Suspense, useEffect, useState, useRef } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import HeroPoster from './HeroPoster'
 
 const Hero3D = lazy(() => import('./Hero3D'))
@@ -20,7 +20,6 @@ function canRender3D() {
 export default function HeroVisual() {
   const [enable, setEnable] = useState(false)
   const [show3D, setShow3D] = useState(false)
-  const canvasRef = useRef(null)
 
   useEffect(() => {
     const go = () => setEnable(canRender3D())
@@ -32,19 +31,9 @@ export default function HeroVisual() {
       : clearTimeout(id))
   }, [])
 
-  // Handle 3D canvas ready - cross-fade from poster to 3D
-  const handleCanvasReady = () => {
-    if (canvasRef.current) {
-      // Start fade-in
-      requestAnimationFrame(() => {
-        setShow3D(true)
-      })
-    }
-  }
-
   return (
     <div className="hero-visual" style={{ aspectRatio: '1 / 1', position: 'relative', overflow: 'hidden' }}>
-      {/* Static poster - always rendered, cross-fades out when 3D ready */}
+      {/* Static poster — LCP element, cross-fades out once the 3D first frame is up */}
       <HeroPoster
         style={{
           position: 'absolute',
@@ -56,21 +45,11 @@ export default function HeroVisual() {
           pointerEvents: 'none',
         }}
       />
-      {/* 3D Canvas - fades in when ready */}
       {enable && (
         <Suspense fallback={null}>
-          <Hero3D
-            ref={canvasRef}
-            onReady={handleCanvasReady}
-            style={{
-              position: 'absolute',
-              inset: 0,
-              width: '100%',
-              height: '100%',
-              opacity: show3D ? 1 : 0,
-              transition: 'opacity 600ms ease-out',
-            }}
-          />
+          <div style={{ position: 'absolute', inset: 0, opacity: show3D ? 1 : 0, transition: 'opacity 600ms ease-out' }}>
+            <Hero3D onReady={() => setShow3D(true)} />
+          </div>
         </Suspense>
       )}
     </div>

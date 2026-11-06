@@ -1,79 +1,66 @@
-import { useRef, useEffect, useState, useImperativeHandle, forwardRef } from 'react'
+import { useRef, useEffect, useState, useImperativeHandle, forwardRef, useMemo } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { Html, OrbitControls } from '@react-three/drei'
+import { OrbitControls } from '@react-three/drei'
+import * as THREE from 'three'
+
+// Coin face texture — "सं" baked into the top face so it scales in 3D
+// (drei <Html> text stays screen-sized, which made the coin read as a blob).
+function makeFaceTexture() {
+  const c = document.createElement('canvas')
+  c.width = c.height = 512
+  const g = c.getContext('2d')
+  const grad = g.createRadialGradient(216, 200, 40, 256, 256, 280)
+  grad.addColorStop(0, '#f4a48f')
+  grad.addColorStop(1, '#c45a4a')
+  g.fillStyle = grad
+  g.fillRect(0, 0, 512, 512)
+  g.fillStyle = '#7d2b1f'
+  g.font = 'bold 230px "Noto Sans Devanagari", "Nirmala UI", sans-serif'
+  g.textAlign = 'center'
+  g.textBaseline = 'middle'
+  g.fillText('सं', 256, 268)
+  return new THREE.CanvasTexture(c)
+}
 
 // Coin mark component - procedural geometry with "सं"
 function CoinMark({ position = [0, 0, 0], rotation = [0, 0, 0], scale = 1 }) {
   const groupRef = useRef()
+  const faceTex = useMemo(makeFaceTexture, [])
 
-  useEffect(() => {
-    // The mark texture could be generated via canvas
-    // For now using a simple text approach
-  }, [])
+  const materials = useMemo(() => {
+    const side = new THREE.MeshStandardMaterial({ color: '#ed6f5c', metalness: 0.3, roughness: 0.7, side: THREE.DoubleSide })
+    const face = new THREE.MeshStandardMaterial({ map: faceTex, metalness: 0.3, roughness: 0.7, side: THREE.DoubleSide })
+    const bottom = new THREE.MeshStandardMaterial({ color: '#c45a4a', metalness: 0.3, roughness: 0.7, side: THREE.DoubleSide })
+    return [side, face, bottom]
+  }, [faceTex])
+
+  useEffect(() => () => materials.forEach((m) => m.dispose()), [materials])
 
   return (
     <group ref={groupRef} position={position} rotation={rotation} scale={scale}>
-      {/* The coin body - cylinder */}
+      {/* The coin body - cylinder; material array = [side, top face, bottom face] */}
       <mesh
+        material={materials}
         castShadow={false}
         receiveShadow={false}
       >
         <cylinderGeometry args={[1.2, 1.2, 0.15, 64]} />
-        <meshStandardMaterial
-          color="#ed6f5c"
-          metalness={0.3}
-          roughness={0.7}
-          side={2}
-        />
       </mesh>
-
-      {/* The "सं" mark on top face */}
-      <Html
-        position={[0, 0.08, 0]}
-        rotation={[-Math.PI / 2, 0, 0]}
-        style={{
-          fontFamily: '"Noto Sans Devanagari", sans-serif',
-          fontSize: '2.5rem',
-          fontWeight: 700,
-          color: '#ed6f5c',
-          textShadow: '0 0 8px rgba(237,111,92,0.5)',
-          pointerEvents: 'none',
-          transform: 'scale(1)',
-        }}
-      >
-        सं
-      </Html>
-
-      {/* Bottom face mark (subtle) */}
-      <Html
-        position={[0, -0.08, 0]}
-        rotation={[Math.PI / 2, 0, 0]}
-        style={{
-          fontFamily: '"Noto Sans Devanagari", sans-serif',
-          fontSize: '1.5rem',
-          fontWeight: 500,
-          color: '#ed6f5c',
-          opacity: 0.4,
-          pointerEvents: 'none',
-        }}
-      >
-        संपदा
-      </Html>
     </group>
   )
 }
 
 // Zero ring - the target ring the coin settles onto
-function ZeroRing({ position = [0, -2, 0], radius = 1.5 }) {
+const ZeroRing = forwardRef(function ZeroRing({ position = [0, -0.85, 0], radius = 1.5 }, ref) {
   return (
-    <group position={position}>
+    <group ref={ref} position={position}>
       <mesh>
         <ringGeometry args={[radius * 0.85, radius, 64]} />
         <meshBasicMaterial
           color="#ed6f5c"
           transparent
           opacity={0.15}
-          side={2}
+          side={THREE.DoubleSide}
           depthWrite={false}
         />
       </mesh>
@@ -84,13 +71,13 @@ function ZeroRing({ position = [0, -2, 0], radius = 1.5 }) {
           color="#ed6f5c"
           transparent
           opacity={0.08}
-          side={2}
+          side={THREE.DoubleSide}
           depthWrite={false}
         />
       </mesh>
     </group>
   )
-}
+})
 
 // Ambient particles for atmosphere
 function AmbientParticles({ count = 60, spread = 8 }) {
@@ -133,23 +120,28 @@ function Scene({ scrollProgress = 0, prefersReducedMotion = false }) {
 
     const progress = Math.max(0, Math.min(1, scrollProgress))
 
-    // Coin starts at ring level (y=0) and descends slightly as scroll goes 0→1
-    // Matches poster: coin sits on the zero ring
-    const startY = 0
-    const endY = -0.3 // Slightly below ring level
-    coinRef.current.position.y = startY + (endY - startY) * progress
+    // Intro drop: coin settles onto the ring in the first ~2s (easeOutCubic),
+    // so there's visible motion right after the poster cross-fade.
+    const t = state.clock.elapsedTime
+    const k = Math.min(t / 2.2, 1)
+    const ease = 1 - Math.pow(1 - k, 3)
+    const drop = 0.5 * (1 - ease)
 
-    // Gentle tilt based on progress (swaying as it descends)
+    // Coin floats above the ring at load (matches poster), settles to rest,
+    // and drifts down into the zero as the hero scrolls out (progress 0→1).
+    coinRef.current.position.y = drop - 0.55 - 0.25 * progress
+
+    // Gentle tilt based on progress plus a slow idle sway
     const maxTilt = Math.PI / 12 // 15 degrees
-    coinRef.current.rotation.x = Math.sin(progress * Math.PI * 2) * maxTilt * 0.3
-    coinRef.current.rotation.z = Math.cos(progress * Math.PI * 1.5) * maxTilt * 0.2
+    coinRef.current.rotation.x = Math.sin(progress * Math.PI) * maxTilt * 0.3 + Math.sin(t * 0.6) * 0.02
+    coinRef.current.rotation.z = Math.cos(progress * Math.PI) * maxTilt * 0.2
 
     // Subtle rotation around Y (slow spin)
     coinRef.current.rotation.y += delta * 0.15
 
-    // Ring pulse when coin approaches bottom
-    if (ringRef.current && progress > 0.7) {
-      const pulse = 1 + Math.sin(state.clock.elapsedTime * 4) * 0.1 * (progress - 0.7) / 0.3
+    // Ring pulse when coin settles / near the zero
+    if (ringRef.current && progress > 0.5) {
+      const pulse = 1 + Math.sin(t * 4) * 0.1 * (progress - 0.5) / 0.5
       ringRef.current.scale.setScalar(pulse)
     }
   })
@@ -175,7 +167,7 @@ function Scene({ scrollProgress = 0, prefersReducedMotion = false }) {
       <ZeroRing ref={ringRef} />
 
       {/* Coin with "सं" mark */}
-      <CoinMark ref={coinRef} />
+      <CoinMark ref={coinRef} position={[0, -0.55, 0]} />
 
       {/* Ambient particles */}
       <AmbientParticles count={40} spread={10} />
@@ -184,7 +176,7 @@ function Scene({ scrollProgress = 0, prefersReducedMotion = false }) {
 }
 
 // Canvas wrapper with performance settings
-function Hero3DCanvas({ scrollProgress, prefersReducedMotion }) {
+function Hero3DCanvas({ scrollProgress, prefersReducedMotion, onReady }) {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -195,14 +187,15 @@ function Hero3DCanvas({ scrollProgress, prefersReducedMotion }) {
 
   return (
     <Canvas
-      camera={{ position: [0, 1.2, 3.5], fov: 30 }}
+      camera={{ position: [0, 1.4, 5], fov: 40 }}
       gl={{ antialias: true, alpha: true, preserveDrawingBuffer: false }}
       dpr={[1, 1.5]}
-      frameloop={prefersReducedMotion ? 'never' : 'demand'}
+      frameloop={prefersReducedMotion ? 'never' : 'always'}
       onCreated={({ gl }) => {
         gl.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
         // Explicitly set clear color to transparent to avoid black background
         gl.clearColor(0, 0, 0, 0)
+        onReady?.()
       }}
       style={{ width: '100%', height: '100%', display: 'block' }}
     >
@@ -220,15 +213,10 @@ function Hero3DCanvas({ scrollProgress, prefersReducedMotion }) {
 }
 
 // Main Hero3D component with scroll tracking
-const Hero3DComponent = forwardRef((props, ref) => {
-  const { onReady, style, ...rest } = props
+const Hero3DComponent = (props) => {
+  const { onReady, ...rest } = props
   const [scrollProgress, setScrollProgress] = useState(0)
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
-  const canvasRef = useRef(null)
-
-  useImperativeHandle(ref, () => ({
-    canvas: canvasRef.current,
-  }))
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -244,13 +232,12 @@ const Hero3DComponent = forwardRef((props, ref) => {
       if (!hero) return
 
       const rect = hero.getBoundingClientRect()
-      const viewportHeight = window.innerHeight
       const heroHeight = rect.height
 
-      // Progress from when hero top enters viewport to when hero bottom leaves
-      const _start = -heroHeight
-      const _end = viewportHeight
-      const progress = Math.max(0, Math.min(1, (viewportHeight - rect.top) / (heroHeight + viewportHeight)))
+      // Progress: 0 when the hero is fully on screen, → 1 as the hero
+      // bottom leaves the viewport. Old mapping started at ~0.5 on load,
+      // which killed the first half of the motion.
+      const progress = Math.max(0, Math.min(1, -rect.top / heroHeight))
 
       setScrollProgress(progress)
     }
@@ -261,23 +248,15 @@ const Hero3DComponent = forwardRef((props, ref) => {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // Call onReady when canvas is mounted
-  useEffect(() => {
-    if (onReady && canvasRef.current) {
-      onReady()
-    }
-  }, [onReady])
-
   return (
     <Hero3DCanvas
-      ref={canvasRef}
       scrollProgress={scrollProgress}
       prefersReducedMotion={prefersReducedMotion}
-      style={style}
+      onReady={onReady}
       {...rest}
     />
   )
-})
+}
 
 Hero3DComponent.displayName = 'Hero3D'
 

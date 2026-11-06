@@ -367,7 +367,10 @@
   --accent: var(--color-accent);
   --accent-soft: var(--color-accent-soft);
   --accent-bg: var(--color-accent-bg);
+  --success: var(--color-success);
   --success-bg: var(--color-success-bg);
+  --danger: var(--color-danger);
+  --danger-bg: var(--color-danger-bg);
   --warning: var(--color-warning);
   --overlay: var(--color-overlay);
   --border: var(--color-border);
