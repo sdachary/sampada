@@ -139,7 +139,8 @@ jobs:
         env:
           DATABASE_URL: postgres://sampada:sampada@localhost:5432/sampada_test
           RAILS_ENV: test
-        run: bin/rails db:create db:migrate 2>&1
+        run: |
+          bin/rails db:drop db:create db:migrate 2>&1
       - name: Run RSpec
         env:
           DATABASE_URL: postgres://sampada:sampada@localhost:5432/sampada_test
