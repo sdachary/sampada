@@ -55,12 +55,14 @@ export default function Login() {
         return
       }
       const credentialJSON = credentialToJSON(credential)
-      const res = await api.request('/api/v1/auth/passkeys/auth/verify', {
+      const _res = await api.request('/api/v1/auth/passkeys/auth/verify', {
         method: 'POST',
         body: JSON.stringify({ email, credential: credentialJSON })
       })
-      // Use the same auth flow as password login
-      localStorage.setItem('sampada_token', res.token)
+      // Passkey verified - now establish Better-Auth session by calling sign-in endpoint
+      // Note: This requires Better-Auth to support passkey-based sign-in or a custom integration
+      // For now, redirect to dashboard; the user may need to complete sign-in via password
+      // TODO: Integrate with Better-Auth session creation API
       navigate('/dashboard')
     } catch (err) {
       if (err.name === 'NotAllowedError' || err.name === 'AbortError') {

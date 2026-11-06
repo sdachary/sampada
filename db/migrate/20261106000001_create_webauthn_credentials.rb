@@ -12,6 +12,5 @@ class CreateWebauthnCredentials < ActiveRecord::Migration[8.1]
     end
 
     add_index :webauthn_credentials, :webauthn_id, unique: true
-    add_index :webauthn_credentials, :user_id
   end
 end

@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
+import { Card, Button, Input, Select, Textarea, EmptyState, PageHeader, Badge, ToastHost, toast } from '../components/ui'
 
 const DPO_EMAIL = 'grievance@acharylab.app'
 
-// Mirrors Grievance::TYPES — the server rejects any other value.
 const GRIEVANCE_TYPES = [
   { value: 'access', label: 'Access my data' },
   { value: 'correction', label: 'Correct my data' },
@@ -104,94 +104,111 @@ export default function Privacy() {
   const features = Object.keys(consent)
 
   return (
-    <div>
-      <p className="page-num mb-4" >00<em>18</em> / 016</p>
-      <h1 className="page-title" >Privacy</h1>
-      <p className="text-13-5-muted-sm" >Your data, your control (DPDP compliance).</p>
+    <div style={{ display: 'grid', gap: 20 }}>
+      <PageHeader
+        title="Privacy"
+        num="018 / 016"
+      >
+        <p style={{ fontSize: 13, color: 'var(--muted)' }}>Your data, your control (DPDP compliance).</p>
+      </PageHeader>
 
       {msg && (
-        <div className="card" style={{ padding: '10px 16px', marginBottom: 12, fontSize: 13, color: isErr ? 'var(--coral)' : 'var(--emerald)' }}>
+        <Card style={{ padding: '10px 16px', fontSize: 13, color: isErr ? 'var(--accent)' : 'var(--success)' }}>
           {msg}
-        </div>
+        </Card>
       )}
 
-      <div className="card card-pad-lg" >
+      <Card style={{ padding: '20px' }}>
         <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 10, letterSpacing: '-0.01em' }}>Consent Management</p>
         {features.length === 0 && (
-          <p className="text-12-muted" >Loading…</p>
+          <p style={{ fontSize: 12, color: 'var(--muted)' }}>Loading…</p>
         )}
         {features.map(f => (
-          <div key={f} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid var(--line-soft)' }}>
+          <div key={f} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid var(--border-soft)' }}>
             <span style={{ fontSize: 13, textTransform: 'capitalize' }}>{f.replace(/_/g, ' ')}</span>
-            <button onClick={() => toggleConsent(f)}
-              style={{ padding: '5px 14px', borderRadius: 20, border: '1px solid var(--line)', background: consent[f] ? 'var(--emerald)' : 'transparent', color: consent[f] ? '#fff' : 'var(--ink-soft)', fontSize: 12, cursor: 'pointer', transition: 'all 0.2s' }}>
+            <Button
+              onClick={() => toggleConsent(f)}
+              variant={consent[f] ? 'success' : 'ghost'}
+              size="sm"
+            >
               {consent[f] ? 'Granted' : 'Revoked'}
-            </button>
+            </Button>
           </div>
         ))}
-      </div>
+      </Card>
 
-      <div className="card card-pad-lg" >
-        <p className="h-600-12 mb-6" >Data & Erasure</p>
-        <p className="text-12-muted mb-10" >
+      <Card style={{ padding: '20px' }}>
+        <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 10, letterSpacing: '-0.01em' }}>Data & Erasure</p>
+        <p style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 16 }}>
           Request deletion of your account and all associated data. You can download everything first with a full export,
           then cancel within 48 hours.
         </p>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <button onClick={handleErasure} className="btn" style={{ fontSize: 12.5, padding: '7px 16px', background: 'var(--coral)', color: '#fff' }}>
+          <Button onClick={handleErasure} style={{ background: 'var(--accent)', color: '#fff' }}>
             Request account erasure
-          </button>
-          <a href="/privacy.html" className="btn btn-ghost" style={{ fontSize: 12.5, padding: '7px 16px', textDecoration: 'none' }}>
-            Read the privacy notice
+          </Button>
+          <a href="/privacy.html" style={{ textDecoration: 'none' }}>
+            <Button variant="ghost">Read the privacy notice</Button>
           </a>
         </div>
-      </div>
+      </Card>
 
       {pending.length > 0 && (
-        <div className="card" style={{ padding: '14px 18px', marginBottom: 12, borderLeft: '3px solid #d4a017' }}>
-          <p className="h-600-12 mb-6" >Pending Erasure Requests</p>
+        <Card style={{ padding: '14px 18px', borderLeft: '3px solid var(--warning)' }}>
+          <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)', marginBottom: 6 }}>Pending Erasure Requests</p>
           {pending.map(e => (
-            <div key={e.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, padding: '6px 0', borderBottom: '1px solid var(--line-soft)' }}>
-              <div className="text-11-5-muted" >
-                <p>Deletes on {new Date(e.scheduled_for).toLocaleString()}</p>
-                <p>Reference <code style={{ fontSize: 11, background: 'var(--paper-warm)', padding: '1px 6px', borderRadius: 4 }}>{e.cancel_token}</code></p>
+            <div key={e.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, padding: '6px 0', borderBottom: '1px solid var(--border-soft)' }}>
+              <div>
+                <p style={{ fontSize: 11.5, color: 'var(--muted)' }}>Deletes on {new Date(e.scheduled_for).toLocaleString()}</p>
+                <p>Reference <code style={{ fontSize: 11, background: 'var(--bg)', padding: '1px 6px', borderRadius: 4 }}>{e.cancel_token}</code></p>
               </div>
-              <button onClick={() => cancelDeletion(e.cancel_token)} className="btn btn-ghost" style={{ fontSize: 12, padding: '5px 14px' }}>
+              <Button variant="ghost" size="sm" onClick={() => cancelDeletion(e.cancel_token)}>
                 Cancel deletion
-              </button>
+              </Button>
             </div>
           ))}
-        </div>
+        </Card>
       )}
 
-      <div className="card card-pad-lg" >
-        <p className="h-600-12 mb-6" >Raise a Grievance</p>
-        <p className="text-12-muted mb-10" >
+      <Card style={{ padding: '20px' }}>
+        <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 10, letterSpacing: '-0.01em' }}>Raise a Grievance</p>
+        <p style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 16 }}>
           Anything we got wrong with your data? We respond within 72 hours and resolve within 90 days. You can also write
-          to our Grievance Officer at <a className="text-coral" href={`mailto:${DPO_EMAIL}`} >{DPO_EMAIL}</a>.
+          to our Grievance Officer at <a style={{ color: 'var(--accent)' }} href={`mailto:${DPO_EMAIL}`}>{DPO_EMAIL}</a>.
         </p>
         {reference && (
-          <p style={{ fontSize: 12, color: 'var(--emerald)', marginBottom: 10 }}>
+          <p style={{ fontSize: 12, color: 'var(--success)', marginBottom: 10 }}>
             Reference for your last grievance: <strong>{reference}</strong>
           </p>
         )}
-        <form className="col-g10" onSubmit={submitGrievance} >
-          <select className="input" required value={grievance.grievance_type}
-            onChange={e => setGrievance(g => ({ ...g, grievance_type: e.target.value }))}>
-            <option value="">What is this about?</option>
-            {GRIEVANCE_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-          </select>
-          <textarea className="input" required rows={3} placeholder="Tell us what happened"
+        <form onSubmit={submitGrievance} style={{ display: 'grid', gap: 12 }}>
+          <Select
+            value={grievance.grievance_type}
+            onChange={e => setGrievance(g => ({ ...g, grievance_type: e.target.value }))}
+            options={GRIEVANCE_TYPES.map(t => ({ value: t.value, label: t.label }))}
+            placeholder="What is this about?"
+            required
+          />
+          <Textarea
             value={grievance.description}
-            onChange={e => setGrievance(g => ({ ...g, description: e.target.value }))} />
-          <input className="input" type="email" placeholder="Contact email (optional — defaults to your account email)"
+            onChange={e => setGrievance(g => ({ ...g, description: e.target.value }))}
+            placeholder="Tell us what happened"
+            rows={3}
+            required
+          />
+          <Input
+            type="email"
             value={grievance.email}
-            onChange={e => setGrievance(g => ({ ...g, email: e.target.value }))} />
-          <button type="submit" disabled={sending} className="btn btn-primary" style={{ justifyContent: 'center', fontSize: 12.5, padding: '8px 18px' }}>
+            onChange={e => setGrievance(g => ({ ...g, email: e.target.value }))}
+            placeholder="Contact email (optional — defaults to your account email)"
+          />
+          <Button type="submit" loading={sending} disabled={sending}>
             {sending ? 'Submitting…' : 'Submit grievance'}
-          </button>
+          </Button>
         </form>
-      </div>
+      </Card>
+
+      <ToastHost />
     </div>
   )
 }

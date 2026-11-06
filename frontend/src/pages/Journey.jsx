@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../lib/api'
 import { fmtINR } from '../lib/amounts'
-import { Button } from '../components/ui'
+import { Button, Card, Progress, Skeleton, EmptyState, PageHeader, Badge } from '../components/ui'
 
 export default function Journey() {
   const [journey, setJourney] = useState(null)
@@ -18,24 +18,27 @@ export default function Journey() {
   }, [])
 
   if (loading) return (
-    <div>
-      {[1,2,3,4].map(i => <div key={i} className="skeleton" style={{ height: 80, marginBottom: 8, borderRadius: 'var(--radius)' }} />)}
+    <div style={{ display: 'grid', gap: 8 }}>
+      {[1,2,3,4].map(i => <Skeleton key={i} style={{ height: 80, marginBottom: 8, borderRadius: 'var(--radius-md)' }} />)}
     </div>
   )
 
   if (!journey) return (
-    <div>
-      <p className="page-num mb-4" >00<em>12</em> / 016</p>
-      <h1 className="page-title" >Your Journey</h1>
-      <p style={{ fontSize: 13.5, color: 'var(--ink-mute)', marginBottom: 20 }}>Your path to financial freedom.</p>
-      <div className="empty-state">
-        <span className="emoji">→</span>
-        <p>Start your financial journey</p>
-        <p className="text-12-faint" >Track your first debt or investment to see your journey unfold.</p>
-        <Link to="/dashboard/onboarding">
-          <Button variant="primary" style={{ marginTop: 16 }}>Start your journey</Button>
-        </Link>
-      </div>
+    <div style={{ display: 'grid', gap: 16 }}>
+      <PageHeader
+        title="Your Journey"
+        num="012 / 016"
+      >
+        <p style={{ fontSize: 13, color: 'var(--muted)' }}>Your path to financial freedom.</p>
+      </PageHeader>
+      <EmptyState
+        icon={<span aria-hidden="true" style={{ fontSize: 48, color: 'var(--border)' }}>→</span>}
+        title="Start your financial journey"
+        action="Start your journey"
+        onAction={() => window.location.href = '/dashboard/onboarding'}
+      >
+        Track your first debt or investment to see your journey unfold.
+      </EmptyState>
     </div>
   )
 
@@ -48,90 +51,86 @@ export default function Journey() {
   const milestones = journey.milestones || p?.milestones || []
 
   return (
-    <div>
-      <p className="page-num mb-4" >00<em>12</em> / 016</p>
-      <h1 className="page-title" >Your Journey</h1>
-      <p className="text-13-5-muted-sm" >Your path to financial freedom.</p>
+    <div style={{ display: 'grid', gap: 20 }}>
+      <PageHeader
+        title="Your Journey"
+        num="012 / 016"
+      >
+        <p style={{ fontSize: 13, color: 'var(--muted)' }}>Your path to financial freedom.</p>
+      </PageHeader>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 16 }}>
-        <div className="card card-pad-16" >
-          <p className="label-caps-sm mb-4" >Net Worth</p>
-          <p className="fin" style={{ fontSize: 20, fontWeight: 600, color: (+nw.net_worth || 0) >= 0 ? 'var(--emerald)' : 'var(--coral)' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 }}>
+        <Card style={{ padding: '16px' }}>
+          <p style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Net Worth</p>
+          <p className="fin" style={{ fontSize: 20, fontWeight: 600, color: (+nw.net_worth || 0) >= 0 ? 'var(--success)' : 'var(--danger)' }}>
             {fmtINR(+nw.net_worth || 0)}
           </p>
-          <p className="text-11-muted" >Assets: {fmtINR(+nw.assets || 0)} · Liab: {fmtINR(+nw.liabilities || 0)}</p>
-        </div>
-        <div className="card card-pad-16" >
-          <p className="label-caps-sm mb-4" >Total Debt</p>
-          <p className="fin amt-20-out" >{fmtINR(+d.total_debt || 0)}</p>
-          {d.total_emi && <p className="text-11-muted" >EMI: {fmtINR(+d.total_emi)}/mo</p>}
-        </div>
-        <div className="card card-pad-16" >
-          <p className="label-caps-sm mb-4" >SIP Progress</p>
-          <p className="fin" style={{ fontSize: 20, fontWeight: 600, color: 'var(--emerald)' }}>{sp.progress || 0}%</p>
-          <p className="text-11-muted" >Goal: {fmtINR(+sp.monthly_goal || 0)}/mo</p>
-        </div>
+          <p style={{ fontSize: 11, color: 'var(--muted)' }}>Assets: {fmtINR(+nw.assets || 0)} · Liab: {fmtINR(+nw.liabilities || 0)}</p>
+        </Card>
+        <Card style={{ padding: '16px' }}>
+          <p style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Total Debt</p>
+          <p className="fin" style={{ fontSize: 20, fontWeight: 600, color: 'var(--danger)' }}>{fmtINR(+d.total_debt || 0)}</p>
+          {d.total_emi && <p style={{ fontSize: 11, color: 'var(--muted)' }}>EMI: {fmtINR(+d.total_emi)}/mo</p>}
+        </Card>
+        <Card style={{ padding: '16px' }}>
+          <p style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>SIP Progress</p>
+          <p className="fin" style={{ fontSize: 20, fontWeight: 600, color: 'var(--success)' }}>{sp.progress || 0}%</p>
+          <p style={{ fontSize: 11, color: 'var(--muted)' }}>Goal: {fmtINR(+sp.monthly_goal || 0)}/mo</p>
+        </Card>
       </div>
 
-      {/* Goal Progress Bars */}
-      <h2 className="h-600-14-ls" >Goals</h2>
+      <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink)', marginBottom: 12 }}>Goals</p>
 
-      <div className="card card-pad-16-mb8" >
-        <div className="spread-mb4" >
-          <span className="h-500-13" >Net Worth Target</span>
-          <span className="fin text-12-muted" >{fmtINR(+nwp.current || 0)} / {fmtINR(+nwp.target || 0)}</span>
+      <Card style={{ padding: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+          <span style={{ fontSize: 13, fontWeight: 500 }}>Net Worth Target</span>
+          <span className="fin" style={{ fontSize: 12, color: 'var(--muted)' }}>{fmtINR(+nwp.current || 0)} / {fmtINR(+nwp.target || 0)}</span>
         </div>
-        <div className="progress h-8" >
-          <div className="progress-fill green" style={{ width: `${nwp.progress_pct || 0}%` }} />
-        </div>
-        <p className="text-11-faint mt-4" >{nwp.progress_pct || 0}% of ₹50L goal</p>
-      </div>
+        <Progress value={nwp.progress_pct || 0} variant="success" />
+        <p style={{ fontSize: 11, color: 'var(--faint)', marginTop: 8 }}>{nwp.progress_pct || 0}% of ₹50L goal</p>
+      </Card>
 
-      <div className="card card-pad-16-mb8" >
-        <div className="spread-mb4" >
-          <span className="h-500-13" >Debt Reduction</span>
-          <span className="fin text-12-muted" >{fmtINR(+dp.paid_debt || 0)} / {fmtINR(+dp.original_debt || 0)}</span>
+      <Card style={{ padding: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+          <span style={{ fontSize: 13, fontWeight: 500 }}>Debt Reduction</span>
+          <span className="fin" style={{ fontSize: 12, color: 'var(--muted)' }}>{fmtINR(+dp.paid_debt || 0)} / {fmtINR(+dp.original_debt || 0)}</span>
         </div>
-        <div className="progress h-8" >
-          <div className="progress-fill" style={{ width: `${dp.reduction_pct || 0}%`, background: 'var(--coral)' }} />
-        </div>
-        <p className="text-11-faint mt-4" >{dp.reduction_pct || 0}% paid off · {fmtINR(+dp.total_debt || 0)} remaining</p>
-      </div>
+        <Progress value={dp.reduction_pct || 0} variant="danger" />
+        <p style={{ fontSize: 11, color: 'var(--faint)', marginTop: 8 }}>{dp.reduction_pct || 0}% paid off · {fmtINR(+dp.total_debt || 0)} remaining</p>
+      </Card>
 
-      <div className="card" style={{ padding: '16px', marginBottom: 16 }}>
-        <div className="spread-mb4" >
-          <span className="h-500-13" >Monthly SIP Goal</span>
-          <span className="fin text-12-muted" >{sp.progress || 0}%</span>
+      <Card style={{ padding: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+          <span style={{ fontSize: 13, fontWeight: 500 }}>Monthly SIP Goal</span>
+          <span className="fin" style={{ fontSize: 12, color: 'var(--muted)' }}>{sp.progress || 0}%</span>
         </div>
-        <div className="progress h-8" >
-          <div className="progress-fill green" style={{ width: `${sp.progress || 0}%`, background: '#a855f7' }} />
-        </div>
-        <p className="text-11-faint mt-4" >Goal: {fmtINR(+sp.monthly_goal || 0)}/mo</p>
-      </div>
+        <Progress value={sp.progress || 0} variant="success" />
+        <p style={{ fontSize: 11, color: 'var(--faint)', marginTop: 8 }}>Goal: {fmtINR(+sp.monthly_goal || 0)}/mo</p>
+      </Card>
 
       {milestones.length > 0 && (
-        <div>
-          <h2 className="h-600-14-ls" >Milestones</h2>
+        <div style={{ display: 'grid', gap: 8 }}>
+          <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink)' }}>Milestones</p>
           {milestones.map((m, i) => (
-            <div key={i} className="card" style={{ padding: '12px 16px', marginBottom: 6, borderLeft: '3px solid var(--emerald)' }}>
-              <p className="row-600-13" >{m.title || m.name}</p>
-              {m.date && <p className="text-11-muted" >{m.date}</p>}
-            </div>
+            <Card key={i} style={{ padding: '12px 16px', borderLeft: '3px solid var(--success)' }}>
+              <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--ink)' }}>{m.title || m.name}</p>
+              {m.date && <p style={{ fontSize: 11, color: 'var(--muted)' }}>{m.date}</p>}
+            </Card>
           ))}
         </div>
       )}
 
       {p?.net_worth_trajectory?.length > 0 && (
-        <div className="mt-16" >
-          <h2 className="h-600-14-ls" >Net Worth Trajectory</h2>
-          <div className="card card-pad-16" >
+        <div>
+          <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink)', marginBottom: 12 }}>Net Worth Trajectory</p>
+          <Card style={{ padding: '16px' }}>
             {p.net_worth_trajectory.slice(0, 12).map((pt, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, padding: '3px 0', borderBottom: i < 11 ? '1px solid var(--line-soft)' : 'none' }}>
-                <span className="text-mute" >{pt.date || pt.month}</span>
-                <span className="fin fw-500" >{fmtINR(+pt.net_worth || 0)}</span>
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, padding: '3px 0', borderBottom: i < 11 ? '1px solid var(--border-soft)' : 'none' }}>
+                <span style={{ color: 'var(--muted)' }}>{pt.date || pt.month}</span>
+                <span className="fin" style={{ fontWeight: 500 }}>{fmtINR(+pt.net_worth || 0)}</span>
               </div>
             ))}
-          </div>
+          </Card>
         </div>
       )}
     </div>

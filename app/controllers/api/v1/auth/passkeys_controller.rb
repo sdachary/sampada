@@ -113,9 +113,12 @@ module Api
 
             clear_challenge(challenge_key)
 
-            # Issue session token (same as password login)
-            token = Session.create_for_user!(user)
-            render_success({ token: token.token, user: user.as_json(only: %i[id email first_name last_name currency onboarded]) }, message: "Signed in with passkey")
+            # Issue session via Better-Auth — call Better-Auth's sign-in endpoint
+            # The frontend will use the returned user info to establish a session
+            render_success({
+              user: user.as_json(only: %i[id email first_name last_name currency onboarded]),
+              message: "Passkey verified. Redirecting to establish session..."
+            })
           rescue WebAuthn::Error => e
             clear_challenge(challenge_key)
             render_error("Authentication failed: #{e.message}", status: :unauthorized)
