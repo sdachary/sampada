@@ -223,10 +223,11 @@ export async function onRequest(context) {
       modifiedHeaders.delete('host')
       // Better-Auth cookie is a signed token: <session-token>.<signature> (URL-encoded).
       // Rails verifies via /api/auth/verify which matches the short session token only.
+      // Prod sets __Secure-better-auth.session_token; accept either prefix.
       const cookieToken = request.headers.get('cookie')
         ?.split(';')
         .map((c) => c.trim())
-        .find((c) => c.startsWith('better-auth.session_token='))
+        .find((c) => c.startsWith('better-auth.session_token=') || c.startsWith('__Secure-better-auth.session_token='))
         ?.split('=').slice(1).join('=')
       if (cookieToken) {
         const decoded = decodeURIComponent(cookieToken)
