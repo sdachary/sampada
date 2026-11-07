@@ -268,3 +268,9 @@ input, button, textarea { font-family: var(--body); }
   .landing-stage-grid { grid-template-columns: 1fr !important; }
   .landing-feature-grid { grid-template-columns: 1fr !important; }
 }
+
+/* Big-screen (2.5K/4K/8K) hero heading scale — floors at 40px so midsize
+   desktops keep today's size; 1.875vw hits 72px at 3840w and caps there. */
+@media (min-width: 2000px) {
+  #hero-heading { font-size: clamp(40px, 1.875vw, 72px) !important; }
+}

@@ -47,7 +47,10 @@ export default function HeroVisual() {
       />
       {enable && (
         <Suspense fallback={null}>
-          <div style={{ position: 'absolute', inset: 0, opacity: show3D ? 1 : 0, transition: 'opacity 600ms ease-out' }}>
+          {/* Subtle scale settle alongside the fade — 3D only mounts when
+              prefers-reduced-motion is off (canRender3D), so RM users never
+              see the transform. */}
+          <div style={{ position: 'absolute', inset: 0, opacity: show3D ? 1 : 0, transform: show3D ? 'scale(1)' : 'scale(0.97)', transition: 'opacity 600ms ease-out, transform 600ms ease-out' }}>
             <Hero3D onReady={() => setShow3D(true)} />
           </div>
         </Suspense>

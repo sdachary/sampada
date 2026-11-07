@@ -3,22 +3,25 @@ import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
 
-// Coin face texture — "सं" baked into the top face so it scales in 3D
-// (drei <Html> text stays screen-sized, which made the coin read as a blob).
+// Coin face texture — "सं" baked into the top face so it stays crisp at any
+// resolution up to 8K (drei <Html> text stays screen-sized, which made the
+// coin read as a blob). Larger backing store than the 3D canvas needs, so the
+// glyph and gradient survive high-dpr sampling.
 function makeFaceTexture() {
+  const s = 1024
   const c = document.createElement('canvas')
-  c.width = c.height = 512
+  c.width = c.height = s
   const g = c.getContext('2d')
-  const grad = g.createRadialGradient(216, 200, 40, 256, 256, 280)
+  const grad = g.createRadialGradient(s * 0.42, s * 0.39, s * 0.078, s * 0.5, s * 0.5, s * 0.547)
   grad.addColorStop(0, '#f4a48f')
   grad.addColorStop(1, '#c45a4a')
   g.fillStyle = grad
-  g.fillRect(0, 0, 512, 512)
+  g.fillRect(0, 0, s, s)
   g.fillStyle = '#7d2b1f'
-  g.font = 'bold 230px "Noto Sans Devanagari", "Nirmala UI", sans-serif'
+  g.font = `bold ${Math.round(s * 0.449)}px "Noto Sans Devanagari", "Nirmala UI", sans-serif`
   g.textAlign = 'center'
   g.textBaseline = 'middle'
-  g.fillText('सं', 256, 268)
+  g.fillText('सं', s * 0.5, s * 0.523)
   return new THREE.CanvasTexture(c)
 }
 
@@ -192,10 +195,13 @@ function Hero3DCanvas({ scrollProgress, prefersReducedMotion, onReady }) {
     <Canvas
       camera={{ position: [0, 1.4, 5], fov: 40 }}
       gl={{ antialias: true, alpha: true, preserveDrawingBuffer: false }}
-      dpr={[1, 1.5]}
+      // Render at up to native device resolution (8K panels + high-dpr
+      // phones) — the hero is a small surface (~400px CSS), so full-dpr
+      // backing stores stay trivially cheap. The old hard cap of 1.5 made
+      // the 3D visibly softer than the vector poster it cross-fades over.
+      dpr={[1, 3]}
       frameloop={prefersReducedMotion ? 'never' : 'always'}
       onCreated={({ gl }) => {
-        gl.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
         // Explicitly set clear color to transparent to avoid black background
         gl.clearColor(0, 0, 0, 0)
         onReady?.()
