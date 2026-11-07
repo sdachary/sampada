@@ -9,9 +9,9 @@
 [![Ruby on Rails](https://img.shields.io/badge/Ruby%20on%20Rails-8.1-CC0000?logo=rubyonrails&logoColor=white)](https://rubyonrails.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![Hosted](https://img.shields.io/badge/Hosted%20SaaS-free%20forever-2fa39a)](https://sampada.vayalabs.in)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](docs/CONTRIBUTING.md)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](docs/contributing/CONTRIBUTING.md)
 
-[Features](#what-is-sampada) · [Why Sampada](#why-sampada-vs-other-finance-apps) · [Architecture](#architecture) · [Contributing](#contributing)
+[Features](#what-is-sampada) · [Why Sampada](#why-sampada-vs-other-finance-apps) · [Architecture](#architecture) · [Project Structure](#project-structure) · [Contributing](#contributing)
 
 </div>
 
@@ -189,6 +189,77 @@ Sampada is a **Rails 8.1 API-only backend** + **React 19/Vite SPA frontend**, de
 
 ---
 
+## Project Structure
+
+```
+sampada/
+├── .github/                    # CI/CD workflows
+├── app/                        # Rails 8.1 API-only backend
+│   ├── controllers/            # API controllers (Api::V1::*, Admin::*)
+│   ├── jobs/                   # Sidekiq background jobs
+│   ├── lib/                    # Shared Rails lib code
+│   ├── mailers/                # ActionMailer classes
+│   ├── middleware/             # Custom Rack middleware
+│   ├── models/                 # ActiveRecord models
+│   ├── services/               # Business logic services
+│   └── views/                  # API serializers (JSON)
+├── bin/                        # Executable scripts (rails, rake, deploy)
+├── config/                     # Rails configuration
+├── db/                         # Migrations, seeds, schema
+├── deploy/                     # Deployment configs (docker-compose, cloudflared, scripts)
+├── docs/                       # All documentation
+│   ├── architecture/           # System design, ADRs, master specs
+│   ├── api/                    # API contracts, provider configs
+│   ├── contributing/           # Contribution guidelines, code of conduct
+│   ├── deployment/             # Deployment guides, runbooks
+│   ├── design/                 # Design system, UI specs, UAT tracker
+│   ├── legal/                  # Privacy, DPDP, terms, security
+│   ├── operations/             # Backup, performance, ops runbooks
+│   ├── specs/                  # Feature specs by phase (phase1–4)
+│   ├── ARCHITECTURE.md         # High-level architecture overview
+│   ├── CHANGELOG.md            # Version history
+│   ├── CONTEXT.md              # AI agent context
+│   └── roadmap-updated.md      # Product roadmap
+├── frontend/                   # React 19 + Vite SPA (separate deploy)
+│   ├── src/
+│   │   ├── pages/              # Route pages (Dashboard, Debts, Portfolio, …)
+│   │   ├── components/         # Shared UI components
+│   │   │   └── ui/             # Design primitives (Button, Card, Stat, …)
+│   │   ├── lib/                # api.js, chartTheme, motion-primitives, amounts
+│   │   ├── landing/hero3d/     # 3D hero (landing page only)
+│   │   └── App.jsx             # Router + page transitions
+│   ├── public/                 # Static assets, SW, legal pages, _headers
+│   ├── functions/              # Cloudflare Pages Functions (auth proxy)
+│   ├── test/                   # Playwright tests
+│   ├── package.json
+│   ├── vite.config.js
+│   ├── wrangler.toml
+│   └── lighthouserc.json
+├── lib/                        # Rails lib (tasks, utilities)
+├── spec/                       # RSpec test suite
+├── vendor/                     # Bundler cache (gitignored)
+├── Dockerfile
+├── docker-compose.yml
+├── docker-entrypoint.sh
+├── deploy.sh
+├── Gemfile
+├── Gemfile.lock
+├── LICENSE
+├── Rakefile
+├── config.ru
+├── .dockerignore
+├── .gitignore
+├── .gitleaks.toml
+├── .rubocop.yml
+├── .ruby-version
+├── .sops.yaml
+├── opencode.json
+├── package.json                # Root scripts (lint, test for Ruby)
+└── VERSION
+```
+
+---
+
 ## Roadmap
 
 Full plan: [`docs/roadmap-updated.md`](docs/roadmap-updated.md). Everything already shipped is in the [release history](#what-is-sampada) above.
@@ -218,7 +289,7 @@ Full plan: [`docs/roadmap-updated.md`](docs/roadmap-updated.md). Everything alre
 
 ## Contributing
 
-Read [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) before opening a PR.
+Read [`docs/contributing/CONTRIBUTING.md`](docs/contributing/CONTRIBUTING.md) before opening a PR.
 
 The short version: contributions should serve the philosophy — debt first, then wealth. Features that undermine that priority won't be merged, regardless of technical quality.
 
