@@ -1,11 +1,11 @@
 # Sampada Frontend
 
-React 19 + Vite SPA for Sampada — the user interface companion to the Rails 8.1 API-only backend. See `../docs/ARCHITECTURE.md` and `../DESIGN.md` (design system) for full context.
+React 19 + Vite SPA for Sampada — the user interface companion to the Rails 8.1 API-only backend. See [`../docs/architecture/ARCHITECTURE.md`](../docs/architecture/ARCHITECTURE.md) and [`../docs/design/DESIGN.md`](../docs/design/DESIGN.md) (design system) for full context.
 
 ## Stack
 
 - **React 19**, **Vite 8** (`vite.config.js` proxies `/api` → `http://localhost:3002` in dev)
-- **Hand-rolled CSS** — design tokens from `../DESIGN.md`, nothing pre-made (no Tailwind, no component library)
+- **Hand-rolled CSS** — design tokens from [`../docs/design/DESIGN.md`](../docs/design/DESIGN.md), nothing pre-made (no Tailwind, no component library)
 - **recharts** — charts (dashboard, goal projections); **lucide-react** — icons
 - **Cloudflare Pages** — deployment via `wrangler.toml` (`sampada.vayalabs.in`); security headers in `public/_headers`
 - **PWA** — service worker (`public/sw.js`), manifest, offline read-only indicator
@@ -62,8 +62,8 @@ Build (`npm run build` → `dist/`) and push the `frontend/` directory with Clou
 
 ## Legal pages
 
-`public/privacy.html` and `public/terms.html` are the AcharyaLab-standard DPDP legal pages shipped in the SPA build (linked from the landing footer). Keep them byte-consistent with the AcharyaLab template and in sync with `../docs/PRIVACY_POLICY.md`.
+`public/privacy.html` and `public/terms.html` are the AcharyaLab-standard DPDP legal pages shipped in the SPA build (linked from the landing footer). Keep them byte-consistent with the AcharyaLab template and in sync with [`../docs/legal/PRIVACY_POLICY.md`](../docs/legal/PRIVACY_POLICY.md).
 
 ## Screenshots
 
-See `../docs/ui-after.md` for before/after comparison (Steps 0–11).
+See [`../docs/design/ui-after.md`](../docs/design/ui-after.md) for before/after comparison (Steps 0–11).
