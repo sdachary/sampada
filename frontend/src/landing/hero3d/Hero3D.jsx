@@ -146,6 +146,9 @@ function Scene({ scrollProgress = 0, prefersReducedMotion = false }) {
     }
   })
 
+  // Mobile still gets 3D — fewer particles only.
+  const wide = typeof window !== 'undefined' && window.innerWidth >= 768
+
   return (
     <>
       {/* Lighting */}
@@ -170,7 +173,7 @@ function Scene({ scrollProgress = 0, prefersReducedMotion = false }) {
       <CoinMark ref={coinRef} position={[0, -0.55, 0]} />
 
       {/* Ambient particles */}
-      <AmbientParticles count={40} spread={10} />
+      <AmbientParticles count={wide ? 40 : 20} spread={10} />
     </>
   )
 }

@@ -14,7 +14,7 @@ function canRender3D() {
   const cores = nav.hardwareConcurrency ?? 8
   const canvas = document.createElement('canvas')
   const webgl = !!(canvas.getContext('webgl2') || canvas.getContext('webgl'))
-  return webgl && wide && !reduced && !saveData && cores > 4
+  return webgl && !reduced && !saveData && cores > 4
 }
 
 export default function HeroVisual() {

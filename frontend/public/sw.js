@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sampada-v3';
+const CACHE_NAME = 'sampada-v4';
 const SHELL_URLS = ['/', '/manifest.webmanifest'];
 
 // Precaches the app shell plus the hashed build assets the current index.html
@@ -84,11 +84,19 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Navigation and everything else: network-first, offline serves the cache or the app shell.
+  // Navigation and everything else: network-first. Navigation responses must
+  // NOT race a short timeout — a slow network once served a stale precached
+  // shell pointing at deleted hashed assets (blank screens, dead buttons, the
+  // old hero). Only a genuinely failed/absent network response falls back.
   event.respondWith(
-    fetchWithTimeout(event.request, 3000).then(async (response) => {
-      if (response) return response;
-      return (await caches.match(event.request)) || caches.match('/');
+    fetch(event.request).then(async (response) => {
+      if (response && response.ok && url.pathname === '/') {
+        const cache = await caches.open(CACHE_NAME)
+        cache.put('/', response.clone())
+      }
+      return response
+    }).catch(async () => {
+      return (await caches.match(event.request)) || caches.match('/')
     })
   );
 });
