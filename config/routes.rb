@@ -48,9 +48,14 @@ Rails.application.routes.draw do
     resources :portfolios, only: %i[index show create update destroy] do
       member do
         post :rebalance
+        post :rebalance_v2
+        get :rebalance_config
+        put :rebalance_config, action: :update_rebalance_config
         get :prices
+        post :import_investments
       end
     end
+    get 'sectors', to: 'sectors#index'
     resources :investments, only: %i[index create update destroy]
     resources :goals, only: %i[index show create update destroy]
     resources :dividend_sips, only: %i[index show create update destroy] do

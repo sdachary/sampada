@@ -374,7 +374,7 @@ export default function Settings() {
             <Select value={newCred.provider} onChange={e => setNewCred(c => ({ ...c, provider: e.target.value }))} placeholder="Select provider…" options={PROVIDERS} />
             <Input placeholder="Label (optional)" value={newCred.label} onChange={e => setNewCred(c => ({ ...c, label: e.target.value }))} />
             <Input placeholder="API key / token" value={newCred.encrypted_value} onChange={e => setNewCred(c => ({ ...c, encrypted_value: e.target.value }))} />
-            <Button onClick={addCredential} style={{ alignSelf: 'flex-start' }}>Save</Button>
+            <Button onClick={addCredential} style={{ alignSelf: 'flex-start' }}>Add key</Button>
           </div>
         )}
 
