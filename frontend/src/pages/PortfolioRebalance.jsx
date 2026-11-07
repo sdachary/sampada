@@ -1,31 +1,21 @@
 // Rebalance v2 — Main rebalance page component (T3)
 // Uses extracted dialog components to avoid JSX parsing issues
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useParams } from 'react-router-dom'
-import { useAuth } from '../lib/useAuth'
 import { api } from '../lib/api'
 import { useRebalance } from '../lib/rebalance/useRebalance'
 import { rebalanceV2, rebalanceV1 } from '../lib/rebalance'
-import { portfolioToHoldings } from '../lib/rebalance/mapping'
 import {
-  PageHeader, Card, Button, Input, Select, Progress, Badge, Table,
-  InputField, Dialog, toast, Skeleton, EmptyState
+  PageHeader, Card, Button, InputField, toast, Skeleton
 } from '../components/ui'
 import HoldingsDrawer from '../components/Rebalance/HoldingsDrawer'
 import ImportPreviewDialog from '../components/Rebalance/ImportPreviewDialog'
 import EditHoldingDialog from '../components/Rebalance/EditHoldingDialog'
 import { api as apiClient } from '../lib/api'
 
-const TARGET_MODES = [
-  { value: 'equal', label: 'Equal weight' },
-  { value: 'current', label: 'Current value' },
-  { value: 'invested', label: 'Invested amount' },
-]
-
 export default function PortfolioRebalance() {
   const { id } = useParams()
-  const { user } = useAuth()
   const [compareV1, setCompareV1] = useState(false)
   const [holdingsDrawerOpen, setHoldingsDrawerOpen] = useState(false)
   const [importPreview, setImportPreview] = useState(null)
@@ -37,7 +27,6 @@ export default function PortfolioRebalance() {
     holdings: apiHoldings,
     config: apiConfig,
     loading: hookLoading,
-    runRebalance,
     saveConfig,
     error: hookError,
   } = useRebalance({ portfolioId: id, autoLoad: true })
@@ -309,21 +298,12 @@ export default function PortfolioRebalance() {
           <InputField label="Max Orders"
             type="number" step="1" min="1" max="20" value={config.maxOrders}
             onChange={e => handleConfigChange('maxOrders', Number(e.target.value))} />
-          <InputField label="Dip Boost"
-            type="number" step="0.05" min="1" max="2" value={config.dipBoost}
-            onChange={e => handleConfigChange('dipBoost', Number(e.target.value))} />
           <InputField label="Trend Down Penalty"
             type="number" step="0.05" min="0" max="1" value={config.trendDownPenalty}
             onChange={e => handleConfigChange('trendDownPenalty', Number(e.target.value))} />
           <InputField label="Momentum Tilt"
             type="number" step="0.05" min="0" max="1" value={config.momentumTilt}
             onChange={e => handleConfigChange('momentumTilt', Number(e.target.value))} />
-          <InputField label="Max Add Share"
-            type="number" step="0.01" min="0.01" max="1" value={config.maxAddShare}
-            onChange={e => handleConfigChange('maxAddShare', Number(e.target.value))} />
-          <InputField label="Fee Reserve (%)"
-            type="number" step="0.001" min="0" max="0.1" value={config.feeReservePct}
-            onChange={e => handleConfigChange('feeReservePct', Number(e.target.value))} />
         </div>
         <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
           <Button variant="ghost" onClick={handleResetDefaults}>Reset to defaults</Button>

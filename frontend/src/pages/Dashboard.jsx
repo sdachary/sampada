@@ -105,17 +105,15 @@ export default function Dashboard() {
         }
       />
 
-      {/* Share snapshot */}
+      {/* Display options */}
       <Card>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <p style={{ fontSize: 10.5, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Share snapshot</p>
+          <p style={{ fontSize: 10.5, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Display</p>
           <label style={{ fontSize: 11, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
             <input type="checkbox" checked={hideAmt} onChange={() => setHideAmt(h => !h)} style={{ accentColor: 'var(--accent)' }} />
             Hide amounts
           </label>
         </div>
-        <p style={{ fontSize: 12, color: 'var(--muted)', margin: '6px 0 10px' }}>Download a styled SVG card of your net worth snapshot.</p>
-        <Button variant="secondary" size="sm" onClick={downloadSnapshot}>Download snapshot</Button>
       </Card>
 
       {/* Debt freedom progress — prominent, per spec */}
