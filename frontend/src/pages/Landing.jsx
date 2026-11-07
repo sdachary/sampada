@@ -87,7 +87,7 @@ export default function Landing() {
               <p style={{ fontSize: 12, color: 'var(--faint)', marginTop: 16, letterSpacing: '0.02em' }}>Open source · Apache 2.0 · Free forever</p>
             </Reveal>
             <Reveal delay={0.1}>
-              <div id="landing-hero" style={{ width: '100%', maxWidth: 400, margin: '0 auto' }}>
+              <div id="landing-hero" style={{ width: '100%', maxWidth: 'clamp(400px, 22vw, 520px)', margin: '0 auto' }}>
                 <HeroVisual />
               </div>
             </Reveal>
