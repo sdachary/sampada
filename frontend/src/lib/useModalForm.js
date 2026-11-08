@@ -8,8 +8,13 @@ export function useModalForm(initial, { basePath, id, toBody = (b) => b, onSave,
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
 
+  // set(key) -> handler that works for both text inputs (e.target.value)
+  // and checkboxes (e.target.checked). Handles both event and direct value.
   const set = useCallback(
-    (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value })),
+    (key) => (e) => {
+      const val = e?.target ? (e.target.type === 'checkbox' ? e.target.checked : e.target.value) : e
+      setForm((f) => ({ ...f, [key]: val }))
+    },
     []
   )
 

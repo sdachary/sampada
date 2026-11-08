@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
-import { ResponsiveModal, Field, ConfirmDialog } from './ui'
+import { ResponsiveModal, Field, ConfirmDialog, Skeleton } from './ui'
 import { useModalForm } from '../lib/useModalForm'
 
 const FREQS = ['monthly', 'weekly', 'daily', 'yearly', 'quarterly']
@@ -9,6 +9,7 @@ export default function RecurringFormModal({ expense, prefill, onClose, onSave, 
   const isEdit = !!expense
   const initial = expense || prefill || {}
   const [categories, setCategories] = useState([])
+  const [categoriesLoading, setCategoriesLoading] = useState(true)
 
   const { form, set, saving, error, handleSubmit, handleDelete } = useModalForm({
     name: initial.name || '',
@@ -32,7 +33,11 @@ export default function RecurringFormModal({ expense, prefill, onClose, onSave, 
   const [confirming, setConfirming] = useState(false)
 
   useEffect(() => {
-    api.request('/api/v1/budget_categories').then(d => setCategories(Array.isArray(d) ? d : [])).catch(() => {})
+    setCategoriesLoading(true)
+    api.request('/api/v1/budget_categories')
+      .then(d => setCategories(Array.isArray(d) ? d : []))
+      .catch(() => setCategories([]))
+      .finally(() => setCategoriesLoading(false))
   }, [])
 
   return (
@@ -56,10 +61,18 @@ export default function RecurringFormModal({ expense, prefill, onClose, onSave, 
         </div>
 
         <Field label="Category">
-          <select className="input" value={form.category} onChange={set('category')}>
-            <option value="">Select category</option>
-            {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
+          {categoriesLoading ? (
+            <Skeleton style={{ height: 42, borderRadius: 'var(--radius-md)' }} />
+          ) : (
+            <select className="input" value={form.category} onChange={set('category')} disabled={categories.length === 0}>
+              <option value="">Select category</option>
+              {categories.length === 0 ? (
+                <option value="" disabled>No categories available — add in Budgets</option>
+              ) : (
+                categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)
+              )}
+            </select>
+          )}
         </Field>
 
         <div className="grid-2" >
@@ -68,7 +81,7 @@ export default function RecurringFormModal({ expense, prefill, onClose, onSave, 
           </Field>
           <Field label="Auto Debit">
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-              <input type="checkbox" className="input" style={{ width: 'auto' }} checked={form.auto_debit} onChange={(e) => set('auto_debit')(e.target.checked)} />
+              <input type="checkbox" className="input" style={{ width: 'auto' }} checked={form.auto_debit} onChange={set('auto_debit')} />
               <span>Yes</span>
             </label>
           </Field>
