@@ -33,10 +33,50 @@ export function useCountUp(value, { duration = 0.9, decimals = 0, enabled = true
 }
 
 // Single fade-up entrance, once, when scrolled into view. No repeat, no stagger.
+// FIX: If element is already in viewport on mount, show immediately without animation
 export function Reveal({ children, y = 12, delay = 0, ...props }) {
   if (prefersReducedMotion()) return <div {...props}>{children}</div>
+  
+  const ref = useRef(null)
+  const inView = useInView(ref, { once: true, margin: '-10% 0px' })
+  const [mounted, setMounted] = useState(false)
+  
+  // If already in viewport on mount, show immediately
+  useEffect(() => {
+    if (inView) setMounted(true)
+  }, [inView])
+  
+  // Also check on mount if element is already visible
+  useEffect(() => {
+    const el = ref.current
+    if (el && isElementInViewport(el)) {
+      setMounted(true)
+    }
+  }, [])
+  
+  // Fallback: show after 500ms if inView hasn't triggered (handles edge cases)
+  useEffect(() => {
+    const timer = setTimeout(() => setMounted(true), 500)
+    return () => clearTimeout(timer)
+  }, [])
+  
+  if (mounted || inView) {
+    return (
+      <m.div
+        ref={ref}
+        initial={mounted ? false : { opacity: 0, y }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: DUR.slow, ease: EASE, delay }}
+        {...props}
+      >
+        {children}
+      </m.div>
+    )
+  }
+  
   return (
     <m.div
+      ref={ref}
       initial={{ opacity: 0, y }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-10% 0px' }}
@@ -45,6 +85,16 @@ export function Reveal({ children, y = 12, delay = 0, ...props }) {
     >
       {children}
     </m.div>
+  )
+}
+
+function isElementInViewport(el) {
+  const rect = el.getBoundingClientRect()
+  return (
+    rect.top >= 0 &&
+    rect.left >= 0 &&
+    rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+    rect.right <= (window.innerWidth || document.documentElement.clientWidth)
   )
 }
 
