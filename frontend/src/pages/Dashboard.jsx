@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../lib/api'
-import { Stat, Progress, Button, Card, Skeleton, EmptyState, ToastHost, toast } from '../components/ui'
+import { Stat, Progress, Button, Card, Skeleton, EmptyState, ToastHost, toast, PageHeader } from '../components/ui'
 import Chart from '../components/Chart'
 import QuickLogSheet from '../components/QuickLogSheet'
 import useOnline from '../lib/useOnline'
 import { Plus, AlertCircle, CreditCard, ArrowUp } from 'lucide-react'
 import { fmtINR } from '../lib/amounts'
-import PageHeader from '../components/ui/PageHeader'
+import { Reveal } from '../lib/motion-primitives'
 
 export default function Dashboard() {
   const { isOnline } = useOnline()
@@ -53,11 +53,11 @@ export default function Dashboard() {
   }
 
   if (loading) return (
-    <div style={{ display: 'grid', gap: 20 }}>
-      <Skeleton style={{ width: 180, height: 22 }} />
-      <Skeleton style={{ width: 260, height: 14 }} />
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px,1fr))', gap: 14 }}>
-        {[1,2,3,4].map(i => <Skeleton key={i} style={{ height: 100 }} />)}
+    <div className="space-y-5">
+      <Skeleton className="skeleton-title" />
+      <Skeleton className="skeleton-text w-64" />
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+        {[1,2,3,4].map(i => <Skeleton key={i} className="skeleton-card" />)}
       </div>
     </div>
   )
@@ -95,146 +95,158 @@ export default function Dashboard() {
   const debtFreePct = data?.debt_free_progress_pct ?? (debt > 0 ? Math.max(0, 100 - (debt / (nw + debt || 1)) * 100) : 100)
 
   return (
-    <div style={{ display: 'grid', gap: 24 }}>
-      <PageHeader
-        title="Dashboard"
-        action={
-          <Button variant="secondary" size="sm" onClick={downloadSnapshot}>
-            Download snapshot
-          </Button>
-        }
-      />
+    <div className="space-y-6">
+      <Reveal delay={0}>
+        <PageHeader
+          title="Dashboard"
+          action={
+            <Button variant="secondary" size="sm" onClick={downloadSnapshot}>
+              Download snapshot
+            </Button>
+          }
+        />
+      </Reveal>
 
-      {/* Display options */}
-      <Card>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <p style={{ fontSize: 10.5, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Display</p>
-          <label style={{ fontSize: 11, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
-            <input type="checkbox" checked={hideAmt} onChange={() => setHideAmt(h => !h)} style={{ accentColor: 'var(--accent)' }} />
-            Hide amounts
-          </label>
-        </div>
-      </Card>
-
-      {/* Debt freedom progress — prominent, per spec */}
-      <div style={{ display: 'grid', gap: 12 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <p style={{ fontSize: 11, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Debt freedom progress</p>
-          <p className="fin" style={{ fontSize: 14, fontWeight: 600, color: 'var(--accent)' }}>
-            {Math.round(debtFreePct)}%
-          </p>
-        </div>
-        <Progress value={debtFreePct} label="Debt freedom progress" />
-        {data?.debt_free_date && (
-          <p style={{ fontSize: 13, color: 'var(--muted)' }}>
-            Projected debt-free by <span className="fin" style={{ fontWeight: 600, color: 'var(--ink)' }}>{data.debt_free_date}</span>
-          </p>
-        )}
-      </div>
-
-      {/* Net worth hero */}
-      <Card>
-        <p style={{ fontSize: 11, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Net worth</p>
-        <p className="fin" style={{ fontFamily: 'var(--font-display)', fontSize: 36, fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.1 }}>
-          {fmtINR(nw)}
-        </p>
-        {snapshots.length >= 2 && (() => {
-          const prev = snapshots[snapshots.length - 2]?.net_worth || 0
-          const change = nw - prev
-          const pct = prev ? ((change / Math.abs(prev)) * 100).toFixed(1) : 0
-          return (
-            <p style={{ fontSize: 12, color: change >= 0 ? 'var(--success)' : 'var(--danger)', marginTop: 6, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
-              {change >= 0 ? '▲' : '▼'} {Math.abs(change) > 0 ? fmtINR(Math.abs(change)) : '0'} ({pct}%)
-            </p>
-          )
-        })()}
-      </Card>
-
-      {/* Stat grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px,1fr))', gap: 12 }}>
-        <Stat label="Total debt" value={fmtINR(debt)} countUp delta={data?.debt_delta} subtext={data?.debt_count > 0 ? `${data.debt_count} loan${data.debt_count > 1 ? 's' : ''}` : null} />
-        <Stat label="Investments" value={fmtINR(inv)} countUp subtext={data?.portfolio_count > 0 ? `${data.portfolio_count} portfolio${data.portfolio_count > 1 ? 's' : ''}` : null} />
-        <Stat label="Monthly expenses" value={fmtINR(data?.monthly_expenses || 0)} />
-        <Stat label="Wealth score" value={(data?.wealth_score || 0).toFixed(1)} tooltip="Composite score (0–10) based on debt-to-income ratio, savings rate, investment diversity, and emergency fund coverage" />
-      </div>
-
-      {/* Net worth area chart */}
-      {snapshots.length > 1 ? (
-        <Card>
-          <p className="label-caps mb-4" >Net worth trend</p>
-          <Chart data={snapshots} xKey="date" xFormatter={(d) => (d || '').slice(5)}
-            series={[{ key: 'net_worth', name: 'Net worth', color: 'var(--accent)', area: true }]} />
-        </Card>
-      ) : (
-        <EmptyState icon={<AlertCircle size={32} />} title="No net worth history yet" action="Add a transaction" onAction={() => setQuickOpen(true)}>
-          Your first transaction will start the trend chart.
-        </EmptyState>
-      )}
-
-      {/* Projection chart */}
-      {projection?.projection?.length > 1 ? (
-        <Card>
-          <p className="label-caps mb-4" >60-month projection</p>
-          <div role="img" aria-label="60-month projection chart showing debt decreasing, investments growing, and net worth increasing over time">
-            <Chart data={projection.projection} xKey="month" xFormatter={(m) => `${m || ''}m`}
-              series={[
-                { key: 'debt', name: 'Debt', color: 'var(--accent)' },
-                { key: 'investments', name: 'Investments', color: 'var(--success)' },
-                { key: 'net_worth', name: 'Net Worth', color: 'var(--ink)' },
-              ]} height={180} />
+      <Reveal delay={50}>
+        {/* Display options */}
+        <Card className="card-shell card-shell--interactive card-core--pad-base">
+          <div className="flex items-center justify-between">
+            <p className="text-2xs font-semibold uppercase tracking-wider text-muted">Display</p>
+            <label className="flex items-center gap-2 text-xs text-muted cursor-pointer">
+              <input type="checkbox" checked={hideAmt} onChange={() => setHideAmt(h => !h)} className="accent-accent" />
+              Hide amounts
+            </label>
           </div>
-          {/* Data table fallback for screen readers */}
-          <details style={{ marginTop: 12 }}>
-            <summary style={{ fontSize: 12, color: 'var(--muted)', cursor: 'pointer' }}>View projection data as table</summary>
-            <div style={{ overflowX: 'auto', marginTop: 8 }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                    <th style={{ textAlign: 'left', padding: '6px 8px' }}>Month</th>
-                    <th style={{ textAlign: 'right', padding: '6px 8px' }}>Debt</th>
-                    <th style={{ textAlign: 'right', padding: '6px 8px' }}>Investments</th>
-                    <th style={{ textAlign: 'right', padding: '6px 8px' }}>Net Worth</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {projection.projection.slice(0, 12).map((row, i) => (
-                    <tr key={i} style={{ borderBottom: '1px solid var(--border-soft)' }}>
-                      <td style={{ padding: '6px 8px' }}>{row.month || ''}m</td>
-                      <td style={{ padding: '6px 8px', textAlign: 'right', color: 'var(--accent)' }}>{fmtINR(row.debt || 0)}</td>
-                      <td style={{ padding: '6px 8px', textAlign: 'right', color: 'var(--success)' }}>{fmtINR(row.investments || 0)}</td>
-                      <td style={{ padding: '6px 8px', textAlign: 'right', color: 'var(--ink)' }}>{fmtINR(row.net_worth || 0)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </details>
         </Card>
-      ) : null}
+      </Reveal>
 
-      
+      <Reveal delay={100}>
+        {/* Debt freedom progress — prominent, per spec */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-2xs font-semibold uppercase tracking-wider text-muted">Debt freedom progress</p>
+            <p className="fin text-base font-semibold text-accent">{Math.round(debtFreePct)}%</p>
+          </div>
+          <Progress value={debtFreePct} label="Debt freedom progress" />
+          {data?.debt_free_date && (
+            <p className="text-sm text-muted">
+              Projected debt-free by <span className="fin font-semibold text-ink">{data.debt_free_date}</span>
+            </p>
+          )}
+        </div>
+      </Reveal>
 
-      {/* Quick actions */}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        <Link to="/dashboard/transactions">
-          <Button variant="ghost" size="sm"><Plus size={14} strokeWidth={2} /> Add transaction</Button>
-        </Link>
-        <Link to="/dashboard/debts">
-          <Button variant="ghost" size="sm"><CreditCard size={14} strokeWidth={2} /> Log payment</Button>
-        </Link>
-        {data?.unread_notifications > 0 && (
-          <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--accent)' }}>
-            <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--accent)', display: 'inline-block', animation: 'pulse 1.5s ease-in-out infinite' }} />
-            {data.unread_notifications} unread
-          </span>
+      <Reveal delay={150}>
+        {/* Net worth hero */}
+        <Card className="card-shell card-shell--elevated card-core--pad-lg">
+          <p className="text-2xs font-semibold uppercase tracking-wider text-muted mb-1">Net worth</p>
+          <p className="fin font-display text-3xl font-bold tracking-tight leading-tight">{fmtINR(nw)}</p>
+          {snapshots.length >= 2 && (() => {
+            const prev = snapshots[snapshots.length - 2]?.net_worth || 0
+            const change = nw - prev
+            const pct = prev ? ((change / Math.abs(prev)) * 100).toFixed(1) : 0
+            return (
+              <p className={`text-sm font-medium mt-2 flex items-center gap-1 ${change >= 0 ? 'text-success' : 'text-danger'}`}>
+                {change >= 0 ? '▲' : '▼'} {Math.abs(change) > 0 ? fmtINR(Math.abs(change)) : '0'} ({pct}%)
+              </p>
+            )
+          })()}
+        </Card>
+      </Reveal>
+
+      <Reveal delay={200}>
+        {/* Stat grid */}
+        <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          <Stat label="Total debt" value={fmtINR(debt)} countUp delta={data?.debt_delta} subtext={data?.debt_count > 0 ? `${data.debt_count} loan${data.debt_count > 1 ? 's' : ''}` : null} />
+          <Stat label="Investments" value={fmtINR(inv)} countUp subtext={data?.portfolio_count > 0 ? `${data.portfolio_count} portfolio${data.portfolio_count > 1 ? 's' : ''}` : null} />
+          <Stat label="Monthly expenses" value={fmtINR(data?.monthly_expenses || 0)} />
+          <Stat label="Wealth score" value={(data?.wealth_score || 0).toFixed(1)} tooltip="Composite score (0–10) based on debt-to-income ratio, savings rate, investment diversity, and emergency fund coverage" />
+        </div>
+      </Reveal>
+
+      <Reveal delay={250}>
+        {/* Net worth area chart */}
+        {snapshots.length > 1 ? (
+          <Card className="card-shell card-core--pad-lg">
+            <p className="label-caps mb-4">Net worth trend</p>
+            <Chart data={snapshots} xKey="date" xFormatter={(d) => (d || '').slice(5)}
+              series={[{ key: 'net_worth', name: 'Net worth', color: 'var(--accent)', area: true }]} />
+          </Card>
+        ) : (
+          <EmptyState icon={<AlertCircle size={32} />} title="No net worth history yet" action="Add a transaction" onAction={() => setQuickOpen(true)}>
+            Your first transaction will start the trend chart.
+          </EmptyState>
         )}
-      </div>
+      </Reveal>
 
-      {/* Contextual info */}
-      <div style={{ fontSize: 13, color: 'var(--muted)', display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-        {data?.sip_count > 0 && <span>{data.sip_count} active SIP{data.sip_count > 1 ? 's' : ''}</span>}
-        {data?.currency_symbol && <span>Base: {data.currency_symbol}</span>}
-      </div>
+      <Reveal delay={300}>
+        {/* Projection chart */}
+        {projection?.projection?.length > 1 ? (
+          <Card className="card-shell card-core--pad-lg">
+            <p className="label-caps mb-4">60-month projection</p>
+            <div role="img" aria-label="60-month projection chart showing debt decreasing, investments growing, and net worth increasing over time">
+              <Chart data={projection.projection} xKey="month" xFormatter={(m) => `${m || ''}m`}
+                series={[
+                  { key: 'debt', name: 'Debt', color: 'var(--accent)' },
+                  { key: 'investments', name: 'Investments', color: 'var(--success)' },
+                  { key: 'net_worth', name: 'Net Worth', color: 'var(--ink)' },
+                ]} height={180} />
+            </div>
+            {/* Data table fallback for screen readers */}
+            <details className="mt-3">
+              <summary className="text-sm text-muted cursor-pointer">View projection data as table</summary>
+              <div className="overflow-x-auto mt-2">
+                <table className="w-full border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="text-left px-2 py-1">Month</th>
+                      <th className="text-right px-2 py-1">Debt</th>
+                      <th className="text-right px-2 py-1">Investments</th>
+                      <th className="text-right px-2 py-1">Net Worth</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {projection.projection.slice(0, 12).map((row, i) => (
+                      <tr key={i} className="border-b border-border-soft">
+                        <td className="px-2 py-1">{row.month || ''}m</td>
+                        <td className="px-2 py-1 text-right text-accent">{fmtINR(row.debt || 0)}</td>
+                        <td className="px-2 py-1 text-right text-success">{fmtINR(row.investments || 0)}</td>
+                        <td className="px-2 py-1 text-right text-ink">{fmtINR(row.net_worth || 0)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </details>
+          </Card>
+        ) : null}
+      </Reveal>
+
+      <Reveal delay={350}>
+        {/* Quick actions */}
+        <div className="flex gap-2 flex-wrap">
+          <Link to="/dashboard/transactions">
+            <Button variant="ghost" size="sm"><Plus size={14} strokeWidth={2} /> Add transaction</Button>
+          </Link>
+          <Link to="/dashboard/debts">
+            <Button variant="ghost" size="sm"><CreditCard size={14} strokeWidth={2} /> Log payment</Button>
+          </Link>
+          {data?.unread_notifications > 0 && (
+            <span className="ml-auto flex items-center gap-2 text-sm text-accent">
+              <span className="w-1.25 h-1.25 rounded-full bg-accent animate-pulse" />
+              {data.unread_notifications} unread
+            </span>
+          )}
+        </div>
+      </Reveal>
+
+      <Reveal delay={400}>
+        {/* Contextual info */}
+        <div className="text-sm text-muted flex gap-4 flex-wrap">
+          {data?.sip_count > 0 && <span>{data.sip_count} active SIP{data.sip_count > 1 ? 's' : ''}</span>}
+          {data?.currency_symbol && <span>Base: {data.currency_symbol}</span>}
+        </div>
+      </Reveal>
 
       {/* Floating quick-log action */}
       <button
@@ -243,15 +255,11 @@ export default function Dashboard() {
         tabIndex={0}
         aria-label="Quick log transaction"
         title="Quick log (Alt+Q)"
+        className="fixed bottom-20 right-4 z-popover w-14 h-14 rounded-full border-0 bg-accent text-ink flex items-center justify-center shadow-lg transition-all duration-base ease-spring hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
         style={{
-          position: 'fixed', right: 20, bottom: 'calc(84px + env(safe-area-inset-bottom))', zIndex: 120,
-          width: 56, height: 56, borderRadius: '50%', border: 'none', cursor: 'pointer',
-          background: 'var(--accent)', color: 'var(--ink)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 8px 24px rgba(237,111,92,0.4)', opacity: isOnline ? 1 : 0.5,
-          outline: 'none',
+          opacity: isOnline ? 1 : 0.5,
+          bottom: `calc(5rem + env(safe-area-inset-bottom))`,
         }}
-        onFocus={(e) => { e.currentTarget.style.boxShadow = '0 0 0 3px var(--accent-bg), 0 8px 24px rgba(237,111,92,0.4)'; }}
-        onBlur={(e) => { e.currentTarget.style.boxShadow = '0 8px 24px rgba(237,111,92,0.4)'; }}
       >
         <Plus size={26} strokeWidth={2.5} />
       </button>

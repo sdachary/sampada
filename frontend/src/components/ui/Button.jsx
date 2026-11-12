@@ -47,6 +47,15 @@ function ButtonComponent(parameters, ref) {
 
   const isDisabled = disabled || loading
 
+  // Default trailing arrow for primary buttons
+  const defaultTrailingArrow = (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="btn__arrow" aria-hidden="true">
+      <path d="M5 12h14M12 5l7 7-7 7" />
+    </svg>
+  )
+
+  const trailingContent = trailingIcon || (variant === 'primary' && !loading ? defaultTrailingArrow : null)
+
   return (
     <Tag
       ref={ref}
@@ -72,13 +81,9 @@ function ButtonComponent(parameters, ref) {
             </span>
           )}
           <span className="btn__content">{children}</span>
-          {(trailingIcon || (variant === 'primary' && !loading)) && (
-            <span className="btn__icon btn__icon--trailing" aria-hidden="true">
-              {trailingIcon || (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="btn__arrow">
-                  <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
-              )}
+          {trailingContent && (
+            <span className="btn__icon-wrapper" aria-hidden="true">
+              {trailingContent}
             </span>
           )}
         </>

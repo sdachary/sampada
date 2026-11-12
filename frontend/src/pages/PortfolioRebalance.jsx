@@ -7,12 +7,13 @@ import { api } from '../lib/api'
 import { useRebalance } from '../lib/rebalance/useRebalance'
 import { rebalanceV2, rebalanceV1 } from '../lib/rebalance'
 import {
-  PageHeader, Card, Button, InputField, toast, Skeleton
+  PageHeader, Card, Button, InputField, toast, Skeleton, Table
 } from '../components/ui'
 import HoldingsDrawer from '../components/Rebalance/HoldingsDrawer'
 import ImportPreviewDialog from '../components/Rebalance/ImportPreviewDialog'
 import EditHoldingDialog from '../components/Rebalance/EditHoldingDialog'
 import { api as apiClient } from '../lib/api'
+import { Reveal } from '../lib/motion-primitives'
 
 export default function PortfolioRebalance() {
   const { id } = useParams()
@@ -186,282 +187,275 @@ export default function PortfolioRebalance() {
 
   if (hookLoading) {
     return (
-      <div style={{ display: 'grid', gap: 16 }}>
-        <Skeleton style={{ height: 40 }} />
-        <Skeleton style={{ height: 80 }} />
-        <Skeleton style={{ height: 200 }} />
-      </div>
+      <Reveal delay={0}>
+        <div className="space-y-4">
+          <Skeleton className="skeleton-title w-32" />
+          <Skeleton className="skeleton-text w-64" />
+          <Skeleton className="skeleton-card h-48" />
+        </div>
+      </Reveal>
     )
   }
 
   return (
-    <div style={{ display: 'grid', gap: 20 }}>
-      <PageHeader
-        title="Rebalance"
-        num="018 / 016"
-        action={
-          <div style={{ display: 'flex', gap: 8 }}>
-            <Button variant="ghost" size="sm" onClick={() => setHoldingsDrawerOpen(true)}>
-              Holdings
-            </Button>
-            <Button variant="ghost" size="sm" onClick={handleCompareV1}>
-              {compareV1 ? 'Hide v1' : 'Compare v1'}
-            </Button>
-            <Button onClick={handleSaveConfig}>Save config</Button>
+    <div className="space-y-5">
+      <Reveal delay={0}>
+        <PageHeader
+          title="Rebalance"
+          num="018 / 016"
+          action={
+            <div className="flex gap-2">
+              <Button variant="ghost" size="sm" onClick={() => setHoldingsDrawerOpen(true)}>
+                Holdings
+              </Button>
+              <Button variant="ghost" size="sm" onClick={handleCompareV1}>
+                {compareV1 ? 'Hide v1' : 'Compare v1'}
+              </Button>
+              <Button onClick={handleSaveConfig}>Save config</Button>
+            </div>
+          }
+        >
+          <p className="text-sm text-muted">
+            Buy-only rebalancing: new cash goes to the most underweight positions within guard rails.
+          </p>
+        </PageHeader>
+      </Reveal>
+
+      {hookError && <Reveal delay={50}><div className="text-accent mb-3">{hookError}</div></Reveal>}
+
+      <Reveal delay={100}>
+        {/* KPI Bar */}
+        <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-4">
+          <Card className="card-shell card-core--pad-base">
+            <p className="label-caps">Contribution</p>
+            <input type="number" value={config.contribution} onChange={e => handleConfigChange('contribution', Number(e.target.value))} className="w-full px-3 py-2 border border-border rounded-sm text-base" />
+          </Card>
+          <Card className="card-shell card-core--pad-base">
+            <p className="label-caps">Dividend Pool</p>
+            <p className="fin font-display text-xl font-semibold text-success mt-1">
+              {result ? fmtINR(result.summary.dividendPool) : fmtINR(config.contribution * 0.6 * (1 - config.feeReservePct))}
+            </p>
+          </Card>
+          <Card className="card-shell card-core--pad-base">
+            <p className="label-caps">Growth Pool</p>
+            <p className="fin font-display text-xl font-semibold text-accent mt-1">
+              {result ? fmtINR(result.summary.growthPool) : fmtINR(config.contribution * 0.4 * (1 - config.feeReservePct))}
+            </p>
+          </Card>
+          <Card className="card-shell card-core--pad-base">
+            <p className="label-caps">Actual Cost</p>
+            <p className="fin font-display text-xl font-semibold text-ink mt-1">
+              {result ? fmtINR(result.summary.totalActualCost) : '—'}
+            </p>
+          </Card>
+          <Card className="card-shell card-core--pad-base">
+            <p className="label-caps">Leftover</p>
+            <p className="fin font-display text-xl font-semibold text-faint mt-1">
+              {result ? fmtINR(result.summary.leftoverCash) : '—'}
+            </p>
+          </Card>
+          <Card className="card-shell card-core--pad-base">
+            <p className="label-caps">Orders</p>
+            <p className="fin font-display text-xl font-semibold text-ink mt-1">
+              {result ? result.summary.orders : '—'}
+            </p>
+          </Card>
+          <Card className="card-shell card-core--pad-base">
+            <p className="label-caps">Charges Reserve</p>
+            <p className="fin font-display text-xl font-semibold text-warning mt-1">
+              {result ? fmtINR(result.summary.feeReserve) : fmtINR(config.contribution * config.feeReservePct)}
+            </p>
+          </Card>
+        </div>
+      </Reveal>
+
+      <Reveal delay={150}>
+        {/* Controls */}
+        <Card className="card-shell card-core--pad-lg">
+          <p className="text-sm font-semibold text-ink mb-3">Controls</p>
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            <InputField label="Dividend / Growth Split" type="range"
+              min="0" max="1" step="0.05" value={config.dividendRatio}
+              onChange={e => { const v = Number(e.target.value); handleConfigChange('dividendRatio', v); handleConfigChange('growthRatio', 1 - v); }}
+              style={{ width: '100%' }} />
+            <InputField label="Dip Threshold (%)"
+              type="range" min="-0.5" max="0" step="0.01" value={config.dipThreshold}
+              onChange={e => handleConfigChange('dipThreshold', Number(e.target.value))} />
+            <InputField label="Dip Boost"
+              type="number" step="0.05" min="1" max="3" value={config.dipBoost}
+              onChange={e => handleConfigChange('dipBoost', Number(e.target.value))} />
+            <InputField label="Target Mode"
+              as="select" value={config.targetMode}
+              onChange={e => handleConfigChange('targetMode', e.target.value)}
+              options={TARGET_MODES} />
+            <InputField label="Max Position Weight (%)"
+              type="number" step="0.01" min="0.01" max="1" value={config.maxPositionWeight}
+              onChange={e => handleConfigChange('maxPositionWeight', Number(e.target.value))} />
+            <InputField label="Max Sector Weight (%)"
+              type="number" step="0.01" min="0.01" max="1" value={config.maxSectorWeight}
+              onChange={e => handleConfigChange('maxSectorWeight', Number(e.target.value))} />
+            <InputField label="Max Add Share (%)"
+              type="number" step="0.01" min="0.01" max="1" value={config.maxAddShare}
+              onChange={e => handleConfigChange('maxAddShare', Number(e.target.value))} />
+            <InputField label="Fee Reserve (%)"
+              type="number" step="0.001" min="0" max="0.1" value={config.feeReservePct}
+              onChange={e => handleConfigChange('feeReservePct', Number(e.target.value))} />
+            <InputField label="Min Order Value"
+              type="number" step="100" min="100" value={config.minOrderValue}
+              onChange={e => handleConfigChange('minOrderValue', Number(e.target.value))} />
+            <InputField label="Max Orders"
+              type="number" step="1" min="1" max="20" value={config.maxOrders}
+              onChange={e => handleConfigChange('maxOrders', Number(e.target.value))} />
+            <InputField label="Trend Down Penalty"
+              type="number" step="0.05" min="0" max="1" value={config.trendDownPenalty}
+              onChange={e => handleConfigChange('trendDownPenalty', Number(e.target.value))} />
+            <InputField label="Momentum Tilt"
+              type="number" step="0.05" min="0" max="1" value={config.momentumTilt}
+              onChange={e => handleConfigChange('momentumTilt', Number(e.target.value))} />
           </div>
-        }
-      >
-        <p style={{ fontSize: 13, color: 'var(--muted)' }}>
-          Buy-only rebalancing: new cash goes to the most underweight positions within guard rails.
-        </p>
-      </PageHeader>
+          <div className="flex gap-2 mt-3">
+            <Button variant="ghost" onClick={handleResetDefaults}>Reset to defaults</Button>
+          </div>
+        </Card>
+      </Reveal>
 
-      {hookError && <div style={{ color: 'var(--accent)', marginBottom: 12 }}>{hookError}</div>}
+      <Reveal delay={200}>
+        {/* Compare v1 Toggle */}
+        {compareV1 && v1Result && result && (
+          <Card className="card-shell card-shell--elevated card-core--pad-lg border border-accent">
+            <p className="text-sm font-semibold text-ink mb-3">v1 vs v2 Comparison (Current Portfolio)</p>
+            <Table
+              columns={[
+                { key: 'metric', label: 'Metric' },
+                { key: 'v1', label: 'v1 (Legacy)', align: 'right' },
+                { key: 'v2', label: 'v2 (New)', align: 'right' },
+              ]}
+              rows={[
+                { id: 'spent', cells: { metric: 'Spent', v1: fmtINR(v1Result.summary.totalActualCost), v2: fmtINR(result.summary.totalActualCost) } },
+                { id: 'leftover', cells: { metric: 'Leftover', v1: fmtINR(v1Result.summary.leftoverCash), v2: fmtINR(result.summary.leftoverCash) } },
+                { id: 'orders', cells: { metric: 'Orders', v1: v1Result.summary.orders, v2: result.summary.orders } },
+                { id: 'above10', cells: {
+                  metric: 'Above 10% cap',
+                  v1: fmtINR(v1Result.rows.filter(r => r.suggestedQty > 0 && r.weightAfter > 0.10).reduce((sum, r) => sum + r.actualCost, 0)),
+                  v2: fmtINR(result.rows.filter(r => r.suggestedQty > 0 && r.weightAfter > 0.10).reduce((sum, r) => sum + r.actualCost, 0)),
+                }},
+                { id: 'top5', cells: {
+                  metric: 'Top-5 weight',
+                  v1: `${(v1Result.summary.concentrationAfter?.top5 * 100 || 0).toFixed(1)}%`,
+                  v2: `${(result.summary.concentrationAfter.top5 * 100).toFixed(1)}%`,
+                }},
+                { id: 'hhi', cells: {
+                  metric: 'HHI',
+                  v1: (v1Result.summary.concentrationAfter?.hhi || 0).toFixed(4),
+                  v2: result.summary.concentrationAfter.hhi.toFixed(4),
+                }},
+              ]}
+            />
+          </Card>
+        )}
+      </Reveal>
 
-      {/* KPI Bar */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: 16 }}>
-        <Card style={{ padding: '16px' }}>
-          <p style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Contribution</p>
-          <input type="number" value={config.contribution} onChange={e => handleConfigChange('contribution', Number(e.target.value))} style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', fontSize: 14 }} />
-        </Card>
-        <Card style={{ padding: '16px' }}>
-          <p style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Dividend Pool</p>
-          <p className="fin" style={{ fontSize: 20, fontWeight: 600, color: 'var(--success)' }}>
-            {result ? fmtINR(result.summary.dividendPool) : fmtINR(config.contribution * 0.6 * (1 - config.feeReservePct))}
-          </p>
-        </Card>
-        <Card style={{ padding: '16px' }}>
-          <p style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Growth Pool</p>
-          <p className="fin" style={{ fontSize: 20, fontWeight: 600, color: 'var(--accent)' }}>
-            {result ? fmtINR(result.summary.growthPool) : fmtINR(config.contribution * 0.4 * (1 - config.feeReservePct))}
-          </p>
-        </Card>
-        <Card style={{ padding: '16px' }}>
-          <p style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Actual Cost</p>
-          <p className="fin" style={{ fontSize: 20, fontWeight: 600, color: 'var(--ink)' }}>
-            {result ? fmtINR(result.summary.totalActualCost) : '—'}
-          </p>
-        </Card>
-        <Card style={{ padding: '16px' }}>
-          <p style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Leftover</p>
-          <p className="fin" style={{ fontSize: 20, fontWeight: 600, color: 'var(--faint)' }}>
-            {result ? fmtINR(result.summary.leftoverCash) : '—'}
-          </p>
-        </Card>
-        <Card style={{ padding: '16px' }}>
-          <p style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Orders</p>
-          <p className="fin" style={{ fontSize: 20, fontWeight: 600, color: 'var(--ink)' }}>
-            {result ? result.summary.orders : '—'}
-          </p>
-        </Card>
-        <Card style={{ padding: '16px' }}>
-          <p style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Charges Reserve</p>
-          <p className="fin" style={{ fontSize: 20, fontWeight: 600, color: 'var(--warning)' }}>
-            {result ? fmtINR(result.summary.feeReserve) : fmtINR(config.contribution * config.feeReservePct)}
-          </p>
-        </Card>
-      </div>
-
-      {/* Controls */}
-      <Card style={{ padding: '16px' }}>
-        <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)', marginBottom: 12 }}>Controls</p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
-          <InputField label="Dividend / Growth Split" type="range"
-            min="0" max="1" step="0.05" value={config.dividendRatio}
-            onChange={e => { const v = Number(e.target.value); handleConfigChange('dividendRatio', v); handleConfigChange('growthRatio', 1 - v); }}
-            style={{ width: '100%' }} />
-          <InputField label="Dip Threshold (%)"
-            type="range" min="-0.5" max="0" step="0.01" value={config.dipThreshold}
-            onChange={e => handleConfigChange('dipThreshold', Number(e.target.value))} />
-          <InputField label="Dip Boost"
-            type="number" step="0.05" min="1" max="3" value={config.dipBoost}
-            onChange={e => handleConfigChange('dipBoost', Number(e.target.value))} />
-          <InputField label="Target Mode"
-            as="select" value={config.targetMode}
-            onChange={e => handleConfigChange('targetMode', e.target.value)}
-            options={TARGET_MODES} />
-          <InputField label="Max Position Weight (%)"
-            type="number" step="0.01" min="0.01" max="1" value={config.maxPositionWeight}
-            onChange={e => handleConfigChange('maxPositionWeight', Number(e.target.value))} />
-          <InputField label="Max Sector Weight (%)"
-            type="number" step="0.01" min="0.01" max="1" value={config.maxSectorWeight}
-            onChange={e => handleConfigChange('maxSectorWeight', Number(e.target.value))} />
-          <InputField label="Max Add Share (%)"
-            type="number" step="0.01" min="0.01" max="1" value={config.maxAddShare}
-            onChange={e => handleConfigChange('maxAddShare', Number(e.target.value))} />
-          <InputField label="Fee Reserve (%)"
-            type="number" step="0.001" min="0" max="0.1" value={config.feeReservePct}
-            onChange={e => handleConfigChange('feeReservePct', Number(e.target.value))} />
-          <InputField label="Min Order Value"
-            type="number" step="100" min="100" value={config.minOrderValue}
-            onChange={e => handleConfigChange('minOrderValue', Number(e.target.value))} />
-          <InputField label="Max Orders"
-            type="number" step="1" min="1" max="20" value={config.maxOrders}
-            onChange={e => handleConfigChange('maxOrders', Number(e.target.value))} />
-          <InputField label="Trend Down Penalty"
-            type="number" step="0.05" min="0" max="1" value={config.trendDownPenalty}
-            onChange={e => handleConfigChange('trendDownPenalty', Number(e.target.value))} />
-          <InputField label="Momentum Tilt"
-            type="number" step="0.05" min="0" max="1" value={config.momentumTilt}
-            onChange={e => handleConfigChange('momentumTilt', Number(e.target.value))} />
-        </div>
-        <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-          <Button variant="ghost" onClick={handleResetDefaults}>Reset to defaults</Button>
-        </div>
-      </Card>
-
-      {/* Compare v1 Toggle */}
-      {compareV1 && v1Result && result && (
-        <Card style={{ padding: '16px', border: '2px solid var(--accent)' }}>
-          <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)', marginBottom: 12 }}>v1 vs v2 Comparison (Current Portfolio)</p>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid var(--border)', textAlign: 'left' }}>
-                <th style={{ padding: '8px 12px' }}>Metric</th>
-                <th style={{ padding: '8px 12px', textAlign: 'right' }}>v1 (Legacy)</th>
-                <th style={{ padding: '8px 12px', textAlign: 'right' }}>v2 (New)</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr style={{ borderBottom: '1px solid var(--border-soft)' }}>
-                <td style={{ padding: '8px 12px' }}>Spent</td>
-                <td style={{ padding: '8px 12px', textAlign: 'right' }}>{fmtINR(v1Result.summary.totalActualCost)}</td>
-                <td style={{ padding: '8px 12px', textAlign: 'right' }}>{fmtINR(result.summary.totalActualCost)}</td>
-              </tr>
-              <tr style={{ borderBottom: '1px solid var(--border-soft)' }}>
-                <td style={{ padding: '8px 12px' }}>Leftover</td>
-                <td style={{ padding: '8px 12px', textAlign: 'right' }}>{fmtINR(v1Result.summary.leftoverCash)}</td>
-                <td style={{ padding: '8px 12px', textAlign: 'right' }}>{fmtINR(result.summary.leftoverCash)}</td>
-              </tr>
-              <tr style={{ borderBottom: '1px solid var(--border-soft)' }}>
-                <td style={{ padding: '8px 12px' }}>Orders</td>
-                <td style={{ padding: '8px 12px', textAlign: 'right' }}>{v1Result.summary.orders}</td>
-                <td style={{ padding: '8px 12px', textAlign: 'right' }}>{result.summary.orders}</td>
-              </tr>
-              <tr style={{ borderBottom: '1px solid var(--border-soft)' }}>
-                <td style={{ padding: '8px 12px' }}>Above 10% cap</td>
-                <td style={{ padding: '8px 12px', textAlign: 'right' }}>
-                  {fmtINR(v1Result.rows.filter(r => r.suggestedQty > 0 && r.weightAfter > 0.10).reduce((sum, r) => sum + r.actualCost, 0))}
-                </td>
-                <td style={{ padding: '8px 12px', textAlign: 'right' }}>
-                  {fmtINR(result.rows.filter(r => r.suggestedQty > 0 && r.weightAfter > 0.10).reduce((sum, r) => sum + r.actualCost, 0))}
-                </td>
-              </tr>
-              <tr style={{ borderBottom: '1px solid var(--border-soft)' }}>
-                <td style={{ padding: '8px 12px' }}>Top-5 weight</td>
-                <td style={{ padding: '8px 12px', textAlign: 'right' }}>{(v1Result.summary.concentrationAfter?.top5 * 100 || 0).toFixed(1)}%</td>
-                <td style={{ padding: '8px 12px', textAlign: 'right' }}>{(result.summary.concentrationAfter.top5 * 100).toFixed(1)}%</td>
-              </tr>
-              <tr style={{ borderBottom: '1px solid var(--border-soft)' }}>
-                <td style={{ padding: '8px 12px' }}>HHI</td>
-                <td style={{ padding: '8px 12px', textAlign: 'right' }}>{(v1Result.summary.concentrationAfter?.hhi || 0).toFixed(4)}</td>
-                <td style={{ padding: '8px 12px', textAlign: 'right' }}>{result.summary.concentrationAfter.hhi.toFixed(4)}</td>
-              </tr>
-            </tbody>
-          </table>
-        </Card>
-      )}
-
-      {/* Rebalance Table */}
-      {result && (
-        <div style={{ display: 'grid', gap: 16 }}>
-          <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)' }}>Rebalance Plan</p>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid var(--border)', textAlign: 'left' }}>
-                <th style={{ padding: '8px 12px' }}>Instrument</th>
-                <th style={{ padding: '8px 12px' }}>Type</th>
-                <th style={{ padding: '8px 12px', textAlign: 'right' }}>Qty</th>
-                <th style={{ padding: '8px 12px', textAlign: 'right' }}>Avg Cost</th>
-                <th style={{ padding: '8px 12px', textAlign: 'right' }}>LTP</th>
-                <th style={{ padding: '8px 12px', textAlign: 'right' }}>Perf %</th>
-                <th style={{ padding: '8px 12px', textAlign: 'right' }}>Wt Now</th>
-                <th style={{ padding: '8px 12px', textAlign: 'right' }}>Wt After</th>
-                <th style={{ padding: '8px 12px', textAlign: 'right' }}>Allocation</th>
-                <th style={{ padding: '8px 12px', textAlign: 'right' }}>Suggested</th>
-                <th style={{ padding: '8px 12px', textAlign: 'right' }}>Cost</th>
-                <th style={{ padding: '8px 12px', textAlign: 'center' }}>Action</th>
-                <th style={{ padding: '8px 12px' }}>Why</th>
-              </tr>
-            </thead>
-            <tbody>
-              {result.rows
+      <Reveal delay={250}>
+        {/* Rebalance Table */}
+        {result && (
+          <div className="space-y-4">
+            <p className="text-sm font-semibold text-ink">Rebalance Plan</p>
+            <Table
+              columns={[
+                { key: 'instrument', label: 'Instrument' },
+                { key: 'type', label: 'Type' },
+                { key: 'quantity', label: 'Qty', align: 'right' },
+                { key: 'avgCost', label: 'Avg Cost', align: 'right' },
+                { key: 'ltp', label: 'LTP', align: 'right' },
+                { key: 'performancePct', label: 'Perf %', align: 'right' },
+                { key: 'weightBefore', label: 'Wt Now', align: 'right' },
+                { key: 'weightAfter', label: 'Wt After', align: 'right' },
+                { key: 'totalAllocation', label: 'Allocation', align: 'right' },
+                { key: 'suggestedQty', label: 'Suggested', align: 'right' },
+                { key: 'actualCost', label: 'Cost', align: 'right' },
+                { key: 'action', label: 'Action', align: 'center' },
+                { key: 'reasons', label: 'Why' },
+              ]}
+              rows={result.rows
                 .filter((r) => r.ltp > 0)
                 .sort((a, b) => (b.action === 'BUY' ? 1 : 0) - (a.action === 'BUY' ? 1 : 0))
-                .map((r) => (
-                  <tr key={r.instrument} style={{ borderBottom: '1px solid var(--border-soft)' }}>
-                    <td style={{ padding: '8px 12px' }}><strong>{r.instrument}</strong></td>
-                    <td style={{ padding: '8px 12px' }}><span style={{ background: r.type === 'Dividend' ? 'var(--success-bg)' : 'var(--border-soft)', color: r.type === 'Dividend' ? 'var(--success)' : 'var(--muted)', padding: '2px 8px', borderRadius: 'var(--radius-pill)', fontSize: 11 }}>{r.type}</span></td>
-                    <td style={{ padding: '8px 12px', textAlign: 'right' }}>{r.quantity}</td>
-                    <td style={{ padding: '8px 12px', textAlign: 'right' }}>₹{Number(r.avgCost || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                    <td style={{ padding: '8px 12px', textAlign: 'right' }}>₹{Number(r.ltp || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                    <td style={{ padding: '8px 12px', textAlign: 'right' }}>
-                      {r.performancePct > 0 ? <span style={{ color: 'var(--success)' }}>+{(r.performancePct * 100).toFixed(1)}%</span> : <span style={{ color: 'var(--accent)' }}>{(r.performancePct * 100).toFixed(1)}%</span>}
-                    </td>
-                    <td style={{ padding: '8px 12px', textAlign: 'right' }}>{(r.weightBefore * 100).toFixed(2)}%</td>
-                    <td style={{ padding: '8px 12px', textAlign: 'right' }}>{(r.weightAfter * 100).toFixed(2)}%</td>
-                    <td style={{ padding: '8px 12px', textAlign: 'right' }}>{fmtINR(r.totalAllocation)}</td>
-                    <td style={{ padding: '8px 12px', textAlign: 'right' }}><strong>{r.suggestedQty}</strong></td>
-                    <td style={{ padding: '8px 12px', textAlign: 'right' }}>{fmtINR(r.actualCost)}</td>
-                    <td style={{ padding: '8px 12px', textAlign: 'center' }}>
-                      <span style={{ background: r.action === 'BUY' ? 'var(--success-bg)' : 'var(--border-soft)', color: r.action === 'BUY' ? 'var(--success)' : 'var(--muted)', padding: '2px 8px', borderRadius: 'var(--radius-pill)', fontSize: 11 }}>{r.action}</span>
-                    </td>
-                    <td style={{ padding: '8px 12px' }}>
-                      {r.reasons?.slice(0, 3).map((reason, i) => (
-                        <span key={i} style={{ background: 'var(--border-soft)', color: 'var(--muted)', padding: '2px 8px', borderRadius: 'var(--radius-pill)', fontSize: 10, marginRight: 4, display: 'inline-block', marginBottom: 2 }}>{reason}</span>
-                      ))}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                .map((r) => ({
+                  id: r.instrument,
+                  cells: {
+                    instrument: <strong>{r.instrument}</strong>,
+                    type: <span className={`px-2 py-0.5 rounded-full text-xs ${r.type === 'Dividend' ? 'bg-success-bg text-success' : 'bg-border-soft text-muted'}`}>{r.type}</span>,
+                    quantity: r.quantity,
+                    avgCost: `₹${Number(r.avgCost || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+                    ltp: `₹${Number(r.ltp || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+                    performancePct: r.performancePct > 0
+                      ? <span className="text-success">+{(r.performancePct * 100).toFixed(1)}%</span>
+                      : <span className="text-accent">{(r.performancePct * 100).toFixed(1)}%</span>,
+                    weightBefore: `{(r.weightBefore * 100).toFixed(2)}%`,
+                    weightAfter: `{(r.weightAfter * 100).toFixed(2)}%`,
+                    totalAllocation: fmtINR(r.totalAllocation),
+                    suggestedQty: <strong>{r.suggestedQty}</strong>,
+                    actualCost: fmtINR(r.actualCost),
+                    action: <span className={`px-2 py-0.5 rounded-full text-xs ${r.action === 'BUY' ? 'bg-success-bg text-success' : 'bg-border-soft text-muted'}`}>{r.action}</span>,
+                    reasons: r.reasons?.slice(0, 3).map((reason, i) => (
+                      <span key={i} className="px-2 py-0.5 rounded-full text-[10px] bg-border-soft text-muted mr-1 mb-1 inline-block">{reason}</span>
+                    )),
+                  },
+                }))
+              }
+              ariaLabel="Rebalance plan table"
+            />
           </div>
-      )}
+        )}
+      </Reveal>
 
-      {/* Before/After Panel */}
-      {result && (
-        <Card style={{ padding: '16px' }}>
-          <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)', marginBottom: 12 }}>Before / After</p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
-            <div>
-              <p style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Portfolio Value</p>
-              <p className="fin" style={{ fontSize: 18, fontWeight: 600, color: 'var(--ink)' }}>
-                {fmtINR(result.summary.portfolioBefore)} → {fmtINR(result.summary.portfolioAfter)}
-              </p>
+      <Reveal delay={300}>
+        {/* Before/After Panel */}
+        {result && (
+          <Card className="card-shell card-core--pad-lg">
+            <p className="text-sm font-semibold text-ink mb-3">Before / After</p>
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+              <div>
+                <p className="label-caps">Portfolio Value</p>
+                <p className="fin font-display text-lg font-semibold text-ink mt-1">
+                  {fmtINR(result.summary.portfolioBefore)} → {fmtINR(result.summary.portfolioAfter)}
+                </p>
+              </div>
+              <div>
+                <p className="label-caps">Top-5 Weight</p>
+                <p className="fin font-display text-lg font-semibold text-ink mt-1">
+                  {(result.summary.concentrationBefore.top5 * 100).toFixed(1)}% → {(result.summary.concentrationAfter.top5 * 100).toFixed(1)}%
+                </p>
+              </div>
+              <div>
+                <p className="label-caps">Drift</p>
+                <p className="fin font-display text-lg font-semibold text-ink mt-1">
+                  {(result.summary.driftBefore * 100).toFixed(2)}% → {(result.summary.driftAfter * 100).toFixed(2)}%
+                </p>
+              </div>
+              <div>
+                <p className="label-caps">Sleeve Mix</p>
+                <p className="text-sm text-muted">
+                  Div: {(result.summary.sleeveMixBefore.Dividend * 100).toFixed(1)}% → {(result.summary.sleeveMixAfter.Dividend * 100).toFixed(1)}%
+                </p>
+                <p className="text-sm text-muted">
+                  Gro: {(result.summary.sleeveMixBefore.Growth * 100).toFixed(1)}% → {(result.summary.sleeveMixAfter.Growth * 100).toFixed(1)}%
+                </p>
+              </div>
             </div>
-            <div>
-              <p style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Top-5 Weight</p>
-              <p className="fin" style={{ fontSize: 18, fontWeight: 600, color: 'var(--ink)' }}>
-                {(result.summary.concentrationBefore.top5 * 100).toFixed(1)}% → {(result.summary.concentrationAfter.top5 * 100).toFixed(1)}%
-              </p>
-            </div>
-            <div>
-              <p style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Drift</p>
-              <p className="fin" style={{ fontSize: 18, fontWeight: 600, color: 'var(--ink)' }}>
-                {(result.summary.driftBefore * 100).toFixed(2)}% → {(result.summary.driftAfter * 100).toFixed(2)}%
-              </p>
-            </div>
-            <div>
-              <p style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Sleeve Mix</p>
-              <p style={{ fontSize: 14, color: 'var(--muted)' }}>
-                Div: {(result.summary.sleeveMixBefore.Dividend * 100).toFixed(1)}% → {(result.summary.sleeveMixAfter.Dividend * 100).toFixed(1)}%
-              </p>
-              <p style={{ fontSize: 14, color: 'var(--muted)' }}>
-                Gro: {(result.summary.sleeveMixBefore.Growth * 100).toFixed(1)}% → {(result.summary.sleeveMixAfter.Growth * 100).toFixed(1)}%
-              </p>
-            </div>
-          </div>
-        </Card>
-      )}
+          </Card>
+        )}
+      </Reveal>
 
-      {result?.warnings?.length > 0 && (
-        <Card style={{ padding: '12px', borderLeft: '3px solid var(--warning)' }}>
-          <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--warning)', marginBottom: 4 }}>Warnings</p>
-          <ul style={{ fontSize: 12, color: 'var(--muted)', margin: 0, paddingLeft: 20 }}>
-            {result.warnings.map((w, i) => <li key={i}>{w}</li>)}
-          </ul>
-        </Card>
-      )}
+      <Reveal delay={350}>
+        {result?.warnings?.length > 0 && (
+          <Card className="card-shell card-core--pad-base border-l-3 border-l-warning">
+            <p className="text-xs font-semibold text-warning mb-1">Warnings</p>
+            <ul className="text-sm text-muted m-0 pl-5">
+              {result.warnings.map((w, i) => <li key={i}>{w}</li>)}
+            </ul>
+          </Card>
+        )}
+      </Reveal>
 
       <HoldingsDrawer
         open={holdingsDrawerOpen}
@@ -501,7 +495,7 @@ export default function PortfolioRebalance() {
         onSave={() => setEditingHolding(null)}
       />
 
-      <footer style={{ padding: '20px 0', borderTop: '1px solid var(--border-soft)', fontSize: 12, color: 'var(--faint)', textAlign: 'center' }}>
+      <footer className="py-5 border-t border-border-soft text-sm text-faint text-center">
         Suggestions only. Check live prices and charges before ordering. Not investment advice.
       </footer>
     </div>

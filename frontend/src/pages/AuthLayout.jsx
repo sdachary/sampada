@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom'
 import ThemeToggle from '../components/ThemeToggle'
-import { Card, Button, PageHeader, Badge, fmtINR } from '../components/ui'
+import { Card, PageHeader, Badge } from '../components/ui'
+import { Reveal } from '../lib/motion-primitives'
 
 const shellStyle = {
-  minHeight: '100vh',
+  minHeight: '100dvh',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
@@ -22,37 +23,47 @@ const brandStyle = {
 export default function AuthLayout({ variant = 'form', icon, title, subtitle, error, children, after, foot }) {
   const success = variant === 'success'
   return (
-    <div style={shellStyle}>
-      <div style={{ position: 'fixed', top: 16, right: 16 }}>
-        <ThemeToggle />
-      </div>
-      <div style={{ width: '100%', maxWidth: 360, textAlign: success ? 'center' : undefined }}>
-        {!success && (
-          <div style={{ textAlign: 'center', marginBottom: 32 }}>
-            <Link to="/" style={brandStyle}>Sampada</Link>
-          </div>
-        )}
-        <Card style={{ padding: 32 }}>
-          {success ? (
-            <>
-              <p style={{ fontSize: 28, marginBottom: 12 }}>{icon}</p>
-              <h1 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>{title}</h1>
-              <p style={{ fontSize: 13.5, color: 'var(--muted)', lineHeight: 1.6 }}>{subtitle}</p>
-              {children}
-            </>
-          ) : (
-            <>
-              <PageHeader title={title} style={{ borderBottom: 'none', paddingBottom: 0, marginBottom: 16 }}>
-                <p style={{ fontSize: 13.5, color: 'var(--muted)', lineHeight: 1.6 }}>{subtitle}</p>
-              </PageHeader>
-              {error && <Badge variant="danger" style={{ marginBottom: 16, fontSize: 13 }}>{error}</Badge>}
-              {children}
-            </>
+    <Reveal delay={0}>
+      <div style={shellStyle}>
+        <div className="fixed top-4 right-4 z-sticky">
+          <ThemeToggle />
+        </div>
+        <div className="w-full max-w-[360px] text-center" style={{ textAlign: success ? 'center' : undefined }}>
+          {!success && (
+            <Reveal delay={50}>
+              <div className="mb-8">
+                <Link to="/" style={brandStyle} className="no-underline">Sampada</Link>
+              </div>
+            </Reveal>
           )}
-        </Card>
-        {after}
-        {foot && <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--muted)', marginTop: 20 }}>{foot}</p>}
+          <Reveal delay={100}>
+            <Card className="card-shell card-core--pad-xl">
+              {success ? (
+                <>
+                  <p className="text-5xl mb-3">{icon}</p>
+                  <h1 className="text-lg font-semibold mb-2">{title}</h1>
+                  <p className="text-sm text-muted leading-relaxed">{subtitle}</p>
+                  {children}
+                </>
+              ) : (
+                <>
+                  <PageHeader title={title} className="border-none pb-0 mb-4">
+                    <p className="text-sm text-muted leading-relaxed">{subtitle}</p>
+                  </PageHeader>
+                  {error && <Badge variant="danger" className="mb-4 text-sm w-full">{error}</Badge>}
+                  {children}
+                </>
+              )}
+            </Card>
+          </Reveal>
+          {after}
+          {foot && (
+            <Reveal delay={150}>
+              <p className="text-center text-sm text-muted mt-5">{foot}</p>
+            </Reveal>
+          )}
+        </div>
       </div>
-    </div>
+    </Reveal>
   )
 }

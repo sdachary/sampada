@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
 import { Card, Button, Input, Select, Textarea, EmptyState, PageHeader, Badge, ToastHost, toast } from '../components/ui'
+import { Reveal } from '../lib/motion-primitives'
 
 const DPO_EMAIL = 'grievance@acharylab.app'
 
@@ -104,109 +105,123 @@ export default function Privacy() {
   const features = Object.keys(consent)
 
   return (
-    <div style={{ display: 'grid', gap: 20 }}>
-      <PageHeader
-        title="Privacy"
-        num="018 / 016"
-      >
-        <p style={{ fontSize: 13, color: 'var(--muted)' }}>Your data, your control (DPDP compliance).</p>
-      </PageHeader>
+    <div className="space-y-5">
+      <Reveal delay={0}>
+        <PageHeader
+          title="Privacy"
+          num="018 / 016"
+        >
+          <p className="text-sm text-muted">Your data, your control (DPDP compliance).</p>
+        </PageHeader>
+      </Reveal>
 
       {msg && (
-        <Card style={{ padding: '10px 16px', fontSize: 13, color: isErr ? 'var(--accent)' : 'var(--success)' }}>
-          {msg}
-        </Card>
+        <Reveal delay={50}>
+          <Card className={`card-shell card-core--pad-base ${isErr ? 'border-l-3 border-l-accent' : 'border-l-3 border-l-success'}`}>
+            {msg}
+          </Card>
+        </Reveal>
       )}
 
-      <Card style={{ padding: '20px' }}>
-        <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 10, letterSpacing: '-0.01em' }}>Consent Management</p>
-        {features.length === 0 && (
-          <p style={{ fontSize: 12, color: 'var(--muted)' }}>Loading…</p>
-        )}
-        {features.map(f => (
-          <div key={f} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid var(--border-soft)' }}>
-            <span style={{ fontSize: 13, textTransform: 'capitalize' }}>{f.replace(/_/g, ' ')}</span>
-            <Button
-              onClick={() => toggleConsent(f)}
-              variant={consent[f] ? 'success' : 'ghost'}
-              size="sm"
-            >
-              {consent[f] ? 'Granted' : 'Revoked'}
-            </Button>
-          </div>
-        ))}
-      </Card>
-
-      <Card style={{ padding: '20px' }}>
-        <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 10, letterSpacing: '-0.01em' }}>Data & Erasure</p>
-        <p style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 16 }}>
-          Request deletion of your account and all associated data. You can download everything first with a full export,
-          then cancel within 48 hours.
-        </p>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <Button onClick={handleErasure} style={{ background: 'var(--accent)', color: '#fff' }}>
-            Request account erasure
-          </Button>
-          <a href="/privacy.html" style={{ textDecoration: 'none' }}>
-            <Button variant="ghost">Read the privacy notice</Button>
-          </a>
-        </div>
-      </Card>
-
-      {pending.length > 0 && (
-        <Card style={{ padding: '14px 18px', borderLeft: '3px solid var(--warning)' }}>
-          <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)', marginBottom: 6 }}>Pending Erasure Requests</p>
-          {pending.map(e => (
-            <div key={e.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, padding: '6px 0', borderBottom: '1px solid var(--border-soft)' }}>
-              <div>
-                <p style={{ fontSize: 11.5, color: 'var(--muted)' }}>Deletes on {new Date(e.scheduled_for).toLocaleString()}</p>
-                <p>Reference <code style={{ fontSize: 11, background: 'var(--bg)', padding: '1px 6px', borderRadius: 4 }}>{e.cancel_token}</code></p>
-              </div>
-              <Button variant="ghost" size="sm" onClick={() => cancelDeletion(e.cancel_token)}>
-                Cancel deletion
+      <Reveal delay={100}>
+        <Card className="card-shell card-core--pad-lg">
+          <p className="text-sm font-semibold tracking-tight mb-3">Consent Management</p>
+          {features.length === 0 && (
+            <p className="text-sm text-muted">Loading…</p>
+          )}
+          {features.map(f => (
+            <div key={f} className="flex justify-between items-center py-2 border-b border-border-soft last:border-0">
+              <span className="text-sm capitalize">{f.replace(/_/g, ' ')}</span>
+              <Button
+                onClick={() => toggleConsent(f)}
+                variant={consent[f] ? 'success' : 'ghost'}
+                size="sm"
+              >
+                {consent[f] ? 'Granted' : 'Revoked'}
               </Button>
             </div>
           ))}
         </Card>
-      )}
+      </Reveal>
 
-      <Card style={{ padding: '20px' }}>
-        <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 10, letterSpacing: '-0.01em' }}>Raise a Grievance</p>
-        <p style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 16 }}>
-          Anything we got wrong with your data? We respond within 72 hours and resolve within 90 days. You can also write
-          to our Grievance Officer at <a style={{ color: 'var(--accent)' }} href={`mailto:${DPO_EMAIL}`}>{DPO_EMAIL}</a>.
-        </p>
-        {reference && (
-          <p style={{ fontSize: 12, color: 'var(--success)', marginBottom: 10 }}>
-            Reference for your last grievance: <strong>{reference}</strong>
+      <Reveal delay={150}>
+        <Card className="card-shell card-core--pad-lg">
+          <p className="text-sm font-semibold tracking-tight mb-3">Data & Erasure</p>
+          <p className="text-sm text-muted mb-4">
+            Request deletion of your account and all associated data. You can download everything first with a full export,
+            then cancel within 48 hours.
           </p>
+          <div className="flex gap-2 flex-wrap">
+            <Button onClick={handleErasure} className="bg-accent text-white">
+              Request account erasure
+            </Button>
+            <a href="/privacy.html" className="no-underline">
+              <Button variant="ghost">Read the privacy notice</Button>
+            </a>
+          </div>
+        </Card>
+      </Reveal>
+
+      <Reveal delay={200}>
+        {pending.length > 0 && (
+          <Card className="card-shell card-core--pad-base border-l-3 border-l-warning">
+            <p className="text-sm font-semibold text-ink mb-2">Pending Erasure Requests</p>
+            <div className="space-y-2">
+              {pending.map(e => (
+                <div key={e.id} className="flex justify-between items-center gap-3 py-2 border-b border-border-soft last:border-0">
+                  <div>
+                    <p className="text-sm text-muted">Deletes on {new Date(e.scheduled_for).toLocaleString()}</p>
+                    <p>Reference <code className="px-1.5 py-0.5 bg-bg rounded text-xs font-mono">{e.cancel_token}</code></p>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={() => cancelDeletion(e.cancel_token)}>
+                    Cancel deletion
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </Card>
         )}
-        <form onSubmit={submitGrievance} style={{ display: 'grid', gap: 12 }}>
-          <Select
-            value={grievance.grievance_type}
-            onChange={e => setGrievance(g => ({ ...g, grievance_type: e.target.value }))}
-            options={GRIEVANCE_TYPES.map(t => ({ value: t.value, label: t.label }))}
-            placeholder="What is this about?"
-            required
-          />
-          <Textarea
-            value={grievance.description}
-            onChange={e => setGrievance(g => ({ ...g, description: e.target.value }))}
-            placeholder="Tell us what happened"
-            rows={3}
-            required
-          />
-          <Input
-            type="email"
-            value={grievance.email}
-            onChange={e => setGrievance(g => ({ ...g, email: e.target.value }))}
-            placeholder="Contact email (optional — defaults to your account email)"
-          />
-          <Button type="submit" loading={sending} disabled={sending}>
-            {sending ? 'Submitting…' : 'Submit grievance'}
-          </Button>
-        </form>
-      </Card>
+      </Reveal>
+
+      <Reveal delay={250}>
+        <Card className="card-shell card-core--pad-lg">
+          <p className="text-sm font-semibold tracking-tight mb-3">Raise a Grievance</p>
+          <p className="text-sm text-muted mb-4">
+            Anything we got wrong with your data? We respond within 72 hours and resolve within 90 days. You can also write
+            to our Grievance Officer at <a className="text-accent" href={`mailto:${DPO_EMAIL}`}>{DPO_EMAIL}</a>.
+          </p>
+          {reference && (
+            <p className="text-sm text-success mb-3">
+              Reference for your last grievance: <strong>{reference}</strong>
+            </p>
+          )}
+          <form onSubmit={submitGrievance} className="space-y-3">
+            <Select
+              value={grievance.grievance_type}
+              onChange={e => setGrievance(g => ({ ...g, grievance_type: e.target.value }))}
+              options={GRIEVANCE_TYPES.map(t => ({ value: t.value, label: t.label }))}
+              placeholder="What is this about?"
+              required
+            />
+            <Textarea
+              value={grievance.description}
+              onChange={e => setGrievance(g => ({ ...g, description: e.target.value }))}
+              placeholder="Tell us what happened"
+              rows={3}
+              required
+            />
+            <Input
+              type="email"
+              value={grievance.email}
+              onChange={e => setGrievance(g => ({ ...g, email: e.target.value }))}
+              placeholder="Contact email (optional — defaults to your account email)"
+            />
+            <Button type="submit" loading={sending} disabled={sending}>
+              {sending ? 'Submitting…' : 'Submit grievance'}
+            </Button>
+          </form>
+        </Card>
+      </Reveal>
 
       <ToastHost />
     </div>

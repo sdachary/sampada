@@ -1,10 +1,18 @@
 import { useId } from 'react'
 
 // Progress primitive: 6px bar, fills to the value (width transition).
-// Variants: accent (default) | success. 0–100.
-export default function Progress({ value = 0, variant = 'accent', label, _ariaLevel, ...props } = {}) {
+// Variants: accent (default) | success | warning | danger. 0–100.
+export default function Progress({ value = 0, variant = 'accent', label, ...props } = {}) {
   const id = useId()
   const pct = Math.max(0, Math.min(100, Number(value) || 0))
+
+  const variantClasses = {
+    accent: 'progress__fill',
+    success: 'progress__fill progress__fill--success',
+    warning: 'progress__fill progress__fill--warning',
+    danger: 'progress__fill progress__fill--danger',
+  }
+
   return (
     <div
       id={id}
@@ -17,7 +25,7 @@ export default function Progress({ value = 0, variant = 'accent', label, _ariaLe
       {...props}
     >
       <div
-        className={`progress-fill${variant === 'success' ? ' green' : ''}`}
+        className={variantClasses[variant] || variantClasses.accent}
         style={{ width: `${pct}%` }}
       />
     </div>

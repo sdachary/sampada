@@ -29,16 +29,23 @@ async function request(path, options = {}) {
 }
 
 async function betterAuthRequest(path, options = {}) {
-  const res = await fetch(`${BETTER_AUTH_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...options.headers },
-    credentials: 'include', // Cookie-only sessions via the same-origin proxy
-    ...options,
-  })
-  if (!res.ok) {
-    const error = await res.json().catch(() => ({}))
-    throw new Error(error.error || error.message || res.statusText)
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 15000) // 15s timeout
+  try {
+    const res = await fetch(`${BETTER_AUTH_URL}${path}`, {
+      headers: { 'Content-Type': 'application/json', ...options.headers },
+      credentials: 'include', // Cookie-only sessions via the same-origin proxy
+      ...options,
+      signal: controller.signal,
+    })
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}))
+      throw new Error(error.error || error.message || res.statusText)
+    }
+    return res.status === 204 ? null : res.json()
+  } finally {
+    clearTimeout(timeoutId)
   }
-  return res.status === 204 ? null : res.json()
 }
 
 async function requestRaw(path, options = {}) {

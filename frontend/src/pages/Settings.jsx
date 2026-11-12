@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { registerServiceWorker, subscribeToPush, unsubscribeFromPush, isPushSupported, isPushSubscribed } from '../lib/push'
 import { Card, Button, Input, Select, InputField, Badge, PageHeader, ToastHost, toast } from '../components/ui'
 import { credentialToJSON, jsonToCredentialOptions, isPasskeySupported } from '../lib/passkeys'
+import { Reveal } from '../lib/motion-primitives'
 
 const PROVIDERS = [
   { value: 'zerodha', label: 'Zerodha' },
@@ -207,211 +208,232 @@ export default function Settings() {
   }
 
   return (
-    <div style={{ display: 'grid', gap: 20 }}>
-      <PageHeader
-        title="Settings"
-        num="017 / 016"
-      >
-        <p style={{ fontSize: 13, color: 'var(--muted)' }}>Account preferences and profile.</p>
-      </PageHeader>
+    <div className="space-y-5">
+      <Reveal delay={0}>
+        <PageHeader
+          title="Settings"
+          num="017 / 016"
+        >
+          <p className="text-sm text-muted">Account preferences and profile.</p>
+        </PageHeader>
+      </Reveal>
 
-      <Card>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)' }}>Profile</p>
-          <Button variant="ghost" size="sm" onClick={() => setEditing(!editing)}>
-            {editing ? 'Cancel' : 'Edit'}
-          </Button>
-        </div>
-
-        {editing ? (
-          <div style={{ display: 'grid', gap: 12 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-              <InputField label="First Name" value={form.first_name} onChange={set('first_name')} />
-              <InputField label="Last Name" value={form.last_name} onChange={set('last_name')} />
-            </div>
-            <InputField label="Currency">
-              <Select value={form.currency} onChange={set('currency')} options={[
-                { value: 'INR', label: 'INR (₹)' },
-                { value: 'USD', label: 'USD ($)' },
-                { value: 'EUR', label: 'EUR (€)' },
-              ]} />
-            </InputField>
-            <Button onClick={handleSave} style={{ alignSelf: 'flex-start' }}>Save</Button>
-          </div>
-        ) : (
-          <div style={{ display: 'grid', gap: 10 }}>
-            <div>
-              <p style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 2 }}>Name</p>
-              <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)' }}>{user?.first_name} {user?.last_name}</p>
-            </div>
-            <div>
-              <p style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 2 }}>Email</p>
-              <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)' }}>{user?.email}</p>
-            </div>
-            <div>
-              <p style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 2 }}>Currency</p>
-              <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)' }}>{user?.currency || 'INR'}</p>
-            </div>
-          </div>
-        )}
-      </Card>
-
-      <Card>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)' }}>
-            AI Assistant <span style={{ fontWeight: 400, color: 'var(--muted)' }}>(powered by your key)</span>
-          </p>
-          <Badge variant={aiConfigured ? 'success' : 'warning'} style={{ fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.02em' }}>
-            {aiConfigured ? 'On' : 'Off'}
-          </Badge>
-        </div>
-        <p style={{ fontSize: 12.5, color: 'var(--muted)', marginBottom: 12 }}>
-          {aiConfigured
-            ? `Using ${aiProvider === 'gemini' ? 'Google Gemini' : aiProvider === 'grok' ? 'xAI Grok' : aiProvider === 'openrouter' ? 'OpenRouter' : 'OpenAI'} — chat in Conversations.`
-            : 'Chat is disabled by default. Connect a Gemini, Grok, or any OpenAI-compatible key to enable AI answers.'}
-        </p>
-
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: aiConfigured ? 10 : 0 }}>
-          {!aiConfigured && (
-            <>
-              <Select value={aiForm.provider} onChange={e => setAiForm(f => ({ ...f, provider: e.target.value }))} placeholder="Select provider…" options={[
-                { value: 'openai', label: 'OpenAI' },
-                { value: 'gemini', label: 'Google Gemini' },
-                { value: 'grok', label: 'xAI Grok' },
-                { value: 'openrouter', label: 'OpenRouter' },
-              ]} style={{ flex: 1, minWidth: 160 }} />
-              <Input type="password" placeholder="API key" value={aiForm.api_key} onChange={e => setAiForm(f => ({ ...f, api_key: e.target.value }))} style={{ flex: 2, minWidth: 220 }} />
-              <Button onClick={saveAi} disabled={!aiForm.provider || !aiForm.api_key}>Enable</Button>
-            </>
-          )}
-          {aiConfigured && (
-            <Button variant="ghost" size="sm" onClick={disableAi} style={{ color: 'var(--accent)', borderColor: 'var(--accent)' }}>
-              Disable
+      <Reveal delay={50}>
+        <Card className="card-shell card-shell--interactive card-core--pad-lg">
+          <div className="flex justify-between items-center mb-3">
+            <p className="text-sm font-semibold text-ink">Profile</p>
+            <Button variant="ghost" size="sm" onClick={() => setEditing(!editing)}>
+              {editing ? 'Cancel' : 'Edit'}
             </Button>
+          </div>
+
+          {editing ? (
+            <div className="space-y-3">
+              <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
+                <InputField label="First Name" value={form.first_name} onChange={set('first_name')} />
+                <InputField label="Last Name" value={form.last_name} onChange={set('last_name')} />
+              </div>
+              <InputField label="Currency">
+                <Select value={form.currency} onChange={set('currency')} options={[
+                  { value: 'INR', label: 'INR (₹)' },
+                  { value: 'USD', label: 'USD ($)' },
+                  { value: 'EUR', label: 'EUR (€)' },
+                ]} />
+              </InputField>
+              <Button onClick={handleSave} className="w-full sm:w-auto">Save</Button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <div>
+                <p className="text-2xs font-semibold uppercase tracking-wider text-muted mb-1">Name</p>
+                <p className="text-base font-medium text-ink">{user?.first_name} {user?.last_name}</p>
+              </div>
+              <div>
+                <p className="text-2xs font-semibold uppercase tracking-wider text-muted mb-1">Email</p>
+                <p className="text-base font-medium text-ink">{user?.email}</p>
+              </div>
+              <div>
+                <p className="text-2xs font-semibold uppercase tracking-wider text-muted mb-1">Currency</p>
+                <p className="text-base font-medium text-ink">{user?.currency || 'INR'}</p>
+              </div>
+            </div>
           )}
-        </div>
-        {aiError && <p style={{ fontSize: 12, color: 'var(--accent)', marginBottom: 8 }}>{aiError}</p>}
-      </Card>
+        </Card>
+      </Reveal>
+
+      <Reveal delay={100}>
+        <Card className="card-shell card-shell--interactive card-core--pad-lg">
+          <div className="flex justify-between items-center mb-3">
+            <p className="text-sm font-semibold text-ink flex items-center gap-2">
+              AI Assistant <span className="font-normal text-muted text-sm">(powered by your key)</span>
+            </p>
+            <Badge variant={aiConfigured ? 'success' : 'warning'} className="text-2xs uppercase tracking-wider">
+              {aiConfigured ? 'On' : 'Off'}
+            </Badge>
+          </div>
+          <p className="text-sm text-muted mb-3">
+            {aiConfigured
+              ? `Using ${aiProvider === 'gemini' ? 'Google Gemini' : aiProvider === 'grok' ? 'xAI Grok' : aiProvider === 'openrouter' ? 'OpenRouter' : 'OpenAI'} — chat in Conversations.`
+              : 'Chat is disabled by default. Connect a Gemini, Grok, or any OpenAI-compatible key to enable AI answers.'}
+          </p>
+
+          <div className="flex gap-2 flex-wrap mb-2">
+            {!aiConfigured && (
+              <>
+                <Select value={aiForm.provider} onChange={e => setAiForm(f => ({ ...f, provider: e.target.value }))} placeholder="Select provider…" options={[
+                  { value: 'openai', label: 'OpenAI' },
+                  { value: 'gemini', label: 'Google Gemini' },
+                  { value: 'grok', label: 'xAI Grok' },
+                  { value: 'openrouter', label: 'OpenRouter' },
+                ]} className="flex-1 min-w-[160px]" />
+                <Input type="password" placeholder="API key" value={aiForm.api_key} onChange={e => setAiForm(f => ({ ...f, api_key: e.target.value }))} className="flex-1 min-w-[220px]" />
+                <Button onClick={saveAi} disabled={!aiForm.provider || !aiForm.api_key}>Enable</Button>
+              </>
+            )}
+            {aiConfigured && (
+              <Button variant="ghost" size="sm" onClick={disableAi} className="text-accent border-accent">
+                Disable
+              </Button>
+            )}
+          </div>
+          {aiError && <p className="text-sm text-accent mb-2">{aiError}</p>}
+        </Card>
+      </Reveal>
 
       {passkeySupported && (
-        <Card>
-          <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)', marginBottom: 8 }}>Security</p>
-          <p style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 12 }}>Passkeys let you sign in without a password using your device's biometrics or PIN.</p>
+        <Reveal delay={150}>
+          <Card className="card-shell card-shell--interactive card-core--pad-lg">
+            <p className="text-sm font-semibold text-ink mb-2">Security</p>
+            <p className="text-sm text-muted mb-3">Passkeys let you sign in without a password using your device's biometrics or PIN.</p>
 
-          {passkeys.length === 0 ? (
-            <p style={{ fontSize: 12.5, color: 'var(--muted)', marginBottom: 8 }}>No passkeys registered yet.</p>
-          ) : (
-            <div style={{ display: 'grid', gap: 8, marginBottom: 12 }}>
-              {passkeys.map(p => (
-                <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: 'var(--bg)', borderRadius: 6 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{ fontSize: 16 }}>🔐</span>
-                    <div>
-                      <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--ink)' }}>{p.label}</p>
-                      <p style={{ fontSize: 11, color: 'var(--muted)' }}>
-                        {p.transport === 'platform' ? 'Built into this device' : 'Security key'}
-                        {p.last_used_at && ` · Last used ${new Date(p.last_used_at).toLocaleDateString()}`}
-                      </p>
+            {passkeys.length === 0 ? (
+              <p className="text-sm text-muted mb-2">No passkeys registered yet.</p>
+            ) : (
+              <div className="space-y-2 mb-3">
+                {passkeys.map(p => (
+                  <div key={p.id} className="flex justify-between items-center px-3 py-2 bg-bg rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">🔐</span>
+                      <div>
+                        <p className="text-base font-medium text-ink">{p.label}</p>
+                        <p className="text-xs text-muted">
+                          {p.transport === 'platform' ? 'Built into this device' : 'Security key'}
+                          {p.last_used_at && ` · Last used ${new Date(p.last_used_at).toLocaleDateString()}`}
+                        </p>
+                      </div>
                     </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => deletePasskey(p.id)}
+                      className="text-accent border-accent"
+                      disabled={passkeys.length <= 1}
+                    >
+                      Remove
+                    </Button>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => deletePasskey(p.id)}
-                    style={{ color: 'var(--accent)', borderColor: 'var(--accent)' }}
-                    disabled={passkeys.length <= 1}
-                  >
-                    Remove
+                ))}
+              </div>
+            )}
+
+            {!addingPasskey ? (
+              <Button variant="secondary" size="sm" onClick={() => setAddingPasskey(true)} className="w-full sm:w-auto">
+                Add passkey
+              </Button>
+            ) : (
+              <div className="space-y-2 mt-2">
+                <InputField
+                  label="Label (optional)"
+                  placeholder="e.g. MacBook Pro, YubiKey"
+                  value={newPasskeyLabel}
+                  onChange={e => setNewPasskeyLabel(e.target.value)}
+                />
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={addPasskey} loading={addingPasskey} className="flex-1">
+                    {addingPasskey ? 'Registering…' : 'Continue'}
                   </Button>
+                  <Button variant="ghost" size="sm" onClick={() => { setAddingPasskey(false); setNewPasskeyLabel('') }} className="flex-1">
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
+          </Card>
+        </Reveal>
+      )}
+
+      <Reveal delay={200}>
+        <Card className="card-shell card-shell--interactive card-core--pad-lg">
+          <p className="text-sm font-semibold text-ink mb-2">Data & Privacy</p>
+          <div className="flex gap-2 flex-wrap">
+            <Button variant="ghost" size="sm" onClick={handleExport}>Download full export</Button>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard/privacy')}>Privacy controls</Button>
+          </div>
+        </Card>
+      </Reveal>
+
+      <Reveal delay={250}>
+        <Card className="card-shell card-shell--interactive card-core--pad-lg">
+          <div className="flex justify-between items-center mb-3">
+            <p className="text-sm font-semibold text-ink">API Keys</p>
+            <Button variant="ghost" size="sm" onClick={() => setShowAdd(!showAdd)}>
+              {showAdd ? 'Cancel' : 'Add'}
+            </Button>
+          </div>
+
+          {showAdd && (
+            <div className="space-y-2 mb-3">
+              <Select value={newCred.provider} onChange={e => setNewCred(c => ({ ...c, provider: e.target.value }))} placeholder="Select provider…" options={PROVIDERS} />
+              <Input placeholder="Label (optional)" value={newCred.label} onChange={e => setNewCred(c => ({ ...c, label: e.target.value }))} />
+              <Input placeholder="API key / token" value={newCred.encrypted_value} onChange={e => setNewCred(c => ({ ...c, encrypted_value: e.target.value }))} />
+              <Button onClick={addCredential} className="w-full sm:w-auto">Add key</Button>
+            </div>
+          )}
+
+          {credentials.length === 0 ? (
+            <p className="text-sm text-muted">No API keys configured yet.</p>
+          ) : (
+            <div className="space-y-2">
+              {credentials.map(c => (
+                <div key={c.id} className="flex justify-between items-center px-3 py-2 bg-bg rounded-lg">
+                  <div>
+                    <p className="text-base font-medium text-ink">{c.label || PROVIDERS.find(p => p.value === c.provider)?.label || c.provider}</p>
+                    <p className="text-xs text-muted">{c.provider}</p>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={() => deleteCredential(c.id)} className="text-accent border-accent">Remove</Button>
                 </div>
               ))}
             </div>
           )}
-
-          {!addingPasskey ? (
-            <Button variant="secondary" size="sm" onClick={() => setAddingPasskey(true)} style={{ alignSelf: 'flex-start' }}>
-              Add passkey
-            </Button>
-          ) : (
-            <div style={{ display: 'grid', gap: 8, marginTop: 8 }}>
-              <InputField
-                label="Label (optional)"
-                placeholder="e.g. MacBook Pro, YubiKey"
-                value={newPasskeyLabel}
-                onChange={e => setNewPasskeyLabel(e.target.value)}
-              />
-              <div style={{ display: 'flex', gap: 8 }}>
-                <Button size="sm" onClick={addPasskey} loading={addingPasskey}>
-                  {addingPasskey ? 'Registering…' : 'Continue'}
-                </Button>
-                <Button variant="ghost" size="sm" onClick={() => { setAddingPasskey(false); setNewPasskeyLabel('') }}>
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          )}
         </Card>
-      )}
-
-      <Card>
-        <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)', marginBottom: 8 }}>Data & Privacy</p>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <Button variant="ghost" size="sm" onClick={handleExport}>Download full export</Button>
-          <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard/privacy')}>Privacy controls</Button>
-        </div>
-      </Card>
-
-      <Card>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)' }}>API Keys</p>
-          <Button variant="ghost" size="sm" onClick={() => setShowAdd(!showAdd)}>
-            {showAdd ? 'Cancel' : 'Add'}
-          </Button>
-        </div>
-
-        {showAdd && (
-          <div style={{ display: 'grid', gap: 10, marginBottom: 12 }}>
-            <Select value={newCred.provider} onChange={e => setNewCred(c => ({ ...c, provider: e.target.value }))} placeholder="Select provider…" options={PROVIDERS} />
-            <Input placeholder="Label (optional)" value={newCred.label} onChange={e => setNewCred(c => ({ ...c, label: e.target.value }))} />
-            <Input placeholder="API key / token" value={newCred.encrypted_value} onChange={e => setNewCred(c => ({ ...c, encrypted_value: e.target.value }))} />
-            <Button onClick={addCredential} style={{ alignSelf: 'flex-start' }}>Add key</Button>
-          </div>
-        )}
-
-        {credentials.length === 0 ? (
-          <p style={{ fontSize: 12.5, color: 'var(--muted)' }}>No API keys configured yet.</p>
-        ) : (
-          <div style={{ display: 'grid', gap: 8 }}>
-            {credentials.map(c => (
-              <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: 'var(--bg)', borderRadius: 6 }}>
-                <div>
-                  <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--ink)' }}>{c.label || PROVIDERS.find(p => p.value === c.provider)?.label || c.provider}</p>
-                  <p style={{ fontSize: 11, color: 'var(--muted)' }}>{c.provider}</p>
-                </div>
-                <Button variant="ghost" size="sm" onClick={() => deleteCredential(c.id)} style={{ color: 'var(--accent)', borderColor: 'var(--accent)' }}>Remove</Button>
-              </div>
-            ))}
-          </div>
-        )}
-      </Card>
+      </Reveal>
 
       {pushSupported && (
-        <Card style={{ borderLeft: '3px solid var(--success)' }}>
-          <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)', marginBottom: 4 }}>Push Notifications</p>
-          <p style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 8 }}>Get notified about debt reminders and SIP alerts.</p>
-          <Button variant={pushSubscribed ? 'ghost' : 'primary'} size="sm" onClick={togglePush} style={{ background: pushSubscribed ? 'transparent' : undefined, borderColor: pushSubscribed ? 'var(--border)' : undefined, color: pushSubscribed ? 'var(--accent)' : undefined }}>
-            {pushSubscribed ? 'Disable' : 'Enable'}
-          </Button>
-        </Card>
+        <Reveal delay={300}>
+          <Card className="card-shell card-shell--interactive card-core--pad-lg border-l-3 border-l-success">
+            <p className="text-sm font-semibold text-ink mb-1">Push Notifications</p>
+            <p className="text-sm text-muted mb-2">Get notified about debt reminders and SIP alerts.</p>
+            <Button
+              variant={pushSubscribed ? 'ghost' : 'primary'}
+              size="sm"
+              onClick={togglePush}
+              className={pushSubscribed ? 'text-accent border-border bg-transparent' : ''}
+            >
+              {pushSubscribed ? 'Disable' : 'Enable'}
+            </Button>
+          </Card>
+        </Reveal>
       )}
 
-      <Card style={{ borderLeft: '3px solid var(--faint)' }}>
-        <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink)', marginBottom: 4 }}>Logout</p>
-        <p style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 8 }}>Sign out of your account.</p>
-        <Button variant="ghost" size="sm" onClick={() => { logout(); navigate('/') }} style={{ color: 'var(--accent)', borderColor: 'var(--accent)' }}>
-          Sign out
-        </Button>
-      </Card>
+      <Reveal delay={350}>
+        <Card className="card-shell card-shell--interactive card-core--pad-lg border-l-3 border-l-faint">
+          <p className="text-sm font-semibold text-ink mb-1">Logout</p>
+          <p className="text-sm text-muted mb-2">Sign out of your account.</p>
+          <Button variant="ghost" size="sm" onClick={() => { logout(); navigate('/') }} className="text-accent border-accent">
+            Sign out
+          </Button>
+        </Card>
+      </Reveal>
 
       <ToastHost />
     </div>

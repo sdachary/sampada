@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
 import { Card, Button, Skeleton, PageHeader, fmtINR, toast } from '../components/ui'
+import { Reveal } from '../lib/motion-primitives'
 
 export default function Exports() {
   const [info, setInfo] = useState(null)
@@ -25,36 +26,46 @@ export default function Exports() {
     }
   }
 
-  if (loading) return <Skeleton style={{ height: 120 }} />
+  if (loading) return (
+    <Reveal delay={0}>
+      <Skeleton className="skeleton-card h-28" />
+    </Reveal>
+  )
 
   const types = info?.types || ['debts', 'portfolios', 'transactions', 'net_worth']
   const formats = info?.formats || ['csv', 'json']
 
   return (
-    <div style={{ display: 'grid', gap: 20 }}>
-      <PageHeader
-        title="Exports"
-        num="016 / 016"
-      >
-        <p style={{ fontSize: 13, color: 'var(--muted)' }}>Download your data as CSV or JSON.</p>
-      </PageHeader>
+    <div className="space-y-5">
+      <Reveal delay={0}>
+        <PageHeader
+          title="Exports"
+          num="016 / 016"
+        >
+          <p className="text-sm text-muted">Download your data as CSV or JSON.</p>
+        </PageHeader>
+      </Reveal>
 
-      <div style={{ display: 'grid', gap: 8 }}>
-        {types.map(type => (
-          <Card key={type} style={{ padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <p style={{ fontWeight: 500, fontSize: 14, textTransform: 'capitalize' }}>{type.replace(/_/g, ' ')}</p>
-            </div>
-            <div style={{ display: 'flex', gap: 6 }}>
-              {formats.map(f => (
-                <Button key={f} variant="ghost" size="sm" onClick={() => doExport(type, f)} style={{ textTransform: 'uppercase' }}>
-                  {f}
-                </Button>
-              ))}
-            </div>
-          </Card>
-        ))}
-      </div>
+      <Reveal delay={50}>
+        <div className="space-y-2">
+          {types.map((type, index) => (
+            <Reveal key={type} delay={index * 30}>
+              <Card className="card-shell card-shell--interactive card-core--pad-base flex justify-between items-center">
+                <div>
+                  <p className="text-base font-medium capitalize">{type.replace(/_/g, ' ')}</p>
+                </div>
+                <div className="flex gap-2">
+                  {formats.map(f => (
+                    <Button key={f} variant="ghost" size="sm" onClick={() => doExport(type, f)} className="uppercase text-xs">
+                      {f}
+                    </Button>
+                  ))}
+                </div>
+              </Card>
+            </Reveal>
+          ))}
+        </div>
+      </Reveal>
     </div>
   )
 }

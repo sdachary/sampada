@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import ThemeToggle from '../components/ThemeToggle'
-import { Reveal, PageTransition } from '../lib/motion-primitives'
+import { Reveal } from '../lib/motion-primitives'
 import { Check, X, TrendingDown, PiggyBank, RefreshCw, MessageSquare, AlertTriangle, Globe, Users, Cpu, Lock, Shield, Zap, Star } from 'lucide-react'
 import { Button, Card } from '../components/ui'
 import HeroVisual from '../landing/hero3d/HeroVisual'
@@ -30,24 +30,26 @@ const COMPARE_ROWS = [
 function CompareCell({ value }) {
   if (value === true) return <Check size={15} color="var(--success)" strokeWidth={2.5} />
   if (value === false) return <X size={15} color="var(--faint)" strokeWidth={2} />
-  return <span style={{ fontSize: 11.5, color: 'var(--muted)' }}>{value}</span>
+  return <span className="text-sm text-muted">{value}</span>
 }
 
-function FeatureCard({ f }) {
+function FeatureCard({ f, index }) {
   const Icon = f.icon
   return (
-    <Card style={{ padding: '20px 20px', height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Icon className="mb-10" size={20} color={f.accent} strokeWidth={1.75} />
-      <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 600, letterSpacing: '-0.01em', marginBottom: 6 }}>{f.title}</h3>
-      <p style={{ fontSize: 13.5, color: 'var(--muted)', lineHeight: 1.55, flex: 1 }}>{f.body}</p>
-      <div style={{ height: 3, width: '40px', background: f.accent, borderRadius: 2, marginTop: 14, opacity: 0.6 }} />
-    </Card>
+    <Reveal delay={0.2 + index * 0.04} key={f.title}>
+      <Card className="card-shell card-shell--interactive card-core--pad-base h-full flex flex-col">
+        <Icon className="mb-2" size={20} color={f.accent} strokeWidth={1.75} />
+        <h3 className="font-display text-base font-semibold tracking-tight mb-1">{f.title}</h3>
+        <p className="text-sm text-muted leading-relaxed flex-1">{f.body}</p>
+        <div className="mt-3 h-1 w-10 rounded bg-opacity-60" style={{ background: f.accent }} />
+      </Card>
+    </Reveal>
   )
 }
 
 function PrimaryCTA({ children, href }) {
   return (
-    <Link to={href} style={{ textDecoration: 'none' }}>
+    <Link to={href} className="no-underline">
       <Button variant="primary">{children}</Button>
     </Link>
   )
@@ -55,152 +57,147 @@ function PrimaryCTA({ children, href }) {
 
 export default function Landing() {
   return (
-    <PageTransition>
-      <div style={{ maxWidth: 960, margin: '0 auto', padding: '0 24px' }}>
-        <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 0', borderBottom: '1px solid var(--border)' }}>
-          <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 17, letterSpacing: '-0.02em', color: 'var(--ink)', textDecoration: 'none' }}>
-            <img src="/brand-mark.png" alt="" width={22} height={22} style={{ borderRadius: 6 }} />Sampada
-          </Link>
-          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            <ThemeToggle />
-            <Link to="/login" style={{ fontSize: 13.5, color: 'var(--muted)', textDecoration: 'none' }}>Sign in</Link>
-            <PrimaryCTA href="/register">Get started</PrimaryCTA>
-          </div>
-        </nav>
+    <Reveal>
+      <div className="max-w-[960px] mx-auto px-4 lg:px-6">
+        {/* Nav */}
+        <Reveal delay={0}>
+          <nav className="flex justify-between items-center py-4 border-b border-border">
+            <Link to="/" className="flex items-center gap-2 font-display font-bold text-lg tracking-tight text-ink no-underline">
+              <img src="/brand-mark.png" alt="" width={22} height={22} className="rounded-md" />Sampada
+            </Link>
+            <div className="flex items-center gap-3">
+              <ThemeToggle />
+              <Link to="/login" className="text-sm text-muted hover:text-ink transition-colors no-underline">Sign in</Link>
+              <PrimaryCTA href="/register">Get started</PrimaryCTA>
+            </div>
+          </nav>
+        </Reveal>
 
         {/* Hero - with 3D visual */}
-        <section aria-labelledby="hero-heading" style={{ padding: '60px 0 40px', position: 'relative' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', alignItems: 'center' }}>
-            <Reveal delay={0}>
-              <h1 id="hero-heading" style={{ fontSize: 40, fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.15, marginBottom: 16, fontFamily: 'var(--font-display)' }}>
-                Zero is better than <em style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', color: 'var(--accent)' }}>negative</em>.
-              </h1>
-              <p style={{ fontSize: 16, color: 'var(--muted)', maxWidth: 480, margin: '0 auto 28px', lineHeight: 1.6 }}>
-                Debt payoff, AI-guided SIPs, and portfolio rebalancing in one self-hosted app — built to clear what you owe before it grows what you keep.
-              </p>
-              <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-start', flexWrap: 'wrap' }}>
-                <PrimaryCTA href="/register">Get started free</PrimaryCTA>
-                <Link to="/dashboard" style={{ textDecoration: 'none' }}>
-                  <Button variant="secondary">See how it works</Button>
-                </Link>
+        <Reveal delay={100}>
+          <section aria-labelledby="hero-heading" className="py-16 lg:py-24 relative">
+            <div className="grid gap-8 lg:gap-12 lg:grid-cols-2 items-center">
+              <div>
+                <h1 id="hero-heading" className="font-display text-3xl lg:text-5xl font-bold tracking-tight leading-tight mb-4">
+                  Zero is better than <em className="font-serif italic text-accent">negative</em>.
+                </h1>
+                <p className="text-base lg:text-lg text-muted max-w-xl mx-auto lg:mx-0 mb-6 leading-relaxed">
+                  Debt payoff, AI-guided SIPs, and portfolio rebalancing in one self-hosted app — built to clear what you owe before it grows what you keep.
+                </p>
+                <div className="flex gap-3 justify-start flex-wrap">
+                  <PrimaryCTA href="/register">Get started free</PrimaryCTA>
+                  <Link to="/dashboard" className="no-underline">
+                    <Button variant="secondary">See how it works</Button>
+                  </Link>
+                </div>
+                <p className="text-xs text-faint mt-4 tracking-wide">Open source · Apache 2.0 · Free forever</p>
               </div>
-              <p style={{ fontSize: 12, color: 'var(--faint)', marginTop: 16, letterSpacing: '0.02em' }}>Open source · Apache 2.0 · Free forever</p>
-            </Reveal>
-            <Reveal delay={0.1}>
-              <div id="landing-hero" style={{ width: '100%', maxWidth: 'clamp(400px, 22vw, 520px)', margin: '0 auto' }}>
-                <HeroVisual />
+              <div className="w-full max-w-[520px] mx-auto">
+                <div id="landing-hero" className="w-full aspect-square max-w-[520px] mx-auto">
+                  <HeroVisual />
+                </div>
               </div>
-            </Reveal>
-          </div>
-        </section>
+            </div>
+          </section>
+        </Reveal>
 
         {/* 2. Debt → Zero → Wealth arc */}
-        <section aria-labelledby="arc-heading" style={{ padding: '48px 0' }}>
-          <Reveal delay={0.1}>
-            <h2 id="arc-heading" style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 20, textAlign: 'center' }}>
-              The journey
-            </h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 0, border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
+        <Reveal delay={200}>
+          <section aria-labelledby="arc-heading" className="py-12 lg:py-16">
+            <h2 id="arc-heading" className="text-2xs font-semibold uppercase tracking-widest text-muted mb-5 text-center">The journey</h2>
+            <div className="grid grid-cols-3 border border-border rounded-lg overflow-hidden">
               {[
                 { label: 'Negative', desc: 'Track everything you owe. See the full picture of your debt.', color: 'var(--accent)', pct: '33%' },
                 { label: 'Zero', desc: 'Set a debt-free target. Watch your progress toward zero.', color: 'var(--ink)', pct: '33%' },
                 { label: 'Wealth', desc: 'Grow your net worth. Invest, save, and build your future.', color: 'var(--success)', pct: '34%' },
               ].map((s, i) => (
-                <div key={s.label} style={{ padding: '24px 16px', textAlign: 'center', background: i === 1 ? 'var(--surface)' : 'transparent', borderLeft: i > 0 ? '1px solid var(--border)' : 'none' }}>
-                  <p style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Stage {i + 1}</p>
-                  <div style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: s.color, marginBottom: 6 }}>{s.label}</div>
-                  <div style={{ height: 3, width: s.pct, background: s.color, borderRadius: 2, margin: '0 auto 8px' }} />
-                  <p style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.5, maxWidth: 200, margin: '0 auto' }}>{s.desc}</p>
+                <div key={s.label} className="p-6 lg:p-8 text-center" style={{ background: i === 1 ? 'var(--surface)' : 'transparent', borderLeft: i > 0 ? '1px solid var(--border)' : 'none' }}>
+                  <p className="text-2xs font-semibold uppercase tracking-wider text-muted mb-1">Stage {i + 1}</p>
+                  <div className="font-display text-xl lg:text-2xl font-semibold tracking-tight mb-2" style={{ color: s.color }}>{s.label}</div>
+                  <div className="h-1 w-full max-w-xs mx-auto mb-2 rounded" style={{ width: s.pct, background: s.color }} />
+                  <p className="text-sm text-muted leading-relaxed max-w-xs mx-auto">{s.desc}</p>
                 </div>
               ))}
             </div>
-          </Reveal>
-          <Reveal delay={0.2}>
-            <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--muted)', maxWidth: 420, margin: '12px auto 32px', lineHeight: 1.6 }}>
-              Set a goal like <em style={{ fontStyle: 'italic', color: 'var(--faint)' }}>"₹25,000/month passive income by 2030"</em> — Sampada reverse-engineers the SIP amount, stock picks, and rebalance cadence to get there.
+            <p className="text-center text-sm text-muted max-w-xl mx-auto mt-4 leading-relaxed">
+              Set a goal like <em className="italic text-faint">"₹25,000/month passive income by 2030"</em> — Sampada reverse-engineers the SIP amount, stock picks, and rebalance cadence to get there.
             </p>
-          </Reveal>
-        </section>
+          </section>
+        </Reveal>
 
         {/* 3. Feature grid */}
-        <section aria-labelledby="features-heading" style={{ padding: '56px 0' }}>
-          <Reveal delay={0.2}>
-            <h2 id="features-heading" style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 20, textAlign: 'center' }}>
-              Capabilities
-            </h2>
-            <p style={{ textAlign: 'center', fontSize: 14, color: 'var(--muted)', maxWidth: 460, margin: '0 auto 28px', lineHeight: 1.6 }}>Not a budgeting app. Not an investment dashboard. The full arc, in one place.</p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
+        <Reveal delay={300}>
+          <section aria-labelledby="features-heading" className="py-16 lg:py-20">
+            <h2 id="features-heading" className="text-2xs font-semibold uppercase tracking-widest text-muted mb-5 text-center">Capabilities</h2>
+            <p className="text-center text-base text-muted max-w-xl mx-auto mb-7 leading-relaxed">Not a budgeting app. Not an investment dashboard. The full arc, in one place.</p>
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
               {FEATURES.map((f, i) => (
-                <Reveal key={f.title} delay={0.2 + i * 0.04}>
-                  <FeatureCard f={f} />
-                </Reveal>
+                <FeatureCard f={f} index={i} />
               ))}
             </div>
-          </Reveal>
-        </section>
+          </section>
+        </Reveal>
 
         {/* 4. Why Sampada (comparison table) */}
-        <section aria-labelledby="compare-heading" style={{ padding: '48px 0' }}>
-          <Reveal delay={0.3}>
-            <h2 id="compare-heading" style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 20, textAlign: 'center' }}>
-              Why Sampada
-            </h2>
-            <p style={{ textAlign: 'center', fontSize: 14, color: 'var(--muted)', maxWidth: 460, margin: '0 auto 8px', lineHeight: 1.6 }}>Mint shut down in March 2024. YNAB costs ~$15/month. Sampada is neither.</p>
+        <Reveal delay={400}>
+          <section aria-labelledby="compare-heading" className="py-12 lg:py-16">
+            <h2 id="compare-heading" className="text-2xs font-semibold uppercase tracking-widest text-muted mb-5 text-center">Why Sampada</h2>
+            <p className="text-center text-base text-muted max-w-xl mx-auto mb-2 leading-relaxed">Mint shut down in March 2024. YNAB costs ~$15/month. Sampada is neither.</p>
 
-            <Card style={{ padding: '8px 4px', overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, minWidth: 420 }}>
+            <Card className="card-shell card-core--pad-none overflow-x-auto">
+              <table className="w-full border-collapse text-sm min-w-[420px]">
                 <thead>
                   <tr>
-                    <th style={{ textAlign: 'left', padding: '10px 14px', fontSize: 11, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--faint)' }}></th>
-                    <th style={{ padding: '10px 14px', fontSize: 12.5, fontWeight: 700, color: 'var(--accent)' }}>Sampada</th>
-                    <th style={{ padding: '10px 14px', fontSize: 12.5, fontWeight: 600, color: 'var(--muted)' }}>YNAB</th>
-                    <th style={{ padding: '10px 14px', fontSize: 12.5, fontWeight: 600, color: 'var(--muted)' }}>Mint</th>
+                    <th className="text-left px-4 py-2.5 text-2xs font-semibold uppercase tracking-wider text-faint"></th>
+                    <th className="px-4 py-2.5 font-bold text-accent">Sampada</th>
+                    <th className="px-4 py-2.5 font-semibold text-muted">YNAB</th>
+                    <th className="px-4 py-2.5 font-semibold text-muted">Mint</th>
                   </tr>
                 </thead>
                 <tbody>
                   {COMPARE_ROWS.map(([label, sampada, ynab, mint]) => (
                     <tr key={label}>
-                      <td style={{ padding: '9px 14px', borderTop: '1px solid var(--border-soft)', color: 'var(--ink-soft)' }}>{label}</td>
-                      <td style={{ padding: '9px 14px', borderTop: '1px solid var(--border-soft)', textAlign: 'center' }}><CompareCell value={sampada} /></td>
-                      <td style={{ padding: '9px 14px', borderTop: '1px solid var(--border-soft)', textAlign: 'center' }}><CompareCell value={ynab} /></td>
-                      <td style={{ padding: '9px 14px', borderTop: '1px solid var(--border-soft)', textAlign: 'center' }}><CompareCell value={mint} /></td>
+                      <td className="px-4 py-2 border-t border-border-soft text-ink-soft">{label}</td>
+                      <td className="px-4 py-2 border-t border-border-soft text-center"><CompareCell value={sampada} /></td>
+                      <td className="px-4 py-2 border-t border-border-soft text-center"><CompareCell value={ynab} /></td>
+                      <td className="px-4 py-2 border-t border-border-soft text-center"><CompareCell value={mint} /></td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </Card>
-          </Reveal>
-        </section>
+          </section>
+        </Reveal>
 
         {/* 5. Hosted SaaS */}
-        <section aria-labelledby="cta-heading" style={{ padding: '56px 0 40px', textAlign: 'center' }}>
-          <Reveal delay={0.4}>
-            <h2 id="cta-heading" style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.025em', marginBottom: 10 }}>Hosted. Free. Forever.</h2>
-            <p style={{ fontSize: 14, color: 'var(--muted)', maxWidth: 420, margin: '0 auto 20px', lineHeight: 1.6 }}>
-              No installation needed. Sign up at <a href="https://sampada.vayalabs.in" target="_blank" rel="noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>sampada.vayalabs.in</a> and start in seconds.
+        <Reveal delay={500}>
+          <section aria-labelledby="cta-heading" className="py-16 lg:py-20 text-center">
+            <h2 id="cta-heading" className="font-display text-xl lg:text-2xl font-semibold tracking-tight mb-2">Hosted. Free. Forever.</h2>
+            <p className="text-base text-muted max-w-xl mx-auto mb-5 leading-relaxed">
+              No installation needed. Sign up at <a href="https://sampada.vayalabs.in" target="_blank" rel="noreferrer" className="text-accent no-underline">sampada.vayalabs.in</a> and start in seconds.
             </p>
-            <p style={{ fontSize: 12.5, marginTop: 12 }}>
-              <a href="https://github.com/sdachary/sampada" target="_blank" rel="noreferrer" style={{ color: 'var(--faint)', textDecoration: 'none' }}>View source on GitHub →</a>
+            <p className="text-sm mt-3">
+              <a href="https://github.com/sdachary/sampada" target="_blank" rel="noreferrer" className="text-faint no-underline hover:text-muted transition-colors">View source on GitHub →</a>
             </p>
-          </Reveal>
-        </section>
+          </section>
+        </Reveal>
 
         {/* 6. Trust badges */}
-        <section style={{ padding: '40px 0 40px', textAlign: 'center', borderTop: '1px solid var(--border-soft)' }}>
-          <Reveal delay={0.5}>
-            <div className="landing-trust-badges" style={{ display: 'flex', gap: 20, justifyContent: 'center', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: 12.5, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 6 }}><Lock size={13} strokeWidth={2} /> Apache 2.0</span>
-              <span style={{ fontSize: 12.5, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 6 }}><Shield size={13} strokeWidth={2} /> DPDP compliant</span>
-              <span style={{ fontSize: 12.5, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 6 }}><Zap size={13} strokeWidth={2} /> Self-hosted</span>
-              <span style={{ fontSize: 12.5, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 6 }}><Star size={13} strokeWidth={2} /> No paywalls</span>
+        <Reveal delay={600}>
+          <section className="py-10 lg:py-12 text-center border-t border-border-soft">
+            <div className="flex gap-4 justify-center flex-wrap">
+              <span className="flex items-center gap-2 text-sm text-muted"><Lock size={13} strokeWidth={2} /> Apache 2.0</span>
+              <span className="flex items-center gap-2 text-sm text-muted"><Shield size={13} strokeWidth={2} /> DPDP compliant</span>
+              <span className="flex items-center gap-2 text-sm text-muted"><Zap size={13} strokeWidth={2} /> Self-hosted</span>
+              <span className="flex items-center gap-2 text-sm text-muted"><Star size={13} strokeWidth={2} /> No paywalls</span>
             </div>
-          </Reveal>
-        </section>
+          </section>
+        </Reveal>
 
-        <footer style={{ padding: '16px 0', borderTop: '1px solid var(--border-soft)', fontSize: 12, color: 'var(--faint)', textAlign: 'center' }}>
-          Sampada — financial clarity · <a href="/privacy.html" style={{ color: 'var(--faint)', textDecoration: 'none' }}>Privacy</a> · <a href="/terms.html" style={{ color: 'var(--faint)', textDecoration: 'none' }}>Terms</a>
+        <footer className="py-4 border-t border-border-soft text-sm text-faint text-center">
+          Sampada — financial clarity · <a href="/privacy.html" className="text-faint no-underline hover:text-muted">Privacy</a> · <a href="/terms.html" className="text-faint no-underline hover:text-muted">Terms</a>
         </footer>
       </div>
-    </PageTransition>
+    </Reveal>
   )
 }

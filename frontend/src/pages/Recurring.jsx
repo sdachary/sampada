@@ -4,6 +4,7 @@ import { Card, Badge, Skeleton, EmptyState, PageHeader, Stat, fmtINR, toast, But
 import RecurringFormModal from '../components/RecurringFormModal'
 import RecurringSuggestionsModal from '../components/RecurringSuggestionsModal'
 import { fetchFlags, enabled } from '../lib/flags'
+import { Reveal } from '../lib/motion-primitives'
 
 function daysText(days) {
   if (days === null || days === undefined) return ''
@@ -109,9 +110,11 @@ export default function Recurring() {
   }
 
   if (loading) return (
-    <div style={{ display: 'grid', gap: 8 }}>
-      {[1,2,3].map(i => <Skeleton key={i} style={{ height: 86, borderRadius: 'var(--radius-md)' }} />)}
-    </div>
+    <Reveal delay={0}>
+      <div className="space-y-2">
+        {[1,2,3].map(i => <Skeleton key={i} className="skeleton-card h-20" />)}
+      </div>
+    </Reveal>
   )
 
   const totalMonthly = expenses.reduce((s, e) => s + (+e.monthly_amount || 0), 0)
@@ -121,88 +124,98 @@ export default function Recurring() {
   const renderList = () => {
     if (expenses.length === 0) {
       return (
-        <EmptyState
-          icon={<span aria-hidden="true" style={{ fontSize: 48, color: 'var(--border)' }}>↻</span>}
-          title="No recurring expenses"
-          action="+ Add"
-          onAction={() => setModal('new')}
-        >
-          Add your monthly subscriptions and bills so you never miss a payment.
-        </EmptyState>
+        <Reveal delay={150}>
+          <EmptyState
+            icon={<span aria-hidden="true" className="text-5xl text-border">↻</span>}
+            title="No recurring expenses"
+            action="+ Add"
+            onAction={() => setModal('new')}
+          >
+            Add your monthly subscriptions and bills so you never miss a payment.
+          </EmptyState>
+        </Reveal>
       )
     }
 
     return (
-      <div style={{ display: 'grid', gap: 8 }}>
-        {expenses.map(e => (
-          <Card key={e.id} style={{ padding: '14px 18px', opacity: e.active ? 1 : 0.5 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
-              <div>
-                <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)' }}>{e.name}</p>
-                <p style={{ fontSize: 11.5, color: 'var(--muted)' }}>
-                  {e.frequency} · {e.category}
-                  {e.auto_debit && <span> · auto-debit</span>}
-                </p>
-              </div>
-              <p className="fin" style={{ fontFamily: 'var(--font-display)', fontSize: 17, fontWeight: 600 }}>{fmtINR(+e.amount)}</p>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 11.5 }}>
-              <Badge variant={e.active ? 'success' : 'neutral'}>
-                {e.active ? 'active' : 'inactive'}
-              </Badge>
-              {e.next_due_date && (
-                <span style={{ color: 'var(--faint)' }}>
-                  {e.next_due_date} · {daysText(e.next_due_days)}
-                </span>
-              )}
-            </div>
-          </Card>
-        ))}
-      </div>
+      <Reveal delay={150}>
+        <div className="space-y-2">
+          {expenses.map((e, index) => (
+            <Reveal key={e.id} delay={index * 20}>
+              <Card className={`card-shell ${e.active ? 'card-shell--interactive' : ''} card-core--pad-base`} style={{ opacity: e.active ? 1 : 0.5 }}>
+                <div className="flex justify-between items-start mb-2">
+                  <div className="min-w-0">
+                    <p className="text-base font-medium text-ink truncate">{e.name}</p>
+                    <p className="text-sm text-muted flex items-center gap-1 flex-wrap">
+                      {e.frequency} · {e.category}
+                      {e.auto_debit && <span>· auto-debit</span>}
+                    </p>
+                  </div>
+                  <p className="fin font-display text-lg font-semibold ml-3">{fmtINR(+e.amount)}</p>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <Badge variant={e.active ? 'success' : 'neutral'}>
+                    {e.active ? 'active' : 'inactive'}
+                  </Badge>
+                  {e.next_due_date && (
+                    <span className="text-faint">
+                      {e.next_due_date} · {daysText(e.next_due_days)}
+                    </span>
+                  )}
+                </div>
+              </Card>
+            </Reveal>
+          ))}
+        </div>
+      </Reveal>
     )
   }
 
   const renderStats = () => {
     if (expenses.length === 0) return null
     return (
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px,1fr))', gap: 12 }}>
-        <Stat label="Monthly Total" value={fmtINR(totalMonthly)} />
-        <Stat label="Active" value={`${activeCount}/${expenses.length}`} />
-      </div>
+      <Reveal delay={50}>
+        <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
+          <Stat label="Monthly Total" value={fmtINR(totalMonthly)} />
+          <Stat label="Active" value={`${activeCount}/${expenses.length}`} />
+        </div>
+      </Reveal>
     )
   }
 
   return (
-    <div style={{ display: 'grid', gap: 20 }}>
-      <PageHeader
-        title="Recurring Expenses"
-        num="008 / 016"
-        action={
-          <Button size="sm" onClick={() => setModal('new')}>+ Add</Button>
-        }
-      >
-        <p style={{ fontSize: 13, color: 'var(--muted)' }}>Subscriptions, EMIs, and regular bills.</p>
-      </PageHeader>
+    <div className="space-y-5">
+      <Reveal delay={0}>
+        <PageHeader
+          title="Recurring Expenses"
+          num="008 / 016"
+          action={<Button size="sm" onClick={() => setModal('new')}>+ Add</Button>}
+        >
+          <p className="text-sm text-muted">Subscriptions, EMIs, and regular bills.</p>
+        </PageHeader>
+      </Reveal>
 
       {renderStats()}
 
-      {flagOn && hasTransactions && (
-        <Card style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-          <div>
-            <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink)' }}>
-              You've been logging for a while. Let me find patterns.
-            </p>
-            <p style={{ fontSize: 12, color: 'var(--muted)' }}>
-              We scan your transactions for subscriptions and bills you might have missed.
-            </p>
-          </div>
-          <Button size="sm" disabled={detecting} onClick={pendingCount > 0 ? () => setSuggestionsOpen(true) : detect}>
-            {pendingCount > 0
-              ? `Review ${pendingCount} pattern${pendingCount > 1 ? 's' : ''}`
-              : detecting ? 'Scanning…' : 'Detect recurring'}
-          </Button>
-        </Card>
-      )}
+      <Reveal delay={100}>
+        {flagOn && hasTransactions && (
+          <Card className="card-shell card-shell--elevated card-core--pad-base flex items-center justify-between gap-3 flex-wrap">
+            <div className="min-w-0">
+              <p className="text-base font-medium text-ink">
+                You've been logging for a while. Let me find patterns.
+              </p>
+              <p className="text-sm text-muted">
+                We scan your transactions for subscriptions and bills you might have missed.
+              </p>
+            </div>
+            <Button size="sm" disabled={detecting} onClick={pendingCount > 0 ? () => setSuggestionsOpen(true) : detect}>
+              {pendingCount > 0
+                ? `Review ${pendingCount} pattern${pendingCount > 1 ? 's' : ''}`
+                : detecting ? 'Scanning…' : 'Detect recurring'}
+            </Button>
+          </Card>
+        )}
+      </Reveal>
 
       {renderList()}
 

@@ -11,13 +11,13 @@ const VIEWPORTS = [
   { width: 1280, height: 844, name: 'desktop' },
 ]
 
-for (const page of PAGES) {
+for (const pg of PAGES) {
   for (const vp of VIEWPORTS) {
-    test(`visual: ${page.name} @ ${vp.name}`, async ({ page }) => {
+    test(`visual: ${pg.name} @ ${vp.name}`, async ({ page }) => {
       await page.setViewportSize({ width: vp.width, height: vp.height })
-      await page.goto(`http://localhost:4173${page.path}`, { waitUntil: 'networkidle' })
+      await page.goto(pg.path, { waitUntil: 'networkidle' })
       await page.waitForTimeout(2000) // Let animations settle
-      await expect(page).toHaveScreenshot(`${page.name}-${vp.name}.png`, {
+      await expect(page).toHaveScreenshot(`${pg.name}-${vp.name}.png`, {
         maxDiffPixels: 100,
         threshold: 0.1,
       })

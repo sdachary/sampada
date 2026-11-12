@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
 import { Card, Button, Skeleton, EmptyState, PageHeader, Badge, fmtINR } from '../components/ui'
+import { Reveal } from '../lib/motion-primitives'
 
 export default function Households() {
   const [households, setHouseholds] = useState([])
@@ -16,86 +17,102 @@ export default function Households() {
   }
 
   if (loading) return (
-    <div style={{ display: 'grid', gap: 8 }}>
-      {[1,2].map(i => <Skeleton key={i} style={{ height: 80, borderRadius: 'var(--radius-md)' }} />)}
-    </div>
+    <Reveal delay={0}>
+      <div className="space-y-2">
+        {[1,2].map(i => <Skeleton key={i} className="skeleton-card h-20" />)}
+      </div>
+    </Reveal>
   )
 
   if (detail) return (
-    <div style={{ display: 'grid', gap: 16 }}>
-      <PageHeader
-        title={detail.name}
-        num="013 / 016"
-        action={<Button variant="ghost" size="sm" onClick={() => setDetail(null)}>← Back</Button>}
-      >
-        <p style={{ fontSize: 13, color: 'var(--muted)' }}>Shared finances with family.</p>
-        <Badge variant="neutral" style={{ marginTop: 4 }}>{detail.member_count} members</Badge>
-      </PageHeader>
+    <div className="space-y-4">
+      <Reveal delay={0}>
+        <PageHeader
+          title={detail.name}
+          num="013 / 016"
+          action={<Button variant="ghost" size="sm" onClick={() => setDetail(null)}>← Back</Button>}
+        >
+          <p className="text-sm text-muted">Shared finances with family.</p>
+          <Badge variant="neutral" className="mt-1">{detail.member_count} members</Badge>
+        </PageHeader>
+      </Reveal>
 
-      {detail.net_worth && (
-        <Card style={{ padding: 16 }}>
-          <p style={{ fontSize: 10, fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 4 }}>Household Net Worth</p>
-          <p className="fin" style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 600 }}>{detail.currency_symbol}{fmtINR(+detail.net_worth.net_worth || 0)}</p>
-          <p style={{ fontSize: 11, color: 'var(--muted)', marginTop: 2 }}>Assets: {fmtINR(+detail.net_worth.total_assets || 0)} · Liabilities: {fmtINR(+detail.net_worth.total_liabilities || 0)}</p>
-        </Card>
-      )}
+      <Reveal delay={50}>
+        {detail.net_worth && (
+          <Card className="card-shell card-core--pad-lg">
+            <p className="label-caps mb-1">Household Net Worth</p>
+            <p className="fin font-display text-2xl font-semibold">{detail.currency_symbol}{fmtINR(+detail.net_worth.net_worth || 0)}</p>
+            <p className="text-sm text-muted mt-1">Assets: {fmtINR(+detail.net_worth.total_assets || 0)} · Liabilities: {fmtINR(+detail.net_worth.total_liabilities || 0)}</p>
+          </Card>
+        )}
+      </Reveal>
 
-      {detail.members?.length > 0 && (
-        <div style={{ display: 'grid', gap: 8 }}>
-          <h2 style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)', marginBottom: 8 }}>Members</h2>
-          {detail.members.map(m => (
-            <Card key={m.id} style={{ padding: '12px 16px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div>
-                  <p style={{ fontWeight: 500, fontSize: 13, color: 'var(--ink)' }}>{m.name}</p>
-                  <p style={{ fontSize: 11, color: 'var(--muted)' }}>{m.email} · {m.role}</p>
-                </div>
-                <Badge variant="neutral" style={{ fontSize: 10, textTransform: 'capitalize' }}>{m.role}</Badge>
-              </div>
-              <div style={{ display: 'flex', gap: 12, marginTop: 6, fontSize: 11, color: 'var(--muted)' }}>
-                <span>Debt: {fmtINR(+m.total_debt || 0)}</span>
-                <span>Invest: {fmtINR(+m.total_investments || 0)}</span>
-                <span>Expenses: {fmtINR(+m.monthly_expenses || 0)}/mo</span>
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
+      <Reveal delay={100}>
+        {detail.members?.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-ink mb-2">Members</p>
+            {detail.members.map((m, index) => (
+              <Reveal key={m.id} delay={index * 30}>
+                <Card className="card-shell card-core--pad-base">
+                  <div className="flex justify-between items-start">
+                    <div className="min-w-0">
+                      <p className="text-base font-medium text-ink truncate">{m.name}</p>
+                      <p className="text-sm text-muted">{m.email} · {m.role}</p>
+                    </div>
+                    <Badge variant="neutral" className="text-[10px] capitalize">{m.role}</Badge>
+                  </div>
+                  <div className="flex gap-3 mt-2 text-xs text-muted flex-wrap">
+                    <span>Debt: {fmtINR(+m.total_debt || 0)}</span>
+                    <span>Invest: {fmtINR(+m.total_investments || 0)}</span>
+                    <span>Expenses: {fmtINR(+m.monthly_expenses || 0)}/mo</span>
+                  </div>
+                </Card>
+              </Reveal>
+            ))}
+          </div>
+        )}
+      </Reveal>
     </div>
   )
 
   return (
-    <div style={{ display: 'grid', gap: 20 }}>
-      <PageHeader
-        title="Households"
-        num="013 / 016"
-      >
-        <p style={{ fontSize: 13, color: 'var(--muted)' }}>Shared finances with family.</p>
-      </PageHeader>
-
-      {households.length === 0 ? (
-        <EmptyState
-          icon={<span aria-hidden="true" style={{ fontSize: 48, color: 'var(--border)' }}>◈</span>}
-          title="No households yet"
+    <div className="space-y-5">
+      <Reveal delay={0}>
+        <PageHeader
+          title="Households"
+          num="013 / 016"
         >
-          Create a household to manage shared expenses and goals.
-        </EmptyState>
-      ) : (
-        <div style={{ display: 'grid', gap: 8 }}>
-          {households.map(h => (
-            <Card key={h.id} interactive onClick={() => loadDetail(h.id)} style={{ padding: '14px 18px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <p style={{ fontSize: 15, fontWeight: 500, color: 'var(--ink)' }}>{h.name}</p>
-                  <p style={{ fontSize: 11.5, color: 'var(--muted)' }}>{h.currency} · {h.member_count} member{h.member_count !== 1 ? 's' : ''}</p>
-                </div>
-                <span style={{ fontSize: 16, color: 'var(--faint)' }}>→</span>
-              </div>
-              {h.description && <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 6 }}>{h.description}</p>}
-            </Card>
-          ))}
-        </div>
-      )}
+          <p className="text-sm text-muted">Shared finances with family.</p>
+        </PageHeader>
+      </Reveal>
+
+      <Reveal delay={50}>
+        {households.length === 0 ? (
+          <EmptyState
+            icon={<span aria-hidden="true" className="text-5xl text-border">◈</span>}
+            title="No households yet"
+          >
+            Create a household to manage shared expenses and goals.
+          </EmptyState>
+        ) : (
+          <div className="space-y-2">
+            {households.map((h, index) => (
+              <Reveal key={h.id} delay={index * 30}>
+                <Card className="card-shell card-shell--interactive card-core--pad-base" onClick={() => loadDetail(h.id)}>
+                  <div className="flex justify-between items-center">
+                    <div className="min-w-0">
+                      <p className="text-lg font-medium text-ink truncate">{h.name}</p>
+                      <p className="text-sm text-muted">{h.currency} · {h.member_count} member{h.member_count !== 1 ? 's' : ''}</p>
+                    </div>
+                    <span className="text-faint">→</span>
+                  </div>
+                  {h.description && <p className="text-sm text-muted mt-2">{h.description}</p>}
+                </Card>
+              </Reveal>
+            ))}
+          </div>
+        )}
+      </Reveal>
     </div>
   )
 }

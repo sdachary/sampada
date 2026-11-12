@@ -37,7 +37,7 @@ function CoinMark({ position = [0, 0, 0], rotation = [0, 0, 0], scale = 1 }) {
     return [side, face, bottom]
   }, [faceTex])
 
-  useEffect(() => () => materials.forEach((m) => m.dispose()), [materials])
+  useEffect(() => () => materials.forEach((m) => m?.dispose()), [materials])
 
   return (
     <group ref={groupRef} position={position} rotation={rotation} scale={scale}>
@@ -93,7 +93,9 @@ function AmbientParticles({ count = 60, spread = 8 }) {
       positions.current[i * 3 + 1] = (Math.random() - 0.5) * spread
       positions.current[i * 3 + 2] = (Math.random() - 0.5) * spread
     }
-    pointsRef.current.geometry.attributes.position.needsUpdate = true
+    if (pointsRef.current?.geometry?.attributes?.position) {
+      pointsRef.current.geometry.attributes.position.needsUpdate = true
+    }
   }, [count, spread])
 
   return (
@@ -125,7 +127,8 @@ function Scene({ scrollProgress = 0, prefersReducedMotion = false }) {
 
     // Intro drop: coin settles onto the ring in the first ~2s (easeOutCubic),
     // so there's visible motion right after the poster cross-fade.
-    const t = state.clock.elapsedTime
+    // Use THREE.Timer via state.clock.getElapsedTime() instead of deprecated .elapsedTime
+    const t = state.clock.getElapsedTime()
     const k = Math.min(t / 2.2, 1)
     const ease = 1 - Math.pow(1 - k, 3)
     const drop = 0.5 * (1 - ease)
@@ -181,9 +184,10 @@ function Scene({ scrollProgress = 0, prefersReducedMotion = false }) {
   )
 }
 
-// Canvas wrapper with performance settings
+// Canvas wrapper with performance settings + WebGL context loss handling
 function Hero3DCanvas({ scrollProgress, prefersReducedMotion, onReady }) {
   const [mounted, setMounted] = useState(false)
+  const [contextLost, setContextLost] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -191,20 +195,33 @@ function Hero3DCanvas({ scrollProgress, prefersReducedMotion, onReady }) {
 
   if (!mounted) return null
 
+  if (contextLost) {
+    return (
+      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)', fontSize: '0.875rem' }}>
+        3D unavailable — WebGL context lost
+      </div>
+    )
+  }
+
   return (
     <Canvas
       camera={{ position: [0, 1.4, 5], fov: 40 }}
       gl={{ antialias: true, alpha: true, preserveDrawingBuffer: false }}
-      // Render at up to native device resolution (8K panels + high-dpr
-      // phones) — the hero is a small surface (~400px CSS), so full-dpr
-      // backing stores stay trivially cheap. The old hard cap of 1.5 made
-      // the 3D visibly softer than the vector poster it cross-fades over.
       dpr={[1, 3]}
       frameloop={prefersReducedMotion ? 'never' : 'always'}
       onCreated={({ gl }) => {
-        // Explicitly set clear color to transparent to avoid black background
         gl.clearColor(0, 0, 0, 0)
         onReady?.()
+      }}
+      onContextLost={() => {
+        console.warn('WebGL context lost')
+        setContextLost(true)
+        // Attempt to restore after a short delay
+        setTimeout(() => setContextLost(false), 3000)
+      }}
+      onContextRestored={() => {
+        console.log('WebGL context restored')
+        setContextLost(false)
       }}
       style={{ width: '100%', height: '100%', display: 'block' }}
     >

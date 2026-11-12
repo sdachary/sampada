@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Outlet, useNavigate, useLocation, Link } from 'react-router-dom'
 import { PageTransition } from '../lib/motion-primitives'
 import { useAuth } from '../lib/useAuth'
@@ -9,7 +9,8 @@ import {
   LayoutDashboard, ArrowRightLeft, Wallet, RefreshCw,
   CircleDollarSign, Target, Calculator, Briefcase, TrendingUp,
   Clock, Map, Plane, Users, MessageSquare, BarChart3,
-  Download, Settings, Shield, LogOut, ChevronUp, X, Sun, Moon, WifiOff,
+  Download, Settings, Shield, LogOut, X, Sun, Moon, WifiOff,
+  Menu, ChevronUp,
 } from 'lucide-react'
 
 const iconMap = {
@@ -35,9 +36,9 @@ const iconMap = {
   'logout': LogOut,
 }
 
-function NavIcon({ name, size }) {
+function NavIcon({ name, size = 14 }) {
   const Icon = iconMap[name]
-  return Icon ? <Icon size={size || 14} aria-hidden="true" /> : null
+  return Icon ? <Icon size={size} aria-hidden="true" /> : null
 }
 
 const groups = [
@@ -82,24 +83,48 @@ const moreItems = [
   { name: 'Settings', path: '/dashboard/settings', icon: 'settings' },
 ]
 
-function NavLink({ item, current, depth, onNav }) {
+function NavLink({ item, current, depth = 0, onNav, index = 0, isMobile = false }) {
   const active = item.path === current
+  const baseDelay = isMobile ? 50 : 100
+  const staggerDelay = baseDelay + (index * 50)
+
   return (
-    <Link to={item.path} onClick={onNav}
+    <Link
+      to={item.path}
+      onClick={onNav}
+      className={`nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-fast ${active ? 'text-accent font-semibold' : 'text-ink'}`}
       style={{
-        display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', marginLeft: depth ? 16 : 0,
-        borderRadius: 6, fontSize: 13, fontWeight: active ? 500 : 400,
-        color: active ? 'var(--accent)' : 'var(--ink)',
-        background: 'transparent',
-        position: 'relative',
-        transition: 'color var(--dur-fast) var(--ease)',
-      }}>
-      {active && <span style={{
-        position: 'absolute', left: -12, top: '50%', transform: 'translateY(-50%)',
-        width: 4, height: '60%', borderRadius: 2, background: 'var(--accent)',
-      }} />}
-      <NavIcon name={item.icon} />
+        marginLeft: depth ? '16px' : 0,
+        transitionDelay: `${staggerDelay}ms`,
+      }}
+    >
+      {active && !isMobile && (
+        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-md bg-accent" aria-hidden="true" />
+      )}
+      <NavIcon name={item.icon} size={isMobile ? 20 : 14} />
       <span>{item.name}</span>
+      {active && isMobile && (
+        <span className="ml-auto w-2 h-2 rounded-full bg-accent" aria-hidden="true" />
+      )}
+    </Link>
+  )
+}
+
+function MobileNavLink({ item, current, onNav, index = 0 }) {
+  const active = item.path === current
+  const staggerDelay = 100 + (index * 50)
+
+  return (
+    <Link
+      key={item.path}
+      to={item.path}
+      onClick={onNav}
+      className={`nav-link-mobile flex items-center gap-4 px-4 py-3 rounded-xl text-base font-medium transition-colors duration-fast ${active ? 'text-accent font-semibold bg-accent-bg' : 'text-ink'}`}
+      style={{ transitionDelay: `${staggerDelay}ms` }}
+    >
+      <NavIcon name={item.icon} size={22} />
+      <span>{item.name}</span>
+      {active && <span className="ml-auto w-2 h-2 rounded-full bg-accent" aria-hidden="true" />}
     </Link>
   )
 }
@@ -115,12 +140,15 @@ export default function Layout() {
     window.addEventListener('sampada:queue', update)
     return () => window.removeEventListener('sampada:queue', update)
   }, [])
+
   const navigate = useNavigate()
   const location = useLocation()
-  const [menuOpen, setMenuOpen] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
   const [cmdOpen, setCmdOpen] = useState(false)
   const [bannerDismissed, setBannerDismissed] = useState(() => sessionStorage.getItem('onboarding-dismissed') === '1')
+  const [hamburgerAnim, setHamburgerAnim] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
 
   const showBanner = !user?.onboarded && !bannerDismissed
 
@@ -144,94 +172,133 @@ export default function Layout() {
   const initials = user ? (user.first_name?.[0] || '') + (user.last_name?.[0] || '') : '?'
   const isActive = (path) => location.pathname === path
 
+  const toggleSidebar = () => {
+    const next = !sidebarOpen
+    setSidebarOpen(next)
+    setHamburgerAnim(next)
+    if (next) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+  }
+
+  const closeSidebar = () => {
+    setSidebarOpen(false)
+    setHamburgerAnim(false)
+    document.body.style.overflow = ''
+  }
+
   const closeMore = () => setMoreOpen(false)
 
+  // Close sidebar on route change
+  useEffect(() => {
+    if (sidebarOpen) closeSidebar()
+  }, [location.pathname])
+
   return (
-    <div className="app-layout">
-      {/* sidebar */}
-      <aside className="sidebar">
-        <div style={{ padding: '16px 14px', borderBottom: '1px solid var(--line)', marginBottom: 8 }}>
-          <Link to="/dashboard" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontFamily: 'var(--sans)', fontWeight: 700, fontSize: 16, letterSpacing: '-0.02em', color: 'var(--ink)' }}>
-            <img src="/brand-mark.png" alt="" width={22} height={22} style={{ borderRadius: 6 }} />Sampada
+    <div className="app-layout relative min-h-dvh bg-bg">
+      {/* Overlay for mobile sidebar */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-overlay bg-overlay backdrop-blur-sm"
+          onClick={closeSidebar}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* ===== DESKTOP SIDEBAR — FLUID ISLAND ===== */}
+      <aside className="hidden lg:flex lg:flex-col fixed lg:static inset-y-0 left-0 z-sticky mt-6 mr-6 lg:mt-6 lg:mr-6 lg:mb-6 max-h-[calc(100vh-3rem)] w-64 bg-surface/80 backdrop-blur-2xl border border-border/50 rounded-3xl shadow-xl overflow-hidden">
+        {/* Brand */}
+        <div className="p-4 border-b border-border-soft">
+          <Link to="/dashboard" className="flex items-center gap-2 font-display font-bold text-lg tracking-tight text-ink no-underline">
+            <img src="/brand-mark.png" alt="" width={22} height={22} className="rounded-md" />
+            Sampada
           </Link>
         </div>
-        <nav style={{ padding: '0 8px', flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {groups.map((g) => (
-            <div key={g.name}>
+
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto p-2 space-y-1" role="navigation" aria-label="Main navigation">
+          {groups.map((g, groupIndex) => (
+            <div key={g.name} className="nav-group">
               {g.children ? (
                 <>
-                  <div style={{ padding: '8px 12px 4px', fontSize: 10, fontWeight: 600, color: 'var(--ink-faint)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{g.name}</div>
-                  {g.children.map(c => <NavLink key={c.path} item={c} current={location.pathname} depth={1} />)}
+                  <div className="px-3 py-2 text-[10px] font-semibold uppercase tracking-widest text-ink-faint">
+                    {g.name}
+                  </div>
+                  {g.children.map((c, itemIndex) => (
+                    <NavLink
+                      key={c.path}
+                      item={c}
+                      current={location.pathname}
+                      depth={1}
+                      onNav={closeSidebar}
+                      index={groupIndex * 10 + itemIndex}
+                    />
+                  ))}
                 </>
               ) : (
-                <NavLink item={g} current={location.pathname} />
+                <NavLink item={g} current={location.pathname} onNav={closeSidebar} index={groupIndex} />
               )}
             </div>
           ))}
         </nav>
 
-        {/* theme toggle + palette hint */}
-        <div style={{ padding: '8px 14px', borderTop: '1px solid var(--line)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <button onClick={toggleTheme}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px',
-              background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-mute)',
-              borderRadius: 6, fontSize: 12, fontFamily: 'inherit',
-            }}>
-            {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+        {/* Theme toggle */}
+        <div className="p-4 border-t border-border-soft flex items-center justify-between">
+          <button
+            onClick={toggleTheme}
+            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-ink-mute hover:text-ink hover:bg-surface-hover transition-colors duration-fast w-full"
+            aria-label={`${theme === 'dark' ? 'Switch to light' : 'Switch to dark'} mode`}
+          >
+            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
             <span>{theme === 'dark' ? 'Light' : 'Dark'} mode</span>
           </button>
-          <span style={{ fontSize: 10, color: 'var(--ink-faint)', fontFamily: 'monospace' }}>⌘K</span>
+          <kbd className="text-[10px] text-ink-faint font-mono px-1.5 py-0.5 rounded bg-surface border border-border-soft">⌘K</kbd>
         </div>
 
-        {/* user menu */}
-        <div style={{ position: 'relative', borderTop: '1px solid var(--line)' }}>
-          <button onClick={() => setMenuOpen(!menuOpen)}
-            style={{
-              width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px',
-              background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink)', fontSize: 12,
-            }}>
-            <span style={{
-              width: 30, height: 30, borderRadius: '50%', background: 'var(--coral)', color: '#fff',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 12, fontWeight: 600, flexShrink: 0,
-            }}>{initials}</span>
-            <span style={{ flex: 1, textAlign: 'left', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {user?.first_name || user?.email}
+        {/* User menu */}
+        <div className="p-4 border-t border-border-soft relative">
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm text-ink hover:bg-surface-hover transition-colors duration-fast"
+            aria-expanded={menuOpen}
+            aria-haspopup="true"
+          >
+            <span className="w-10 h-10 rounded-full bg-accent text-white flex items-center justify-center text-sm font-semibold flex-shrink-0">
+              {initials}
             </span>
-            <ChevronUp size={12} aria-hidden="true"
-              style={{ color: 'var(--ink-faint)', transform: menuOpen ? 'rotate(180deg)' : undefined, transition: 'transform 0.2s' }}
-            />
+            <span className="flex-1 text-left truncate">{user?.first_name || user?.email}</span>
+            <ChevronUp size={14} className="text-ink-faint transition-transform duration-fast" style={{ transform: menuOpen ? 'rotate(180deg)' : 'rotate(0)' }} aria-hidden="true" />
           </button>
 
           {menuOpen && (
-            <div style={{
-              position: 'absolute', bottom: '100%', left: 8, right: 8,
-              background: 'var(--paper-card)', border: '1px solid var(--line)', borderRadius: 10,
-              boxShadow: '0 -8px 30px rgba(21,20,15,0.1)', padding: 6, marginBottom: 4,
-            }}>
+            <div className="absolute bottom-full left-4 right-4 mb-3 z-popover card-shell card-shell--elevated p-2 animate-slide-up" role="menu">
               {[
                 { name: 'Settings', path: '/dashboard/settings', icon: 'settings' },
                 { name: 'Privacy', path: '/dashboard/privacy', icon: 'privacy' },
                 { name: 'Logout', action: handleLogout, icon: 'logout' },
-              ].map(item => (
+              ].map((item, index) => (
                 item.action ? (
-                  <button key={item.name} onClick={() => { setMenuOpen(false); item.action() }}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', width: '100%',
-                      borderRadius: 6, border: 'none', background: 'none', cursor: 'pointer',
-                      fontSize: 13, color: item.name === 'Logout' ? 'var(--coral)' : 'var(--ink)', textAlign: 'left',
-                    }}>
+                  <button
+                    key={item.name}
+                    onClick={() => { setMenuOpen(false); item.action() }}
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors duration-fast ${item.name === 'Logout' ? 'text-accent hover:bg-accent-bg' : 'text-ink hover:bg-surface-hover'}`}
+                    role="menuitem"
+                    style={{ transitionDelay: `${100 + index * 50}ms` }}
+                  >
                     <NavIcon name={item.icon} />
                     <span>{item.name}</span>
                   </button>
                 ) : (
-                  <Link key={item.name} to={item.path} onClick={() => setMenuOpen(false)}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px',
-                      borderRadius: 6, fontSize: 13, color: isActive(item.path) ? 'var(--coral)' : 'var(--ink)', textDecoration: 'none',
-                      background: isActive(item.path) ? 'rgba(237,111,92,0.08)' : 'transparent',
-                    }}>
+                  <Link
+                    key={item.name}
+                    to={item.path}
+                    onClick={() => setMenuOpen(false)}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors duration-fast ${isActive(item.path) ? 'text-accent bg-accent-bg font-medium' : 'text-ink hover:bg-surface-hover'}`}
+                    role="menuitem"
+                    style={{ transitionDelay: `${100 + index * 50}ms` }}
+                  >
                     <NavIcon name={item.icon} />
                     <span>{item.name}</span>
                   </Link>
@@ -242,116 +309,245 @@ export default function Layout() {
         </div>
       </aside>
 
-      {/* mobile bottom nav */}
-      <nav className="bottom-nav">
-        {[
-          { name: 'Home', path: '/dashboard', icon: 'dashboard' },
-          { name: 'Money', path: '/dashboard/transactions', icon: 'transactions' },
-          { name: 'Debt', path: '/dashboard/debts', icon: 'debt' },
-          { name: 'Invest', path: '/dashboard/portfolios', icon: 'portfolio' },
-          { name: 'More', action: () => setMoreOpen(true), icon: 'settings' },
-        ].map(item => {
-          const active = item.path ? location.pathname === item.path : false
-          if (item.action) {
-            return (
-              <button key={item.name} onClick={item.action}
-                style={{
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, padding: '4px 0',
-                  fontSize: 10, color: moreOpen ? 'var(--coral)' : 'var(--ink-mute)',
-                  background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
-                }}>
-                <NavIcon name={item.icon} size={18} />
-                <span>{item.name}</span>
-              </button>
-            )
-          }
-          return (
-            <Link key={item.path} to={item.path}
-              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, padding: '8px 0 4px', fontSize: 10, color: active ? 'var(--accent)' : 'var(--ink-mute)', textDecoration: 'none', position: 'relative' }}>
-              {active && <span style={{
-                position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
-                width: 24, height: 3, borderRadius: 1.5, background: 'var(--accent)',
-              }} />}
-              <NavIcon name={item.icon} size={18} />
-              <span>{item.name}</span>
-            </Link>
-          )
-        })}
-      </nav>
+      {/* ===== MOBILE: HAMBURGER BUTTON (top-left) ===== */}
+      <button
+        className="lg:hidden fixed top-4 left-4 z-sticky p-2 rounded-xl bg-surface/80 backdrop-blur-2xl border border-border/50 shadow-lg"
+        onClick={toggleSidebar}
+        aria-expanded={sidebarOpen}
+        aria-controls="mobile-sidebar"
+        aria-label={sidebarOpen ? 'Close menu' : 'Open menu'}
+      >
+        <div className="relative w-6 h-5 flex flex-col justify-between">
+          {/* Top line */}
+          <span
+            className="block w-full h-0.5 bg-ink rounded transition-all duration-300 ease-spring"
+            style={{
+              transform: hamburgerAnim ? 'translateY(2px) rotate(45deg)' : 'translateY(0) rotate(0)',
+              transformOrigin: 'center',
+            }}
+            aria-hidden="true"
+          />
+          {/* Middle line */}
+          <span
+            className="block w-full h-0.5 bg-ink rounded transition-all duration-300 ease-spring"
+            style={{
+              opacity: hamburgerAnim ? 0 : 1,
+              transform: hamburgerAnim ? 'scaleX(0)' : 'scaleX(1)',
+              transformOrigin: 'center',
+            }}
+            aria-hidden="true"
+          />
+          {/* Bottom line */}
+          <span
+            className="block w-full h-0.5 bg-ink rounded transition-all duration-300 ease-spring"
+            style={{
+              transform: hamburgerAnim ? 'translateY(-2px) rotate(-45deg)' : 'translateY(0) rotate(0)',
+              transformOrigin: 'center',
+            }}
+            aria-hidden="true"
+          />
+        </div>
+      </button>
 
-      {/* mobile More sheet */}
-      {moreOpen && (
-        <div onClick={closeMore}
-          style={{
-            position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', flexDirection: 'column',
-            background: 'var(--bg)', padding: '24px 16px', overflow: 'auto',
-          }}>
-          <div onClick={e => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-              <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--ink)' }}>More</span>
-              <button onClick={closeMore}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-mute)', padding: 4 }}>
+      {/* ===== MOBILE SIDEBAR PANEL (FLUID ISLAND) ===== */}
+      {sidebarOpen && (
+        <div
+          id="mobile-sidebar"
+          className="lg:hidden fixed inset-y-0 left-0 z-modal w-full max-w-sm mt-4 ml-4 mr-4 mb-4 bg-surface/95 backdrop-blur-2xl border border-border/50 rounded-3xl shadow-2xl overflow-hidden animate-slide-in-right"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Navigation menu"
+        >
+          <div className="flex flex-col h-full">
+            {/* Header */}
+            <div className="p-4 border-b border-border-soft flex items-center justify-between">
+              <Link to="/dashboard" className="flex items-center gap-2 font-display font-bold text-lg tracking-tight text-ink no-underline">
+                <img src="/brand-mark.png" alt="" width={22} height={22} className="rounded-md" />
+                Sampada
+              </Link>
+              <button
+                onClick={closeSidebar}
+                className="p-2 rounded-lg text-ink-mute hover:text-ink hover:bg-surface-hover transition-colors duration-fast"
+                aria-label="Close menu"
+              >
                 <X size={20} aria-hidden="true" />
               </button>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {moreItems.map(item => {
-                const active = location.pathname === item.path
-                return (
-                  <Link key={item.path} to={item.path} onClick={closeMore}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 12, padding: '12px 12px',
-                      borderRadius: 8, fontSize: 14, fontWeight: active ? 500 : 400,
-                      color: active ? 'var(--accent)' : 'var(--ink)',
-                      background: 'transparent',
-                      textDecoration: 'none',
-                      position: 'relative',
-                    }}>
-                    {active && <span style={{
-                      position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
-                      width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)',
-                    }} />}
-                    <NavIcon name={item.icon} size={20} />
-                    <span>{item.name}</span>
-                  </Link>
-                )
-              })}
+
+            {/* Navigation */}
+            <nav className="flex-1 overflow-y-auto p-4 space-y-2" role="navigation" aria-label="Main navigation">
+              {groups.map((g, groupIndex) => (
+                <div key={g.name} className="nav-group">
+                  {g.children ? (
+                    <>
+                      <div className="px-2 py-2 text-xs font-semibold uppercase tracking-widest text-ink-faint">
+                        {g.name}
+                      </div>
+                      {g.children.map((c, itemIndex) => (
+                        <MobileNavLink
+                          key={c.path}
+                          item={c}
+                          current={location.pathname}
+                          onNav={closeSidebar}
+                          index={groupIndex * 10 + itemIndex}
+                        />
+                      ))}
+                    </>
+                  ) : (
+                    <MobileNavLink item={g} current={location.pathname} onNav={closeSidebar} index={groupIndex} />
+                  )}
+                </div>
+              ))}
+
+              {/* Theme toggle in mobile */}
+              <div className="pt-4 border-t border-border-soft">
+                <button
+                  onClick={toggleTheme}
+                  className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-base text-ink-mute hover:text-ink hover:bg-surface-hover transition-colors duration-fast"
+                >
+                  {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+                  <span>{theme === 'dark' ? 'Light' : 'Dark'} mode</span>
+                </button>
+              </div>
+            </nav>
+
+            {/* User section */}
+            <div className="p-4 border-t border-border-soft space-y-3">
+              <div className="flex items-center gap-3 px-2 py-2">
+                <span className="w-12 h-12 rounded-full bg-accent text-white flex items-center justify-center text-base font-semibold flex-shrink-0">
+                  {initials}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-ink truncate">{user?.first_name || user?.email}</p>
+                  <p className="text-sm text-ink-mute truncate">{user?.email}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <Link to="/dashboard/settings" onClick={closeSidebar} className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-ink hover:bg-surface-hover transition-colors duration-fast">
+                  <Settings size={18} />
+                  <span>Settings</span>
+                </Link>
+                <Link to="/dashboard/privacy" onClick={closeSidebar} className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-ink hover:bg-surface-hover transition-colors duration-fast">
+                  <Shield size={18} />
+                  <span>Privacy</span>
+                </Link>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-accent hover:bg-accent-bg transition-colors duration-fast"
+              >
+                <LogOut size={18} />
+                <span>Sign out</span>
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* onboarding nudge */}
+      {/* ===== MOBILE BOTTOM NAV — FLOATING PILL ===== */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-sticky mx-4 mb-4 px-2 pb-2 safe-area-bottom" aria-label="Bottom navigation">
+        <div className="card-shell card-shell--glass flex items-center justify-around px-2 py-1.5">
+          {[
+            { name: 'Home', path: '/dashboard', icon: 'dashboard' },
+            { name: 'Money', path: '/dashboard/transactions', icon: 'transactions' },
+            { name: 'Debt', path: '/dashboard/debts', icon: 'debt' },
+            { name: 'Invest', path: '/dashboard/portfolios', icon: 'portfolio' },
+            { name: 'More', action: () => setMoreOpen(true), icon: 'settings' },
+          ].map((item, index) => {
+            const active = item.path ? location.pathname === item.path : false
+            if (item.action) {
+              return (
+                <button
+                  key={item.name}
+                  onClick={item.action}
+                  className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl text-[10px] font-medium transition-all duration-fast min-w-[64px] ${moreOpen ? 'text-accent' : 'text-ink-mute'}`}
+                  style={{ minHeight: '44px' }}
+                >
+                  <NavIcon name={item.icon} size={20} />
+                  <span>{item.name}</span>
+                </button>
+              )
+            }
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl text-[10px] font-medium transition-all duration-fast min-w-[64px] relative ${active ? 'text-accent' : 'text-ink-mute'}`}
+                style={{ minHeight: '44px' }}
+              >
+                {active && (
+                  <span className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-1 bg-accent rounded-full" aria-hidden="true" />
+                )}
+                <NavIcon name={item.icon} size={20} />
+                <span>{item.name}</span>
+              </Link>
+            )
+          })}
+        </div>
+      </nav>
+
+      {/* ===== MOBILE MORE SHEET ===== */}
+      {moreOpen && (
+        <div
+          className="lg:hidden fixed inset-0 z-modal flex flex-col bg-bg"
+          onClick={closeMore}
+          role="dialog"
+          aria-modal="true"
+          aria-label="More options"
+        >
+          <div onClick={e => e.stopPropagation()} className="flex-1 overflow-y-auto p-6">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="font-display text-xl font-bold text-ink">More</h2>
+              <button
+                onClick={closeMore}
+                className="p-2 rounded-xl text-ink-mute hover:text-ink hover:bg-surface-hover transition-colors duration-fast"
+                aria-label="Close"
+              >
+                <X size={24} aria-hidden="true" />
+              </button>
+            </div>
+            <div className="space-y-2">
+              {moreItems.map((item, index) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={closeMore}
+                  className={`flex items-center gap-4 px-4 py-4 rounded-2xl text-base font-medium transition-colors duration-fast ${isActive(item.path) ? 'text-accent bg-accent-bg font-semibold' : 'text-ink hover:bg-surface-hover'}`}
+                  style={{ transitionDelay: `${100 + index * 50}ms` }}
+                >
+                  <NavIcon name={item.icon} size={24} />
+                  <span>{item.name}</span>
+                  {isActive(item.path) && <span className="ml-auto w-2 h-2 rounded-full bg-accent" aria-hidden="true" />}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== ONBOARDING NUDGE ===== */}
       {showBanner && (
-        <div style={{
-          position: 'fixed', bottom: 16, left: '50%', transform: 'translateX(-50%)', zIndex: 900,
-          display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px',
-          background: 'var(--ink)', color: 'var(--paper)', borderRadius: 12,
-          boxShadow: '0 10px 30px rgba(21,20,15,0.25)', maxWidth: 'calc(100vw - 32px)',
-        }}>
-          <span className="h-500-13" >Set up Sampada to see your full money picture.</span>
-          <Link to="/dashboard/onboarding"
-            style={{ padding: '6px 14px', borderRadius: 999, background: 'var(--coral)', color: '#fff', fontSize: 13, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-toast flex items-center gap-3 px-4 py-3 rounded-2xl bg-ink text-paper shadow-xl max-w-[calc(100vw-2rem)] animate-slide-up" role="status" aria-live="polite">
+          <span className="text-sm font-medium">Set up Sampada to see your full money picture.</span>
+          <Link to="/dashboard/onboarding" className="px-4 py-2 rounded-full bg-accent text-white text-sm font-semibold no-underline whitespace-nowrap">
             Finish setting up
           </Link>
-          <button onClick={dismissBanner} aria-label="Dismiss"
-            style={{ background: 'none', border: 'none', color: 'var(--ink-faint)', cursor: 'pointer', padding: 4, display: 'flex' }}>
-            <X size={14} />
+          <button onClick={dismissBanner} aria-label="Dismiss" className="p-1 text-ink-faint hover:text-paper transition-colors duration-fast">
+            <X size={16} aria-hidden="true" />
           </button>
         </div>
       )}
 
-      {/* main */}
-      <main className="main-area">
+      {/* ===== MAIN CONTENT ===== */}
+      <main className="main-area lg:ml-72 pt-6 lg:pt-0 px-4 lg:px-8 pb-24 lg:pb-12 min-h-dvh">
+        {/* Offline banner */}
         {!isOnline && (
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, padding: '9px 14px',
-            borderRadius: 10, background: 'var(--ink)', color: 'var(--paper)', fontSize: 12.5,
-          }}>
-            <WifiOff size={14} aria-hidden="true" />
+          <div className="mb-4 flex items-center gap-2 px-4 py-3 rounded-xl bg-ink text-paper text-sm shadow-lg animate-slide-down" role="status" aria-live="polite">
+            <WifiOff size={16} aria-hidden="true" />
             <span>{queued > 0 ? `Offline — ${queued} ${queued === 1 ? 'change' : 'changes'} queued, will sync` : 'Offline — viewing cached data, edits disabled'}</span>
           </div>
         )}
+
         <PageTransition>
           <Outlet />
         </PageTransition>
