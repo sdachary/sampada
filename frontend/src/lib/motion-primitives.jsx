@@ -35,8 +35,7 @@ export function useCountUp(value, { duration = 0.9, decimals = 0, enabled = true
 // Single fade-up entrance, once, when scrolled into view. No repeat, no stagger.
 // FIX: If element is already in viewport on mount, show immediately without animation
 export function Reveal({ children, y = 12, delay = 0, ...props }) {
-  if (prefersReducedMotion()) return <div {...props}>{children}</div>
-  
+  const reduce = prefersReducedMotion()
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-10% 0px' })
   const [mounted, setMounted] = useState(false)
@@ -59,6 +58,8 @@ export function Reveal({ children, y = 12, delay = 0, ...props }) {
     const timer = setTimeout(() => setMounted(true), 500)
     return () => clearTimeout(timer)
   }, [])
+  
+  if (reduce) return <div {...props}>{children}</div>
   
   if (mounted || inView) {
     return (
