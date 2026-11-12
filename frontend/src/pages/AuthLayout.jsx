@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom'
 import ThemeToggle from '../components/ThemeToggle'
 import { Card, PageHeader, Badge } from '../components/ui'
-import { Reveal } from '../lib/motion-primitives'
 
 const shellStyle = {
   minHeight: '100dvh',
@@ -29,13 +28,11 @@ export default function AuthLayout({ variant = 'form', icon, title, subtitle, er
       </div>
       <div className="w-full max-w-[360px] text-center" style={{ textAlign: success ? 'center' : undefined }}>
         {!success && (
-          <Reveal delay={50}>
-            <div className="mb-8">
-              <Link to="/" style={brandStyle} className="no-underline">Sampada</Link>
-            </div>
-          </Reveal>
+          <div className="mb-8">
+            <Link to="/" style={brandStyle} className="no-underline">Sampada</Link>
+          </div>
         )}
-        <Card className="card-shell card-core--pad-xl">
+        <Card variant="shell" padding="xl">
           {success ? (
             <>
               <p className="text-5xl mb-3">{icon}</p>
@@ -55,9 +52,7 @@ export default function AuthLayout({ variant = 'form', icon, title, subtitle, er
         </Card>
         {after}
         {foot && (
-          <Reveal delay={150}>
-            <p className="text-center text-sm text-muted mt-5">{foot}</p>
-          </Reveal>
+          <p className="text-center text-sm text-muted mt-5">{foot}</p>
         )}
       </div>
     </div>
