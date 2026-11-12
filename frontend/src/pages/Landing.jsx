@@ -93,7 +93,7 @@ export default function Landing() {
                 <p className="text-xs text-faint mt-4 tracking-wide">Open source · Apache 2.0 · Free forever</p>
               </div>
               <div className="w-full max-w-[520px] mx-auto">
-                <div id="landing-hero" className="w-full aspect-square max-w-[520px] mx-auto min-w-[280px]">
+                <div className="w-full max-w-[520px] mx-auto min-w-[280px]" style={{ aspectRatio: '1 / 1' }}>
                   <HeroVisual />
                 </div>
               </div>
