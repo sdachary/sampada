@@ -37,8 +37,10 @@ export function useCountUp(value, { duration = 0.9, decimals = 0, enabled = true
 export function Reveal({ children, y = 12, delay = 0, ...props }) {
   const reduce = prefersReducedMotion()
   const ref = useRef(null)
-  const inView = useInView(ref, { once: true, margin: '-10% 0px' })
-  const [mounted, setMounted] = useState(false)
+  // When reduced, disable viewport detection entirely; hook still called (rules of hooks)
+  const inView = useInView(ref, { once: true, margin: '-10% 0px', disabled: reduce })
+  // Reduced motion: mounted immediately so content shows without animation
+  const [mounted, setMounted] = useState(reduce)
   
   // If already in viewport on mount, show immediately
   useEffect(() => {
@@ -59,7 +61,8 @@ export function Reveal({ children, y = 12, delay = 0, ...props }) {
     return () => clearTimeout(timer)
   }, [])
   
-  if (reduce) return <div {...props}>{children}</div>
+  // Reduced motion: render children immediately WITH ref attached
+  if (reduce) return <div ref={ref} {...props}>{children}</div>
   
   if (mounted || inView) {
     return (

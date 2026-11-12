@@ -46,7 +46,7 @@ export default function HeroVisual() {
         }}
       />
       {enable && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<HeroPoster />}>
           {/* Subtle scale settle alongside the fade — 3D only mounts when
               prefers-reduced-motion is off (canRender3D), so RM users never
               see the transform. */}
