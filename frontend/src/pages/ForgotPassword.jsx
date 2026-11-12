@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { auth } from '../lib/api'
 import AuthLayout from './AuthLayout'
 import { Input, Button, Card } from '../components/ui'
-import { Reveal } from '../lib/motion-primitives'
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('')
@@ -41,21 +40,15 @@ export default function ForgotPassword() {
       foot={<Link style={{ color: 'var(--accent)', fontWeight: 500 }} to="/login">Back to sign in</Link>}
     >
       <form onSubmit={handleSubmit} className="space-y-3">
-        <Reveal delay={0}>
-          <input
-            type="text" name="website" value={website} onChange={e => setWebsite(e.target.value)}
-            tabIndex={-1} autoComplete="off" aria-hidden="true"
-            className="absolute -left-9999 w-1 h-1 opacity-0"
-          />
-        </Reveal>
-        <Reveal delay={50}>
-          <Input type="email" placeholder="Email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} required />
-        </Reveal>
-        <Reveal delay={100}>
-          <Button type="submit" loading={submitting} className="w-full sm:w-auto mx-auto sm:mx-0">
-            {submitting ? 'Sending…' : 'Send reset link'}
-          </Button>
-        </Reveal>
+        <input
+          type="text" name="website" value={website} onChange={e => setWebsite(e.target.value)}
+          tabIndex={-1} autoComplete="off" aria-hidden="true"
+          className="absolute -left-9999 w-1 h-1 opacity-0"
+        />
+        <Input type="email" placeholder="Email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} required />
+        <Button type="submit" loading={submitting} className="w-full sm:w-auto mx-auto sm:mx-0">
+          {submitting ? 'Sending…' : 'Send reset link'}
+        </Button>
       </form>
     </AuthLayout>
   )

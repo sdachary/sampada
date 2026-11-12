@@ -5,7 +5,6 @@ import AuthLayout from './AuthLayout'
 import { Input, Button } from '../components/ui'
 import { credentialToJSON, jsonToCredentialOptions, isPasskeySupported, isConditionalMediationSupported } from '../lib/passkeys'
 import { api } from '../lib/api'
-import { Reveal } from '../lib/motion-primitives'
 
 export default function Login() {
   const { user, login } = useAuth()
@@ -86,71 +85,57 @@ export default function Login() {
       foot={<><span>No account? </span><Link to="/register" className="text-accent font-medium">Register</Link></>}
     >
       <form onSubmit={handleSubmit} className="space-y-3">
-        <Reveal delay={0}>
-          <input
-            type="text" name="website" value={website} onChange={e => setWebsite(e.target.value)}
-            tabIndex={-1} autoComplete="off" aria-hidden="true"
-            className="absolute -left-9999 w-1 h-1 opacity-0"
-          />
-        </Reveal>
-        <Reveal delay={50}>
+        <input
+          type="text" name="website" value={website} onChange={e => setWebsite(e.target.value)}
+          tabIndex={-1} autoComplete="off" aria-hidden="true"
+          className="absolute -left-9999 w-1 h-1 opacity-0"
+        />
+        <Input
+          ref={emailRef}
+          type="email"
+          placeholder="Email"
+          autoComplete="email"
+          value={email}
+          onChange={handleEmailChange}
+          required
+        />
+        <div className="relative">
           <Input
-            ref={emailRef}
-            type="email"
-            placeholder="Email"
-            autoComplete="email"
-            value={email}
-            onChange={handleEmailChange}
+            type={showPw ? 'text' : 'password'}
+            placeholder="Password"
+            autoComplete="current-password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
             required
           />
-        </Reveal>
-        <Reveal delay={100}>
-          <div className="relative">
-            <Input
-              type={showPw ? 'text' : 'password'}
-              placeholder="Password"
-              autoComplete="current-password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required
-            />
-            <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted hover:text-ink transition-colors" aria-label={showPw ? 'Hide password' : 'Show password'}>
-              {showPw ? '◔' : '◑'}
-            </button>
-          </div>
-        </Reveal>
-        <Reveal delay={150}>
-          <div className="flex justify-end mt-n2">
-            <Link to="/forgot-password" className="text-sm text-muted hover:text-ink transition-colors">Forgot password?</Link>
-          </div>
-        </Reveal>
-        <Reveal delay={200}>
-          <Button type="submit" loading={submitting} className="w-full sm:w-auto mx-auto sm:mx-0">
-            {submitting ? 'Signing in…' : 'Sign in'}
-          </Button>
-        </Reveal>
+          <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted hover:text-ink transition-colors" aria-label={showPw ? 'Hide password' : 'Show password'}>
+            {showPw ? '◔' : '◑'}
+          </button>
+        </div>
+        <div className="flex justify-end mt-n2">
+          <Link to="/forgot-password" className="text-sm text-muted hover:text-ink transition-colors">Forgot password?</Link>
+        </div>
+        <Button type="submit" loading={submitting} className="w-full sm:w-auto mx-auto sm:mx-0">
+          {submitting ? 'Signing in…' : 'Sign in'}
+        </Button>
 
         {passkeySupported && (
           <>
-            <Reveal delay={250}>
-              <div className="flex items-center gap-3 text-muted text-sm">
-                <div className="flex-1 h-px bg-border" />
-                <span>or</span>
-                <div className="flex-1 h-px bg-border" />
-              </div>
-            </Reveal>
-            <Reveal delay={300}>
-              <Button
-                variant="secondary"
-                type="button"
-                onClick={handlePasskeyLogin}
-                loading={submitting}
-                disabled={submitting}
-                className="w-full sm:w-auto mx-auto sm:mx-0"
-              >
-                {submitting ? 'Signing in…' : 'Use passkey'}
-              </Button>
-            </Reveal>
+            <div className="flex items-center gap-3 text-muted text-sm">
+              <div className="flex-1 h-px bg-border" />
+              <span>or</span>
+              <div className="flex-1 h-px bg-border" />
+            </div>
+            <Button
+              variant="secondary"
+              type="button"
+              onClick={handlePasskeyLogin}
+              loading={submitting}
+              disabled={submitting}
+              className="w-full sm:w-auto mx-auto sm:mx-0"
+            >
+              {submitting ? 'Signing in…' : 'Use passkey'}
+            </Button>
           </>
         )}
       </form>

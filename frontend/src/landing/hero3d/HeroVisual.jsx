@@ -32,7 +32,7 @@ export default function HeroVisual() {
   }, [])
 
   return (
-    <div className="hero-visual" style={{ aspectRatio: '1 / 1', position: 'relative', overflow: 'hidden' }}>
+    <div className="hero-visual" style={{ aspectRatio: '1 / 1', position: 'relative', overflow: 'hidden', width: '100%', height: '100%', minWidth: 0 }}>
       {/* Static poster — LCP element, cross-fades out once the 3D first frame is up */}
       <HeroPoster
         style={{

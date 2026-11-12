@@ -47,7 +47,11 @@ export default function App() {
     <>
       <ToastHost />
       <ServiceWorkerUpdate />
-      <Suspense fallback={null}>
+      <Suspense fallback={
+    <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="skeleton skeleton-title" />
+    </div>
+  }>
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />

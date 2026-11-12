@@ -3,7 +3,6 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { auth } from '../lib/api'
 import AuthLayout from './AuthLayout'
 import { Input, Button, Card } from '../components/ui'
-import { Reveal } from '../lib/motion-primitives'
 
 const PwToggle = ({ show, setShow }) => (
   <button type="button" onClick={() => setShow(!show)} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted hover:text-ink transition-colors" aria-label={show ? 'Hide password' : 'Show password'}>
@@ -59,23 +58,17 @@ export default function ResetPassword() {
       foot={<Link style={{ color: 'var(--accent)', fontWeight: 500 }} to="/login">Back to sign in</Link>}
     >
       <form onSubmit={handleSubmit} className="space-y-3">
-        <Reveal delay={0}>
-          <div className="relative">
-            <Input type={showPw ? 'text' : 'password'} placeholder="New password" autoComplete="new-password" minLength={8} value={password} onChange={e => setPassword(e.target.value)} required />
-            <PwToggle show={showPw} setShow={setShowPw} />
-          </div>
-        </Reveal>
-        <Reveal delay={50}>
-          <div className="relative">
-            <Input type={showConfirm ? 'text' : 'password'} placeholder="Confirm password" autoComplete="new-password" minLength={8} value={passwordConfirmation} onChange={e => setPasswordConfirmation(e.target.value)} required />
-            <PwToggle show={showConfirm} setShow={setShowConfirm} />
-          </div>
-        </Reveal>
-        <Reveal delay={100}>
-          <Button type="submit" loading={submitting} className="w-full sm:w-auto mx-auto sm:mx-0">
-            {submitting ? 'Resetting…' : 'Reset password'}
-          </Button>
-        </Reveal>
+        <div className="relative">
+          <Input type={showPw ? 'text' : 'password'} placeholder="New password" autoComplete="new-password" minLength={8} value={password} onChange={e => setPassword(e.target.value)} required />
+          <PwToggle show={showPw} setShow={setShowPw} />
+        </div>
+        <div className="relative">
+          <Input type={showConfirm ? 'text' : 'password'} placeholder="Confirm password" autoComplete="new-password" minLength={8} value={passwordConfirmation} onChange={e => setPasswordConfirmation(e.target.value)} required />
+          <PwToggle show={showConfirm} setShow={setShowConfirm} />
+        </div>
+        <Button type="submit" loading={submitting} className="w-full sm:w-auto mx-auto sm:mx-0">
+          {submitting ? 'Resetting…' : 'Reset password'}
+        </Button>
       </form>
     </AuthLayout>
   )
