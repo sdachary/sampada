@@ -57,8 +57,7 @@ function PrimaryCTA({ children, href }) {
 
 export default function Landing() {
   return (
-    <Reveal>
-      <div className="max-w-[960px] mx-auto px-4 lg:px-6">
+    <div className="max-w-[960px] mx-auto px-4 lg:px-6">
         {/* Nav */}
         <Reveal delay={0}>
           <nav className="flex justify-between items-center py-4 border-b border-border">
@@ -198,6 +197,5 @@ export default function Landing() {
           Sampada — financial clarity · <a href="/privacy.html" className="text-faint no-underline hover:text-muted">Privacy</a> · <a href="/terms.html" className="text-faint no-underline hover:text-muted">Terms</a>
         </footer>
       </div>
-    </Reveal>
   )
 }
