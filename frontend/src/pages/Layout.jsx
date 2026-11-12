@@ -148,6 +148,7 @@ export default function Layout() {
   const [cmdOpen, setCmdOpen] = useState(false)
   const [bannerDismissed, setBannerDismissed] = useState(() => sessionStorage.getItem('onboarding-dismissed') === '1')
   const [hamburgerAnim, setHamburgerAnim] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
 
   const showBanner = !user?.onboarded && !bannerDismissed
 
