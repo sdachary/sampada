@@ -135,6 +135,11 @@ export async function onRequest(context) {
 
       const modifiedHeaders = new Headers(request.headers)
       modifiedHeaders.delete('host')
+      // Set x-app-name so Better-Auth knows which app this request is for
+      modifiedHeaders.set('x-app-name', APP_NAME)
+      // Forward Origin for Better-Auth app derivation (via hostname map)
+      const origin = request.headers.get('Origin')
+      if (origin) modifiedHeaders.set('Origin', origin)
 
       const response = await fetch(proxyUrl, {
         method: request.method,
