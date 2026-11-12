@@ -100,7 +100,7 @@ export const auth = {
 
   forgotPassword: (email, website = '') => betterAuthRequest('/request-password-reset', {
     method: 'POST',
-    body: JSON.stringify({ email, redirectTo: `${window.location.origin}/reset-password`, website }),
+    body: JSON.stringify({ email, redirectTo: `${window.location.origin}/reset-password`, website, app: 'sampada' }),
   }),
 
   resetPassword: (token, newPassword) => betterAuthRequest('/reset-password', {
