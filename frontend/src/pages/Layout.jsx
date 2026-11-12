@@ -148,7 +148,6 @@ export default function Layout() {
   const [cmdOpen, setCmdOpen] = useState(false)
   const [bannerDismissed, setBannerDismissed] = useState(() => sessionStorage.getItem('onboarding-dismissed') === '1')
   const [hamburgerAnim, setHamburgerAnim] = useState(false)
-  const [menuOpen, setMenuOpen] = useState(false)
 
   const showBanner = !user?.onboarded && !bannerDismissed
 
@@ -196,6 +195,9 @@ export default function Layout() {
     if (sidebarOpen) closeSidebar()
   }, [location.pathname])
 
+  // Sidebar width: 256px (w-64) + 24px margin = 280px, main margin = 288px (ml-72)
+  const SIDEBAR_WIDTH = 288
+
   return (
     <div className="app-layout relative min-h-dvh bg-bg">
       {/* Overlay for mobile sidebar */}
@@ -208,7 +210,7 @@ export default function Layout() {
       )}
 
       {/* ===== DESKTOP SIDEBAR — FLUID ISLAND ===== */}
-      <aside className="hidden lg:flex lg:flex-col fixed lg:static inset-y-0 left-0 z-sticky mt-6 mr-6 lg:mt-6 lg:mr-6 lg:mb-6 max-h-[calc(100vh-3rem)] w-64 bg-surface/80 backdrop-blur-2xl border border-border/50 rounded-3xl shadow-xl overflow-hidden">
+      <aside className="hidden lg:flex lg:flex-col fixed lg:sticky top-6 left-6 right-auto z-sticky max-h-[calc(100vh-3rem)] w-64 bg-surface/80 backdrop-blur-2xl border border-border/50 rounded-3xl shadow-xl overflow-hidden">
         {/* Brand */}
         <div className="p-4 border-b border-border-soft">
           <Link to="/dashboard" className="flex items-center gap-2 font-display font-bold text-lg tracking-tight text-ink no-underline">
@@ -539,7 +541,7 @@ export default function Layout() {
       )}
 
       {/* ===== MAIN CONTENT ===== */}
-      <main className="main-area lg:ml-72 pt-6 lg:pt-0 px-4 lg:px-8 pb-24 lg:pb-12 min-h-dvh">
+      <main className="main-area lg:ml-[288px] pt-6 lg:pt-0 px-4 lg:px-8 pb-24 lg:pb-12 min-h-dvh">
         {/* Offline banner */}
         {!isOnline && (
           <div className="mb-4 flex items-center gap-2 px-4 py-3 rounded-xl bg-ink text-paper text-sm shadow-lg animate-slide-down" role="status" aria-live="polite">
