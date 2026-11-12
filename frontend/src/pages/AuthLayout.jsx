@@ -9,6 +9,7 @@ const shellStyle = {
   alignItems: 'center',
   justifyContent: 'center',
   padding: '0 24px',
+  background: 'var(--color-bg)',
 }
 
 const brandStyle = {
