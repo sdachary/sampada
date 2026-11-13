@@ -1,0 +1,89 @@
+# .gcloudignore - Files not uploaded during gcloud deploy/cloudbuild
+# This reduces build context size and protects secrets
+
+# Git
+.git
+.gitignore
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# IDE/Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+log/
+
+# Temp files
+tmp/
+*.tmp
+*.temp
+
+# Test/coverage
+coverage/
+spec/
+test/
+*.spec.js
+*.test.js
+
+# Node modules (if any)
+node_modules/
+package-lock.json
+
+# Ruby
+vendor/bundle/
+.ruby-version
+Gemfile.lock
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.circleci/
+azure-pipelines.yml
+
+# Terraform/Infrastructure
+*.tfstate
+*.tfvars
+.terraform/
+
+# Secrets (should be in Secret Manager, not repo)
+.env
+.env.*
+*.pem
+*.key
+*.crt
+secrets.enc.env
+
+# Large assets
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.svg
+*.ico
+*.woff
+*.woff2
+
+# Build artifacts
+dist/
+build/
+*.gem
+
+# Cloud Build
+cloudbuild.yaml

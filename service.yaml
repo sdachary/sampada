@@ -1,0 +1,191 @@
+# Cloud Run service.yaml - Declarative deployment
+# Deploy with: gcloud run services replace service.yaml --region=asia-south1
+
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: sampada
+  annotations:
+    run.googleapis.com/ingress: all
+    run.googleapis.com/ingress-status: all
+  labels:
+    cloud.googleapis.com/location: asia-south1
+    app: sampada
+spec:
+  template:
+    metadata:
+      annotations:
+        # Autoscaling
+        autoscaling.knative.dev/minScale: "0"
+        autoscaling.knative.dev/maxScale: "10"
+        # Concurrency - requests per container instance
+        run.googleapis.com/cpu-throttling: "false"
+        # Startup CPU boost (helps with Rails boot)
+        run.googleapis.com/startup-cpu-boost: "true"
+        # Service account
+        run.googleapis.com/service-account: sampada-cloudrun@your-project.iam.gserviceaccount.com
+        # VPC connector for Cloud SQL / Redis access
+        run.googleapis.com/vpc-access-connector: projects/your-project/locations/asia-south1/connectors/sampada-vpc
+        run.googleapis.com/vpc-access-egress: private-ranges-only
+      labels:
+        app: sampada
+        version: latest
+    spec:
+      # Container configuration
+      containers:
+        - name: sampada
+          image: asia-south1-docker.pkg.dev/your-project/sampada-docker/sampada:latest
+          ports:
+            - name: http1
+              containerPort: 8080
+          env:
+            # Rails
+            - name: RAILS_ENV
+              value: "production"
+            - name: RAILS_LOG_TO_STDOUT
+              value: "true"
+            - name: RAILS_SERVE_STATIC_FILES
+              value: "true"
+            - name: RAILS_MAX_THREADS
+              value: "80"
+            - name: WEB_CONCURRENCY
+              value: "1"
+            # Database - Cloud SQL via Unix socket
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: sampada-secrets
+                  key: database-url
+            # Redis - Upstash
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: sampada-secrets
+                  key: redis-url
+            # Rails secrets
+            - name: SECRET_KEY_BASE
+              valueFrom:
+                secretKeyRef:
+                  name: sampada-secrets
+                  key: secret-key-base
+            # Encryption keys
+            - name: ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: sampada-secrets
+                  key: encryption-primary-key
+            - name: ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: sampada-secrets
+                  key: encryption-deterministic-key
+            - name: ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT
+              valueFrom:
+                secretKeyRef:
+                  name: sampada-secrets
+                  key: encryption-key-derivation-salt
+            # Google OAuth
+            - name: GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: sampada-secrets
+                  key: google-client-id
+            - name: GOOGLE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: sampada-secrets
+                  key: google-client-secret
+            # App domain & CORS
+            - name: APP_DOMAIN
+              valueFrom:
+                secretKeyRef:
+                  name: sampada-secrets
+                  key: app-domain
+            - name: CORS_ORIGINS
+              valueFrom:
+                secretKeyRef:
+                  name: sampada-secrets
+                  key: cors-origins
+            # SMTP
+            - name: SMTP_ADDRESS
+              valueFrom:
+                secretKeyRef:
+                  name: sampada-secrets
+                  key: smtp-address
+            - name: SMTP_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: sampada-secrets
+                  key: smtp-port
+            - name: SMTP_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: sampada-secrets
+                  key: smtp-username
+            - name: SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: sampada-secrets
+                  key: smtp-password
+            - name: SMTP_TLS_ENABLED
+              valueFrom:
+                secretKeyRef:
+                  name: sampada-secrets
+                  key: smtp-tls-enabled
+            # Better Auth
+            - name: BETTER_AUTH_VERIFY_URL
+              valueFrom:
+                secretKeyRef:
+                  name: sampada-secrets
+                  key: better-auth-verify-url
+            - name: BETTER_AUTH_APP_ID
+              valueFrom:
+                secretKeyRef:
+                  name: sampada-secrets
+                  key: better-auth-app-id
+            - name: BETTER_AUTH_CACHE_TTL
+              valueFrom:
+                secretKeyRef:
+                  name: sampada-secrets
+                  key: better-auth-cache-ttl
+          resources:
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+          # Health check
+          livenessProbe:
+            httpGet:
+              path: /up
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /up
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          # Startup probe (longer for Rails boot)
+          startupProbe:
+            httpGet:
+              path: /up
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 10
+            failureThreshold: 30
+      # Service account for Cloud SQL, Secret Manager, etc.
+      serviceAccountName: sampada-cloudrun@your-project.iam.gserviceaccount.com
+      # Timeout (matches Cloud Run max 3600s)
+      timeoutSeconds: 300
+  # Traffic: 100% to latest revision
+  traffic:
+    - percent: 100
+      latestRevision: true
