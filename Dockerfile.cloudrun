@@ -1,0 +1,89 @@
+# Cloud Run optimized multi-stage Dockerfile for Sampada
+# Build stage
+FROM ruby:3.3.13-slim-bookworm AS builder
+
+# Install build dependencies
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y \
+    build-essential \
+    libpq-dev \
+    libyaml-dev \
+    curl \
+    ca-certificates \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /rails
+
+# Install bundler
+ENV BUNDLE_PATH=/usr/local/bundle \
+    BUNDLE_WITHOUT=development:test \
+    BUNDLE_JOBS=4 \
+    BUNDLE_RETRY=3
+
+# Copy gem files first for better caching
+COPY Gemfile Gemfile.lock .ruby-version ./
+RUN bundle install && rm -rf /usr/local/bundle/cache/*.gem
+
+# Copy application code
+COPY . .
+
+# Precompile bootsnap for faster startup
+RUN bundle exec bootsnap precompile --gemfile app/ lib/
+
+# Remove test/spec files to reduce image size
+RUN rm -rf spec/ test/ tmp/cache
+
+# ============================================================
+# Runtime stage - minimal image
+# ============================================================
+FROM ruby:3.3.13-slim-bookworm
+
+# Install runtime dependencies only
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y \
+    libpq-dev \
+    libyaml-0-2 \
+    curl \
+    ca-certificates \
+    libjemalloc2 \
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+WORKDIR /rails
+
+# Copy gems from builder
+COPY --from=builder /usr/local/bundle /usr/local/bundle
+
+# Copy application from builder
+COPY --from=builder /rails /rails
+
+# Create non-root user for security
+RUN useradd -m -u 1000 rails && \
+    chown -R rails:rails /rails
+USER rails
+
+# Cloud Run injects PORT env var (default 8080)
+ENV PORT=8080 \
+    RAILS_ENV=production \
+    BUNDLE_PATH=/usr/local/bundle \
+    BUNDLE_WITHOUT=development:test \
+    LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2 \
+    MALLOC_CONF=background_thread:true,metadata_thp:auto,dirty_decay_ms:5000,muzzy_decay_ms:5000 \
+    RAILS_LOG_TO_STDOUT=true \
+    RAILS_SERVE_STATIC_FILES=true
+
+# Expose Cloud Run port
+EXPOSE 8080
+
+# Health check endpoint
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:8080/up || exit 1
+
+# Use the existing entrypoint but adapt for Cloud Run
+COPY --chown=rails:rails docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]
