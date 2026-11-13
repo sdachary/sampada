@@ -229,7 +229,7 @@ export default function Settings() {
 
           {editing ? (
             <div className="space-y-3">
-              <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
+              <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 mobile:grid-cols-1">
                 <InputField label="First Name" value={form.first_name} onChange={set('first_name')} />
                 <InputField label="Last Name" value={form.last_name} onChange={set('last_name')} />
               </div>
@@ -286,7 +286,10 @@ export default function Settings() {
                   { value: 'grok', label: 'xAI Grok' },
                   { value: 'openrouter', label: 'OpenRouter' },
                 ]} className="flex-1 min-w-[160px]" />
-                <Input type="password" placeholder="API key" value={aiForm.api_key} onChange={e => setAiForm(f => ({ ...f, api_key: e.target.value }))} className="flex-1 min-w-[220px]" />
+                <div className="flex-1 min-w-[220px] relative">
+                  <Input type="password" placeholder="API key" value={aiForm.api_key} onChange={e => setAiForm(f => ({ ...f, api_key: e.target.value }))} aria-invalid={!!aiError} />
+                  {aiError && <p className="field__error" role="alert">{aiError}</p>}
+                </div>
                 <Button onClick={saveAi} disabled={!aiForm.provider || !aiForm.api_key}>Enable</Button>
               </>
             )}
@@ -296,7 +299,6 @@ export default function Settings() {
               </Button>
             )}
           </div>
-          {aiError && <p className="text-sm text-accent mb-2">{aiError}</p>}
         </Card>
       </Reveal>
 
@@ -313,7 +315,7 @@ export default function Settings() {
                 {passkeys.map(p => (
                   <div key={p.id} className="flex justify-between items-center px-3 py-2 bg-bg rounded-lg">
                     <div className="flex items-center gap-3">
-                      <span className="text-2xl">🔐</span>
+                      <span className="text-2xl" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
                       <div>
                         <p className="text-base font-medium text-ink">{p.label}</p>
                         <p className="text-xs text-muted">

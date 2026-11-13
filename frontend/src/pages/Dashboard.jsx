@@ -169,8 +169,10 @@ export default function Dashboard() {
         {snapshots.length > 1 ? (
           <Card className="card-shell card-core--pad-lg">
             <p className="label-caps mb-4">Net worth trend</p>
-            <Chart data={snapshots} xKey="date" xFormatter={(d) => (d || '').slice(5)}
-              series={[{ key: 'net_worth', name: 'Net worth', color: 'var(--accent)', area: true }]} />
+            <div role="img" aria-label="Area chart showing net worth trend over time. Coral area shows growth trajectory.">
+              <Chart data={snapshots} xKey="date" xFormatter={(d) => (d || '').slice(5)}
+                series={[{ key: 'net_worth', name: 'Net worth', color: 'var(--accent)', area: true }]} />
+            </div>
           </Card>
         ) : (
           <EmptyState icon={<AlertCircle size={32} />} title="No net worth history yet" action="Add a transaction" onAction={() => setQuickOpen(true)}>
@@ -255,9 +257,8 @@ export default function Dashboard() {
         tabIndex={0}
         aria-label="Quick log transaction"
         title="Quick log (Alt+Q)"
-        className="fixed bottom-20 right-4 z-popover w-14 h-14 rounded-full border-0 bg-accent text-ink flex items-center justify-center shadow-lg transition-all duration-base ease-spring hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+        className={`fixed right-4 z-popover w-14 h-14 rounded-full border-0 bg-accent text-ink flex items-center justify-center shadow-lg btn btn--primary btn--icon transition-transform duration-base ease-spring hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.97] ${isOnline ? '' : 'opacity-50'}`}
         style={{
-          opacity: isOnline ? 1 : 0.5,
           bottom: `calc(5rem + env(safe-area-inset-bottom))`,
         }}
       >

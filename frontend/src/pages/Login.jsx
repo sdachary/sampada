@@ -98,6 +98,7 @@ export default function Login() {
           value={email}
           onChange={handleEmailChange}
           required
+          aria-invalid={!!error}
         />
         <div className="relative">
           <Input
@@ -107,6 +108,7 @@ export default function Login() {
             value={password}
             onChange={e => setPassword(e.target.value)}
             required
+            aria-invalid={!!error}
           />
           <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted hover:text-ink transition-colors" aria-label={showPw ? 'Hide password' : 'Show password'}>
             {showPw ? '◔' : '◑'}

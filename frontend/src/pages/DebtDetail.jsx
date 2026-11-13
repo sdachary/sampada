@@ -69,7 +69,7 @@ function InlineField({ label, value, type = 'text', options, onSave, currency })
   }
 
   return (
-    <div onClick={() => { setDraft(value ?? ''); setEditing(true) }} className="cursor-pointer min-h-[44px]">
+    <div onClick={() => { setDraft(value ?? ''); setEditing(true) }} className="cursor-pointer min-h-44">
       <div className="text-2xs font-semibold uppercase tracking-wider text-muted mb-1">{label}</div>
       <div className={`font-medium ${currency ? 'fin font-display' : ''}`}>{display()}</div>
     </div>

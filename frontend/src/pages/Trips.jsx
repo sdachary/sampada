@@ -242,7 +242,7 @@ export default function Trips() {
           </div>
         ) : trips.length === 0 ? (
           <EmptyState
-            icon={<span aria-hidden="true" className="text-5xl text-border">◈</span>}
+            icon={<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-border" aria-hidden="true"><path d="M17 18a5 5 0 0 0-10 0"/><path d="M12 2v20"/><path d="M22 10H2"/><circle cx="12" cy="18" r="4"/></svg>}
             title="No trips yet"
           >
             Create a trip to track shared expenses with friends and family — like Splitwise, built in.

@@ -78,7 +78,7 @@ export default function PayoffSimulator() {
       {debts.length === 0 ? (
         <Reveal delay={50}>
           <EmptyState
-            icon={<span aria-hidden="true" className="text-5xl text-border">◎</span>}
+            icon={<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-border" aria-hidden="true"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>}
             title="No debts to simulate"
             action="View debts"
             onAction={() => window.location.href = '/dashboard/debts'}
@@ -126,9 +126,9 @@ export default function PayoffSimulator() {
 
           <Reveal delay={150}>
             <div className="flex gap-2 flex-wrap">
-              <InputField label="Extra Monthly (₹)" type="number" value={extraPayment} onChange={e => setExtraPayment(e.target.value)} placeholder="0" min="0" style={{ maxWidth: 160 }} />
-              <InputField label="Lump Sum (₹)" type="number" value={lumpSum} onChange={e => setLumpSum(e.target.value)} placeholder="0" min="0" style={{ maxWidth: 160 }} />
-              <InputField label="Annual Extra (₹)" type="number" value={annualExtra} onChange={e => setAnnualExtra(e.target.value)} placeholder="0" min="0" style={{ maxWidth: 160 }} />
+              <InputField label="Extra Monthly (₹)" type="number" value={extraPayment} onChange={e => setExtraPayment(e.target.value)} placeholder="0" min="0" className="max-w-[160px]" />
+              <InputField label="Lump Sum (₹)" type="number" value={lumpSum} onChange={e => setLumpSum(e.target.value)} placeholder="0" min="0" className="max-w-[160px]" />
+              <InputField label="Annual Extra (₹)" type="number" value={annualExtra} onChange={e => setAnnualExtra(e.target.value)} placeholder="0" min="0" className="max-w-[160px]" />
             </div>
           </Reveal>
 

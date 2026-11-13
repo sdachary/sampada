@@ -75,7 +75,7 @@ export default function Goals() {
       {goals.length === 0 && !form && (
         <Reveal delay={100}>
           <EmptyState
-            icon={<span aria-hidden="true" className="text-5xl text-border">◎</span>}
+            icon={<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-border" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>}
             title="No goals yet"
             action="+ Add Goal"
             onAction={openNew}
@@ -141,58 +141,73 @@ export default function Goals() {
                   {g.projection && g.projection.length > 1 && (
                     <div className="mt-4">
                       <p className="text-xs font-semibold text-muted mb-2">Corpus Projection vs Target</p>
-                      <ResponsiveContainer width="100%" height={180}>
-                        <LineChart data={g.projection} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
-                          <CartesianGrid {...GRID_DEFAULTS} strokeDasharray="3 3" />
-                          <XAxis dataKey="year" {...AXIS_DEFAULTS.tick} />
-                          <YAxis {...AXIS_DEFAULTS.tick} tickFormatter={v => formatINR(v)} width={60} />
-                          <Tooltip content={<ChartTooltip />} />
-                          <Line type="monotone" dataKey="goal_target" stroke="var(--muted)" strokeDasharray="5 5" dot={false} name="Target" />
-                          <Line type="monotone" dataKey="projected_corpus" stroke="var(--accent)" dot={{ r: 2 }} name="Projected" />
-                        </LineChart>
-                      </ResponsiveContainer>
+                      <div role="img" aria-label="Line chart showing projected corpus growing over time compared to target amount. Projected corpus line in coral, target line in muted gray.">
+                        <ResponsiveContainer width="100%" height={180}>
+                          <LineChart data={g.projection} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+                            <CartesianGrid {...GRID_DEFAULTS} strokeDasharray="3 3" />
+                            <XAxis dataKey="year" {...AXIS_DEFAULTS.tick} />
+                            <YAxis {...AXIS_DEFAULTS.tick} tickFormatter={v => formatINR(v)} width={60} />
+                            <Tooltip content={<ChartTooltip />} />
+                            <Line type="monotone" dataKey="goal_target" stroke="var(--muted)" strokeDasharray="5 5" dot={false} name="Target" strokeWidth={1.5} />
+                            <Line type="monotone" dataKey="projected_corpus" stroke="var(--accent)" dot={{ r: 3 }} name="Projected" strokeWidth={2.5} />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
                     </div>
                   )}
 
                   {g.risk_comparison && Object.keys(g.risk_comparison).length > 1 && (
                     <div className="mt-4">
                       <p className="text-xs font-semibold text-muted mb-2">Risk Mix Comparison</p>
-                      <ResponsiveContainer width="100%" height={180}>
-                        <LineChart data={(() => {
-                          const years = [...new Set(Object.values(g.risk_comparison).flatMap(r => r.points.map(p => p.year)))].sort()
-                          return years.map(y => {
-                            const row = { year: y }
-                            Object.entries(g.risk_comparison).forEach(([name, r]) => {
-                              const pt = r.points.find(p => p.year === y)
-                              row[name] = pt ? pt.projected_corpus : 0
+                      <div role="img" aria-label="Line chart comparing conservative, moderate, and aggressive allocation projections over time. Each line uses distinct colors and the current allocation is emphasized with a thicker line.">
+                        <ResponsiveContainer width="100%" height={180}>
+                          <LineChart data={(() => {
+                            const years = [...new Set(Object.values(g.risk_comparison).flatMap(r => r.points.map(p => p.year)))].sort()
+                            return years.map(y => {
+                              const row = { year: y }
+                              Object.entries(g.risk_comparison).forEach(([name, r]) => {
+                                const pt = r.points.find(p => p.year === y)
+                                row[name] = pt ? pt.projected_corpus : 0
+                              })
+                              return row
                             })
-                            return row
-                          })
-                        })()} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
-                          <CartesianGrid {...GRID_DEFAULTS} strokeDasharray="3 3" />
-                          <XAxis dataKey="year" {...AXIS_DEFAULTS.tick} />
-                          <YAxis {...AXIS_DEFAULTS.tick} tickFormatter={v => formatINR(v)} width={60} />
-                          <Tooltip content={<ChartTooltip />} />
-                          <Legend wrapperStyle={{ fontSize: 10 }} />
-                          {ALLOCATIONS.map(name => (
-                            <Line key={name} type="monotone" dataKey={name} stroke={CHART_COLORS[name]} dot={false} strokeWidth={name === g.allocation ? 2.5 : 1.5} name={name.charAt(0).toUpperCase() + name.slice(1)} />
-                          ))}
-                        </LineChart>
-                      </ResponsiveContainer>
+                          })()} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+                            <CartesianGrid {...GRID_DEFAULTS} strokeDasharray="3 3" />
+                            <XAxis dataKey="year" {...AXIS_DEFAULTS.tick} />
+                            <YAxis {...AXIS_DEFAULTS.tick} tickFormatter={v => formatINR(v)} width={60} />
+                            <Tooltip content={<ChartTooltip />} />
+                            <Legend wrapperStyle={{ fontSize: 10 }} />
+                            {ALLOCATIONS.map((name, index) => (
+                              <Line
+                                key={name}
+                                type="monotone"
+                                dataKey={name}
+                                stroke={CHART_COLORS[name]}
+                                strokeDasharray={index === 1 ? '8 4' : index === 2 ? '4 2' : 'none'}
+                                dot={false}
+                                strokeWidth={name === g.allocation ? 2.5 : 1.5}
+                                name={name.charAt(0).toUpperCase() + name.slice(1)}
+                              />
+                            ))}
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
                     </div>
                   )}
 
                   {alloc && (
                     <div className="flex items-center gap-3 mt-2">
                       <p className="text-xs font-semibold">Allocation</p>
-                      <ResponsiveContainer width={100} height={100}>
-                        <PieChart>
-                          <Pie data={[{ name: 'Equity', value: alloc.equity }, { name: 'Debt', value: alloc.debt }, { name: 'Gold', value: alloc.gold }]}
-                            dataKey="value" cx="50%" cy="50%" outerRadius={38} innerRadius={22}>
-                            {PIE_COLORS.map((c, i) => <Cell key={i} fill={c} />)}
-                          </Pie>
-                        </PieChart>
-                      </ResponsiveContainer>
+                      <div role="img" aria-label={`Pie chart showing allocation: Equity ${alloc.equity}%, Debt ${alloc.debt}%, Gold ${alloc.gold}%`}>
+                        <ResponsiveContainer width={100} height={100}>
+                          <PieChart>
+                            <Pie data={[{ name: 'Equity', value: alloc.equity }, { name: 'Debt', value: alloc.debt }, { name: 'Gold', value: alloc.gold }]}
+                              dataKey="value" cx="50%" cy="50%" outerRadius={38} innerRadius={22} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false}>
+                              {PIE_COLORS.map((c, i) => <Cell key={i} fill={c} />)}
+                            </Pie>
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
                       <div className="text-xs text-ink-soft leading-relaxed">
                         <p>Equity {alloc.equity}% · Debt {alloc.debt}% · Gold {alloc.gold}%</p>
                       </div>

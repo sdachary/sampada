@@ -46,8 +46,7 @@ export default function PortfolioFormModal({ portfolio, onClose, onSave }) {
             {saving ? 'Saving…' : isEdit ? 'Update Portfolio' : 'Add Portfolio'}
           </button>
           {isEdit && (
-            <button type="button" onClick={() => setConfirming(true)} disabled={saving}
-              style={{ padding: '10px 20px', borderRadius: 999, border: '1px solid var(--coral)', background: 'transparent', color: 'var(--coral)', cursor: 'pointer', fontSize: 13, fontWeight: 500 }}>
+            <button type="button" onClick={() => setConfirming(true)} disabled={saving} className="btn btn--outline btn--sm border-accent text-accent hover:bg-accent-bg">
               Delete
             </button>
           )}

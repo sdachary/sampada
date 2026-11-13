@@ -61,7 +61,7 @@ export default function InsuranceFormModal({ open, policy, onClose, onSave, curr
         </div>
 
         {canEcho && (
-          <div style={{ background: 'var(--paper-card)', border: '1px solid var(--line)', padding: '10px 14px', borderRadius: 8, fontSize: 13, color: 'var(--ink-mute)' }}>
+          <div className="p-3 rounded-md border border-border bg-surface text-sm text-muted">
             That's {echoAmount(premium, sym)}.
           </div>
         )}

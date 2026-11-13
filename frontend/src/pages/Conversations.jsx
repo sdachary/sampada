@@ -80,7 +80,7 @@ export default function Conversations() {
       <Reveal delay={50}>
         {messages.length === 0 ? (
           <EmptyState
-            icon={<span aria-hidden="true" className="text-5xl text-border">◉</span>}
+            icon={<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-border" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>}
             title="No messages — ask a question below"
           />
         ) : (
@@ -93,7 +93,7 @@ export default function Conversations() {
                     <p className="text-sm leading-relaxed text-ink-soft">…</p>
                   </Card>
                 ) : (
-                  <Card className="card-shell card-core--pad-base border-l-3" style={{ borderLeftColor: m.role === 'user' ? 'var(--accent)' : 'var(--success)' }}>
+                  <Card className={`card-shell card-core--pad-base border-l-3 ${m.role === 'user' ? 'border-l-accent' : 'border-l-success'}`}>
                     <p className="text-xs text-ink-soft mb-1 capitalize">{m.role}</p>
                     <p className="text-sm leading-relaxed whitespace-pre-wrap">{m.content}</p>
                     <p className="text-xs text-faint mt-2">{m.created_at ? new Date(m.created_at).toLocaleString() : ''}</p>
@@ -141,7 +141,7 @@ export default function Conversations() {
       <Reveal delay={100}>
         {convs.length === 0 ? (
           <EmptyState
-            icon={<span aria-hidden="true" className="text-5xl text-border">◉</span>}
+            icon={<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-border" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>}
             title="No conversations yet"
             action="+ Create"
             onAction={createConv}

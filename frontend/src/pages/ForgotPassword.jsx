@@ -27,7 +27,7 @@ export default function ForgotPassword() {
   if (sent) return (
     <AuthLayout variant="success" icon="✉" title="Check your email" subtitle={<>If an account exists for <strong>{email}</strong>, we've sent a password reset link.</>}>
       <Link to="/login">
-        <Button style={{ display: 'inline-flex', marginTop: 20, fontSize: 13, padding: '8px 20px' }}>Back to sign in</Button>
+        <Button className="mt-4">Back to sign in</Button>
       </Link>
     </AuthLayout>
   )
@@ -37,7 +37,7 @@ export default function ForgotPassword() {
       title="Reset password"
       subtitle="Enter your email and we'll send you a link."
       error={error}
-      foot={<Link style={{ color: 'var(--accent)', fontWeight: 500 }} to="/login">Back to sign in</Link>}
+      foot={<Link className="text-accent font-medium" to="/login">Back to sign in</Link>}
     >
       <form onSubmit={handleSubmit} className="space-y-3">
         <input

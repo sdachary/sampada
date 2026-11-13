@@ -45,7 +45,7 @@ export default function ResetPassword() {
   if (done) return (
     <AuthLayout variant="success" icon="✓" title="Password reset" subtitle="Your password has been updated successfully.">
       <Link to="/login">
-        <Button style={{ display: 'inline-flex', marginTop: 20, fontSize: 13, padding: '8px 20px' }}>Sign in</Button>
+        <Button className="mt-4">Sign in</Button>
       </Link>
     </AuthLayout>
   )
@@ -55,7 +55,7 @@ export default function ResetPassword() {
       title="Set new password"
       subtitle="Enter your new password below."
       error={error}
-      foot={<Link style={{ color: 'var(--accent)', fontWeight: 500 }} to="/login">Back to sign in</Link>}
+      foot={<Link className="text-accent font-medium" to="/login">Back to sign in</Link>}
     >
       <form onSubmit={handleSubmit} className="space-y-3">
         <div className="relative">

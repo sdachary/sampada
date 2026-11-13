@@ -33,9 +33,9 @@ function CalendarHeatmap() {
   function intensity(day) {
     const key = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
     const amt = daily[key] || 0
-    if (amt === 0) return { bg: 'var(--border-soft)', opacity: 0.3 }
+    if (amt === 0) return { bg: 'bg-border-soft', opacity: 'opacity-30' }
     const pct = amt / max
-    return { bg: 'var(--accent)', opacity: 0.15 + pct * 0.75 }
+    return { bg: 'bg-accent', opacity: `opacity-${Math.round(15 + pct * 75)}` }
   }
 
   return (
@@ -54,16 +54,15 @@ function CalendarHeatmap() {
                 return (
                   <div key={day}
                     title={daily[key] ? `₹${daily[key].toLocaleString('en-IN')}` : ''}
-                    className="aspect-square rounded-lg flex items-center justify-center text-[10px] text-muted"
-                    style={{ background: c.bg, opacity: c.opacity }}
+                    className={`aspect-square rounded-lg flex items-center justify-center text-[10px] text-muted ${c.bg} ${c.opacity}`}
                   >{day}</div>
                 )
               })}
             </div>
             <div className="flex items-center gap-2 justify-end mt-3">
               <span className="text-[10px] text-muted">Less</span>
-              {[0.15, 0.3, 0.5, 0.7, 0.9].map(o => (
-                <span key={o} className="w-3 h-3 rounded-sm" style={{ background: 'var(--accent)', opacity: o }} />
+              {[15, 30, 50, 70, 90].map(o => (
+                <span key={o} className={`w-3 h-3 rounded-sm bg-accent opacity-${o}`} />
               ))}
               <span className="text-[10px] text-muted">More</span>
             </div>
@@ -205,15 +204,18 @@ export default function Reports() {
                 <Stat label="Warnings" value={anomalies.warnings} />
               </div>
             </Card>
-            {anomalies.anomalies?.length > 0 && anomalies.anomalies.map((a, i) => (
-              <Reveal key={i} delay={i * 30}>
-                <Card className="card-shell card-core--pad-base border-l-3" style={{ borderLeftColor: a.severity >= 7 ? 'var(--accent)' : a.severity >= 4 ? '#d4a017' : 'var(--faint)' }}>
-                  <p className="text-base font-medium text-ink">{a.title}</p>
-                  <p className="text-sm text-muted mt-1">{a.description}</p>
-                  <p className="text-xs text-faint mt-2">{a.date} · severity {a.severity}/10</p>
-                </Card>
-              </Reveal>
-            ))}
+            {anomalies.anomalies?.length > 0 && anomalies.anomalies.map((a, i) => {
+              const borderClass = a.severity >= 7 ? 'border-l-accent' : a.severity >= 4 ? 'border-l-warning' : 'border-l-faint'
+              return (
+                <Reveal key={i} delay={i * 30}>
+                  <Card className={`card-shell card-core--pad-base border-l-3 ${borderClass}`}>
+                    <p className="text-base font-medium text-ink">{a.title}</p>
+                    <p className="text-sm text-muted mt-1">{a.description}</p>
+                    <p className="text-xs text-faint mt-2">{a.date} · severity {a.severity}/10</p>
+                  </Card>
+                </Reveal>
+              )
+            })}
           </div>
         )}
 

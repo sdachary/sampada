@@ -9,10 +9,10 @@ import { Card, Button } from '../components/ui'
 import { Reveal } from '../lib/motion-primitives'
 
 const CHECKLIST_ITEMS = [
-  { key: 'loans', title: 'Loans & EMIs', desc: 'Add what you owe', to: '/dashboard/debts', icon: '🏦' },
-  { key: 'investments', title: 'Investments & Portfolio', desc: 'Track what you own', to: '/dashboard/portfolios', icon: '📈' },
-  { key: 'insurance', title: 'Insurance', desc: 'Add your policies', icon: '🛡️' },
-  { key: 'budget', title: 'Set a Budget', desc: 'Plan your monthly spending', to: '/dashboard/budgets', icon: '💸' },
+  { key: 'loans', title: 'Loans & EMIs', desc: 'Add what you owe', to: '/dashboard/debts', icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> },
+  { key: 'investments', title: 'Investments & Portfolio', desc: 'Track what you own', to: '/dashboard/portfolios', icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> },
+  { key: 'insurance', title: 'Insurance', desc: 'Add your policies', icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> },
+  { key: 'budget', title: 'Set a Budget', desc: 'Plan your monthly spending', to: '/dashboard/budgets', icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> },
 ]
 
 export default function Onboarding() {
@@ -91,7 +91,7 @@ export default function Onboarding() {
               const isInsurance = item.key === 'insurance'
               const content = (
                 <>
-                  <span className="text-2xl">{item.icon}</span>
+                  <span className="text-2xl" aria-hidden="true">{item.icon}</span>
                   <span className="flex-1">
                     <span className="block text-base font-medium">{item.title}</span>
                     <span className="text-sm text-muted">{isDone ? 'Done' : item.desc}</span>
@@ -99,22 +99,14 @@ export default function Onboarding() {
                   {isDone && <span className="text-accent text-lg">✓</span>}
                 </>
               )
-              return isInsurance ? (
-                <Button
-                  key={item.key}
-                  onClick={() => setInsuranceOpen(true)}
-                  disabled={isDone}
-                  variant={isDone ? 'ghost' : 'primary'}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-left"
-                  style={{ transitionDelay: `${index * 50}ms` }}
-                >
-                  {content}
-                </Button>
-              ) : (
+              const baseClasses = "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors duration-fast"
+              const activeClasses = isDone ? 'border-border bg-surface' : 'border-accent bg-accent-bg/50 text-ink'
+              return (
                 <Link
                   key={item.key}
-                  to={item.to}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border transition-colors duration-fast ${isDone ? 'border-border bg-surface' : 'border-accent bg-surface'}`}
+                  to={isInsurance ? '#' : item.to}
+                  onClick={isInsurance ? () => setInsuranceOpen(true) : undefined}
+                  className={`${baseClasses} ${activeClasses}`}
                   style={{ transitionDelay: `${index * 50}ms` }}
                 >
                   {content}
