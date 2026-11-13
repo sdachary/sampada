@@ -72,7 +72,7 @@ export default function Debts() {
       <Reveal delay={100}>
         {debts.length === 0 ? (
           <EmptyState
-            icon={<span aria-hidden="true" className="text-5xl text-border">📋</span>}
+            icon={<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-border" aria-hidden="true"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>}
             title="No debts tracked yet"
             action="+ Add Debt"
             onAction={() => setModal('new')}

@@ -18,7 +18,7 @@ function passwordStrength(pw) {
 }
 
 const STRENGTH_LABEL = ['', 'Weak', 'Fair', 'Good', 'Strong']
-const STRENGTH_COLORS = ['var(--accent)', 'var(--accent)', 'var(--warning)', 'var(--success)']
+const STRENGTH_VARIANTS = ['', 'danger', 'warning', 'success', 'success']
 
 const PwToggle = ({ show, setShow }) => (
   <button type="button" onClick={() => setShow(!show)} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted hover:text-ink transition-colors" aria-label={show ? 'Hide password' : 'Show password'}>
@@ -112,9 +112,14 @@ export default function Register() {
           <div>
             <div className="flex items-center gap-2">
               <div className="flex-1 flex gap-1">
-                {[1, 2, 3, 4].map(i => (
-                  <div key={i} className="h-1.5 flex-1 rounded-full transition-colors duration-fast" style={{ background: i <= passwordStrength(form.password) ? STRENGTH_COLORS[passwordStrength(form.password) - 1] : 'var(--border)' }} />
-                ))}
+                {[1, 2, 3, 4].map(i => {
+                  const strength = passwordStrength(form.password)
+                  const variant = STRENGTH_VARIANTS[strength]
+                  const filled = i <= strength
+                  return (
+                    <div key={i} className={`h-1.5 flex-1 rounded-full transition-colors duration-fast ${filled ? `bg-${variant}` : 'bg-border'}`} />
+                  )
+                })}
               </div>
               <span className="text-xs text-muted min-w-[36px] text-right">{STRENGTH_LABEL[passwordStrength(form.password)]}</span>
             </div>
@@ -122,8 +127,20 @@ export default function Register() {
           </div>
         )}
         <div className="relative">
-          <Input type={showConfirm ? 'text' : 'password'} placeholder="Confirm password" autoComplete="new-password" minLength={MIN_PASSWORD_LENGTH} value={form.password_confirmation} onChange={set('password_confirmation')} required />
+          <Input
+            type={showConfirm ? 'text' : 'password'}
+            placeholder="Confirm password"
+            autoComplete="new-password"
+            minLength={MIN_PASSWORD_LENGTH}
+            value={form.password_confirmation}
+            onChange={set('password_confirmation')}
+            required
+            aria-invalid={form.password_confirmation && form.password !== form.password_confirmation}
+          />
           <PwToggle show={showConfirm} setShow={setShowConfirm} />
+          {form.password_confirmation && form.password !== form.password_confirmation && (
+            <p className="field__error" role="alert">Passwords do not match</p>
+          )}
         </div>
         <Button type="submit" loading={submitting} className="w-full sm:w-auto mx-auto sm:mx-0">
           {submitting ? 'Creating account…' : 'Create account'}

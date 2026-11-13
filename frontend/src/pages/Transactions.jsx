@@ -114,7 +114,7 @@ export default function Transactions() {
 
       {importResult && (
         <Reveal delay={150}>
-          <Card className="card-shell card-core--pad-base border-l-3" style={{ borderLeftColor: importResult.error ? 'var(--danger)' : 'var(--success)' }}>
+          <Card className={`card-shell card-core--pad-base border-l-3 ${importResult.error ? 'border-l-danger' : 'border-l-success'}`}>
             {importResult.error
               ? <span className="text-danger">Import failed: {importResult.error}</span>
               : <span className="text-muted">
@@ -128,7 +128,7 @@ export default function Transactions() {
       <Reveal delay={200}>
         {txns.length === 0 ? (
           <EmptyState
-            icon={<span aria-hidden="true" className="text-5xl text-border">↗</span>}
+            icon={<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-border" aria-hidden="true"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>}
             title="No transactions yet"
             action="+ Add Transaction"
             actionDisabled={!isOnline}
@@ -157,7 +157,7 @@ export default function Transactions() {
             {/* Transaction list */}
             <div className="space-y-2">
               {txns.map(t => (
-                <Card key={t.id} className="card-shell card-core--pad-base border-l-3" style={{ borderLeftColor: t.transaction_type === 'expense' ? 'var(--danger)' : 'var(--success)' }}>
+                <Card key={t.id} className={`card-shell card-core--pad-base border-l-3 ${t.transaction_type === 'expense' ? 'border-l-danger' : 'border-l-success'}`}>
                   <div className="flex justify-between items-start">
                     <div className="flex-1 min-w-0">
                       <p className="text-base font-medium text-ink truncate">{t.description}</p>

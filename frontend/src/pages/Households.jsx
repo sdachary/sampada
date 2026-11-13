@@ -89,7 +89,7 @@ export default function Households() {
       <Reveal delay={50}>
         {households.length === 0 ? (
           <EmptyState
-            icon={<span aria-hidden="true" className="text-5xl text-border">◈</span>}
+            icon={<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-border" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>}
             title="No households yet"
           >
             Create a household to manage shared expenses and goals.

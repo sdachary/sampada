@@ -38,7 +38,7 @@ export default function Budgets() {
     if (budgets.length === 0) {
       return (
         <EmptyState
-          icon={<span aria-hidden="true" className="text-5xl text-border">□</span>}
+          icon={<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-border" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 10h20"/></svg>}
           title="No budgets set yet"
           action="+ Add Budget"
           onAction={() => setModal('new')}
@@ -55,12 +55,13 @@ export default function Budgets() {
             {budgets.map((b, i) => {
               const pct = +b.usage_pct || 0
               const over = pct > 100
-              const color = ENVELOPE_COLORS[i % ENVELOPE_COLORS.length]
+              const colors = ['border-danger', 'border-warning', 'border-accent', 'border-success', 'border-success', 'border-accent', 'border-accent', 'border-accent', 'border-danger', 'border-danger']
+              const statusColors = { over: 'text-danger', track: 'text-success', near: 'text-warning' }
               return (
-                <Card key={b.id} className="card-shell card-shell--interactive card-core--pad-base flex flex-col gap-2" style={{ borderTopColor: color }}>
+                <Card key={b.id} className={`card-shell card-shell--interactive card-core--pad-base flex flex-col gap-2 border-t-4 ${colors[i % colors.length]}`}>
                   <div className="flex justify-between items-start">
                     <span className="font-semibold text-base truncate">{b.category_name || `Category #${b.budget_category_id}`}</span>
-                    <span className="text-2xl">✉</span>
+                    <span className="text-2xl" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 10h20"/></svg></span>
                   </div>
                   <div className="flex justify-between text-xs">
                     <span className="text-muted">Limit</span>
@@ -69,10 +70,10 @@ export default function Budgets() {
                   <Progress value={Math.min(pct, 100)} variant={over ? 'danger' : undefined} />
                   <div className="flex justify-between text-xs text-faint">
                     <span>{fmtINR(+b.spent || 0)}</span>
-                    <span className={`font-medium ${over ? 'text-danger' : 'text-success'}`}>{pct.toFixed(0)}%</span>
+                    <span className={`font-medium ${over ? statusColors.over : b.on_track ? statusColors.track : statusColors.near}`}>{pct.toFixed(0)}%</span>
                   </div>
                   <div className="text-[10px] text-faint text-center py-1 border-t border-border-soft">
-                    {over ? '⚠ Over budget' : b.on_track ? '✓ On track' : '⚠ Nearing limit'}
+                    {over ? 'Over budget' : b.on_track ? 'On track' : 'Nearing limit'}
                   </div>
                 </Card>
               )

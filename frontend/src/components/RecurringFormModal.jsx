@@ -80,7 +80,7 @@ export default function RecurringFormModal({ expense, prefill, onClose, onSave, 
             <input required type="date" className="input" value={form.next_due_date} onChange={set('next_due_date')} />
           </Field>
           <Field label="Auto Debit">
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+            <label className="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" className="input" style={{ width: 'auto' }} checked={form.auto_debit} onChange={set('auto_debit')} />
               <span>Yes</span>
             </label>
@@ -96,8 +96,7 @@ export default function RecurringFormModal({ expense, prefill, onClose, onSave, 
             {saving ? 'Saving…' : isEdit ? 'Update' : 'Add'}
           </button>
           {isEdit && (
-            <button type="button" onClick={() => setConfirming(true)} disabled={saving}
-              style={{ padding: '10px 20px', borderRadius: 999, border: '1px solid var(--coral)', background: 'transparent', color: 'var(--coral)', cursor: 'pointer', fontSize: 13, fontWeight: 500 }}>
+            <button type="button" onClick={() => setConfirming(true)} disabled={saving} className="btn btn--outline btn--sm border-accent text-accent hover:bg-accent-bg">
               Delete
             </button>
           )}

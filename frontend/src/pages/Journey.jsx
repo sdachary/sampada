@@ -38,7 +38,7 @@ export default function Journey() {
       </Reveal>
       <Reveal delay={50}>
         <EmptyState
-          icon={<span aria-hidden="true" className="text-5xl text-border">→</span>}
+          icon={<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-border" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>}
           title="Start your financial journey"
           action="Start your journey"
           onAction={() => window.location.href = '/dashboard/onboarding'}

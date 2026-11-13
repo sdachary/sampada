@@ -126,7 +126,7 @@ export default function Recurring() {
       return (
         <Reveal delay={150}>
           <EmptyState
-            icon={<span aria-hidden="true" className="text-5xl text-border">↻</span>}
+            icon={<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-border" aria-hidden="true"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>}
             title="No recurring expenses"
             action="+ Add"
             onAction={() => setModal('new')}
@@ -142,7 +142,7 @@ export default function Recurring() {
         <div className="space-y-2">
           {expenses.map((e, index) => (
             <Reveal key={e.id} delay={index * 20}>
-              <Card className={`card-shell ${e.active ? 'card-shell--interactive' : ''} card-core--pad-base`} style={{ opacity: e.active ? 1 : 0.5 }}>
+              <Card className={`card-shell ${e.active ? 'card-shell--interactive' : ''} card-core--pad-base ${e.active ? '' : 'opacity-50'}`}>
                 <div className="flex justify-between items-start mb-2">
                   <div className="min-w-0">
                     <p className="text-base font-medium text-ink truncate">{e.name}</p>

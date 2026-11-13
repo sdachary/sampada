@@ -64,7 +64,7 @@ export default function Portfolios() {
       <Reveal delay={100}>
         {portfolios.length === 0 ? (
           <EmptyState
-            icon={<span aria-hidden="true" className="text-5xl text-border">◐</span>}
+            icon={<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-border" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>}
             title="No portfolios yet"
             action="+ Add Portfolio"
             onAction={() => setModal('new')}
@@ -88,7 +88,7 @@ export default function Portfolios() {
                       <div className="min-w-0">
                         <p className="text-lg font-medium text-ink truncate">{p.name}</p>
                         <p className="text-sm text-muted flex items-center gap-1">
-                          {p.goal && <span style={{ textTransform: 'capitalize' }}>{p.goal}</span>}
+                          {p.goal && <span className="capitalize">{p.goal}</span>}
                           {p.risk_tolerance != null && <span>· risk {p.risk_tolerance}/10</span>}
                         </p>
                       </div>
