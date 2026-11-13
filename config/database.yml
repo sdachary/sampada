@@ -6,6 +6,8 @@ default: &default
   port: <%= ENV.fetch("DB_PORT") { "5432" } %>
   user: <%= ENV.fetch("POSTGRES_USER") { nil } %>
   password: <%= ENV.fetch("POSTGRES_PASSWORD") { nil } %>
+  # Cloud SQL support via Unix socket
+  socket: <%= ENV["DB_SOCKET"] %>
 
 development:
   <<: *default
@@ -17,3 +19,5 @@ test:
 production:
   <<: *default
   database: <%= ENV.fetch("POSTGRES_DB") { "sampada_production" } %>
+  # For Cloud Run + Cloud SQL: set DB_SOCKET=/cloudsql/<INSTANCE_CONNECTION_NAME>
+  # and use DATABASE_URL with host=/cloudsql/<INSTANCE_CONNECTION_NAME>

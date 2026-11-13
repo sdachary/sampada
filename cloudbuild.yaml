@@ -1,0 +1,131 @@
+# Cloud Build configuration for Cloud Run deployment
+# Triggers: Push to main branch, or manual run
+
+steps:
+  # Step 1: Build and push Docker image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'Build Image'
+    args:
+      - 'build'
+      - '-f'
+      - 'Dockerfile.cloudrun'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/sampada:${SHORT_SHA}'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/sampada:latest'
+      - '.'
+
+  # Step 2: Push to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'Push Image'
+    args:
+      - 'push'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/sampada:${SHORT_SHA}'
+
+  # Step 3: Run database migrations (using Cloud SQL proxy)
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'Run Migrations'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        # Start Cloud SQL Proxy
+        /cloudsql/cloud_sql_proxy -instances=${_CLOUD_SQL_CONNECTION_NAME}=tcp:5432 &
+        PROXY_PID=$!
+        sleep 5
+        
+        # Run migrations
+        docker run --rm \
+          --network=cloudbuild \
+          -e DATABASE_URL="postgresql://${_DB_USER}:${_DB_PASSWORD}@localhost:5432/${_DB_NAME}" \
+          -e RAILS_ENV=production \
+          -e SECRET_KEY_BASE=${_SECRET_KEY_BASE} \
+          -e ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY=${_ENCRYPTION_PRIMARY_KEY} \
+          -e ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY=${_ENCRYPTION_DETERMINISTIC_KEY} \
+          -e ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT=${_ENCRYPTION_KEY_DERIVATION_SALT} \
+          ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/sampada:${SHORT_SHA} \
+          bundle exec rails db:migrate
+        
+        kill $PROXY_PID
+
+  # Step 4: Deploy to Cloud Run
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'Deploy to Cloud Run'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'sampada'
+      - '--image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/sampada:${SHORT_SHA}'
+      - '--region=${_REGION}'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--port=8080'
+      - '--memory=1Gi'
+      - '--cpu=1'
+      - '--min-instances=0'
+      - '--max-instances=10'
+      - '--concurrency=80'
+      - '--timeout=300'
+      - '--service-account=${_SERVICE_ACCOUNT}'
+      - '--set-env-vars=RAILS_ENV=production,SECRET_KEY_BASE=${_SECRET_KEY_BASE},DATABASE_URL=postgresql://${_DB_USER}:${_DB_PASSWORD}@/${_DB_NAME}?host=/cloudsql/${_CLOUD_SQL_CONNECTION_NAME},REDIS_URL=${_REDIS_URL},GOOGLE_CLIENT_ID=${_GOOGLE_CLIENT_ID},GOOGLE_CLIENT_SECRET=${_GOOGLE_CLIENT_SECRET},APP_DOMAIN=${_APP_DOMAIN},CORS_ORIGINS=${_CORS_ORIGINS},SMTP_ADDRESS=${_SMTP_ADDRESS},SMTP_PORT=${_SMTP_PORT},SMTP_USERNAME=${_SMTP_USERNAME},SMTP_PASSWORD=${_SMTP_PASSWORD},SMTP_TLS_ENABLED=${_SMTP_TLS_ENABLED},BETTER_AUTH_VERIFY_URL=${_BETTER_AUTH_VERIFY_URL},BETTER_AUTH_APP_ID=${_BETTER_AUTH_APP_ID},BETTER_AUTH_CACHE_TTL=${_BETTER_AUTH_CACHE_TTL},ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY=${_ENCRYPTION_PRIMARY_KEY},ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY=${_ENCRYPTION_DETERMINISTIC_KEY},ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT=${_ENCRYPTION_KEY_DERIVATION_SALT},RAILS_LOG_TO_STDOUT=true,RAILS_SERVE_STATIC_FILES=true'
+
+  # Step 5: Deploy Sidekiq as separate Cloud Run Job (or use Cloud Run Service with no ingress)
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'Deploy Sidekiq'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'sampada-sidekiq'
+      - '--image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/sampada:${SHORT_SHA}'
+      - '--region=${_REGION}'
+      - '--platform=managed'
+      - '--no-allow-unauthenticated'
+      - '--command=bundle,exec,sidekiq'
+      - '--memory=512Mi'
+      - '--cpu=1'
+      - '--min-instances=0'
+      - '--max-instances=5'
+      - '--service-account=${_SERVICE_ACCOUNT}'
+      - '--set-env-vars=RAILS_ENV=production,SECRET_KEY_BASE=${_SECRET_KEY_BASE},DATABASE_URL=postgresql://${_DB_USER}:${_DB_PASSWORD}@/${_DB_NAME}?host=/cloudsql/${_CLOUD_SQL_CONNECTION_NAME},REDIS_URL=${_REDIS_URL},ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY=${_ENCRYPTION_PRIMARY_KEY},ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY=${_ENCRYPTION_DETERMINISTIC_KEY},ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT=${_ENCRYPTION_KEY_DERIVATION_SALT},RAILS_LOG_TO_STDOUT=true'
+
+# Artifacts for debugging
+artifacts:
+  objects:
+    location: 'gs://${PROJECT_ID}-cloudbuild-artifacts'
+    paths: ['**/log/*.log']
+
+# Build timeout (30 minutes)
+timeout: '1800s'
+
+# Substitutions (set these in Cloud Build trigger)
+substitutions:
+  _REGION: 'asia-south1'
+  _REPO_NAME: 'sampada-docker'
+  _CLOUD_SQL_CONNECTION_NAME: 'your-project:asia-south1:your-instance'
+  _DB_USER: 'sampada'
+  _DB_PASSWORD: 'your-db-password'
+  _DB_NAME: 'sampada_production'
+  _SECRET_KEY_BASE: 'your-secret-key-base'
+  _ENCRYPTION_PRIMARY_KEY: 'your-encryption-primary-key'
+  _ENCRYPTION_DETERMINISTIC_KEY: 'your-encryption-deterministic-key'
+  _ENCRYPTION_KEY_DERIVATION_SALT: 'your-key-derivation-salt'
+  _GOOGLE_CLIENT_ID: 'your-google-client-id'
+  _GOOGLE_CLIENT_SECRET: 'your-google-client-secret'
+  _APP_DOMAIN: 'sampada.vayalabs.in'
+  _CORS_ORIGINS: 'https://sampada.vayalabs.in'
+  _SMTP_ADDRESS: 'smtp.yourprovider.com'
+  _SMTP_PORT: '587'
+  _SMTP_USERNAME: 'your-smtp-user'
+  _SMTP_PASSWORD: 'your-smtp-password'
+  _SMTP_TLS_ENABLED: 'true'
+  _BETTER_AUTH_VERIFY_URL: 'https://auth.yourdomain.com/api/auth/verify'
+  _BETTER_AUTH_APP_ID: 'sampada'
+  _BETTER_AUTH_CACHE_TTL: '300'
+  _REDIS_URL: 'redis://your-upstash-host:6379/0'
+  _SERVICE_ACCOUNT: 'sampada-cloudrun@your-project.iam.gserviceaccount.com'
+
+# Options
+options:
+  logging: CLOUD_LOGGING_ONLY
+  pool:
+    name: 'projects/${PROJECT_ID}/locations/${_REGION}/workerPools/cloud-build-pool'
