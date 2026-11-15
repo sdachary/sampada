@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { auth } from './auth';
 import type { SafeUser } from './session';
+import { HALF_HOUR_CRON, DAILY_CRON, handleScheduled } from './jobs/dispatch';
 
 export type Bindings = {
   DB: D1Database;
@@ -8,6 +9,12 @@ export type Bindings = {
   RP_ID: string;
   RP_NAME: string;
   ALLOWED_ORIGINS: string;
+  FILES?: R2Bucket;
+  RESEND_API_KEY?: string;
+  VAPID_PUBLIC_KEY?: string;
+  VAPID_PRIVATE_KEY?: string;
+  VAPID_SUBJECT?: string;
+  DATABASE_BACKUP_ENABLED?: string;
 };
 
 export type AppEnv = {
@@ -15,7 +22,7 @@ export type AppEnv = {
   Variables: { user: SafeUser };
 };
 
-const app = new Hono<AppEnv>();
+export const app = new Hono<AppEnv>();
 
 app.get('/up', (c) => {
   return c.json({ status: 'ok', service: 'sampada-api' });
@@ -27,4 +34,11 @@ app.notFound(() => {
   return Response.json({ error: 'not found' }, { status: 404 });
 });
 
-export default app;
+const worker = {
+  fetch: app.fetch,
+  scheduled: async (event: ScheduledEvent, env: Bindings, ctx: ExecutionContext): Promise<void> => {
+    ctx.waitUntil(handleScheduled(event.cron, env));
+  },
+};
+
+export default worker;

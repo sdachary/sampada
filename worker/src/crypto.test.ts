@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { encryptString, decryptString, getKeyBytes } from './crypto';
-import app from './index';
+import { app } from './index';
 
 const KEY_HEX = '00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff';
 const KEY_BYTES = getKeyBytes({ ENCRYPTION_KEY: KEY_HEX });
