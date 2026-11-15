@@ -3,6 +3,7 @@
 // the pure function outcomeFor — that is where the interesting logic lives.
 
 import type { Bindings } from '../index';
+import { aiResponse, expenseReminder, importStatement, processDeletion, pushNotificationDelivery } from './comms';
 
 export type QueueJobType =
   | 'expense_reminder'
@@ -13,13 +14,13 @@ export type QueueJobType =
 
 export type QueuedHandler = (env: Bindings, payload: unknown) => Promise<void>;
 
-/** Filled in by the job modules (chunks 3–4). */
+/** Real bodies live in ./comms (chunk 4). */
 export const QUEUED_HANDLERS: Record<QueueJobType, QueuedHandler> = {
-  expense_reminder: async () => {},
-  push_notification_delivery: async () => {},
-  process_deletion: async () => {},
-  import_statement: async () => {},
-  ai_response: async () => {},
+  expense_reminder: expenseReminder,
+  push_notification_delivery: pushNotificationDelivery,
+  process_deletion: processDeletion,
+  import_statement: importStatement,
+  ai_response: aiResponse,
 };
 
 export async function enqueue(
