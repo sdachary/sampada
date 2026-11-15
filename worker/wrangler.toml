@@ -16,4 +16,4 @@ RP_NAME = "Sampada"
 ALLOWED_ORIGINS = "https://sampada.vayalabs.in"
 
 [triggers]
-crons = []
+crons = ["*/30 * * * *", "0 2,3,4,9 * * *"]
