@@ -1,1 +1,4 @@
 ENCRYPTION_KEY="<32-byte base64>"
+RP_ID="<localhost in dev, vayalabs.in in prod>"
+RP_NAME="Sampada"
+ALLOWED_ORIGINS="<comma-separated origins allowed to call state-changing routes>"
