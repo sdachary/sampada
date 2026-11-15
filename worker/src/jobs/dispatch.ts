@@ -5,6 +5,8 @@
 
 import type { Bindings } from '../index';
 import { exchangeRateSync, importMarketData, priceRefresh } from './data';
+import { securityHealthCheck, databaseBackup } from './backup';
+import { expenseReminderCheck } from './comms';
 import { checkDeletions, cleanupStatementImports, netWorthSnapshot, syncCleaner } from './maintenance';
 
 export type JobName =
@@ -63,7 +65,7 @@ export function jobsForCron(cron: string, now: Date): JobName[] {
 
 export type JobHandler = (env: Bindings, now: Date) => Promise<void>;
 
-/** Real bodies live in ./data and ./maintenance; chunk-4 jobs are stubs. */
+/** Real bodies live in ./data, ./maintenance, ./backup and ./comms. */
 export const HANDLERS: Record<JobName, JobHandler> = {
   check_deletions: checkDeletions,
   sync_cleaner: syncCleaner,
@@ -72,9 +74,9 @@ export const HANDLERS: Record<JobName, JobHandler> = {
   exchange_rate_sync: exchangeRateSync,
   import_market_data: importMarketData,
   net_worth_snapshot: netWorthSnapshot,
-  security_health_check: async () => {}, // chunk 4
-  database_backup: async () => {}, // chunk 4
-  expense_reminder_check: async () => {}, // chunk 4
+  security_health_check: securityHealthCheck,
+  database_backup: databaseBackup,
+  expense_reminder_check: expenseReminderCheck,
 };
 
 /** Run one job, never throwing: cron handlers must not take down the sweep. */
