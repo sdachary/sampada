@@ -1,5 +1,5 @@
 // Cron bodies that touch infrastructure: the security audit and the nightly
-// D1 → R2 backup with a 30-day rolling prune.
+// D1 → R2 backup with free-tier budget automation.
 
 import type { Bindings } from '../index';
 import { putFile } from '../storage';
@@ -30,15 +30,54 @@ export async function securityHealthCheck(env: Bindings, now: Date = new Date())
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+// R2 free tier: 10 GB storage · 1M Class A ops (put/list/delete) · 10M Class B
+// ops (get/head) per month. Backup traffic is all Class A at ~35 ops/day, and
+// backups are never read in the normal path — so the binding budget is storage
+// bytes. The caps below keep even a runaway DB inside the 10 GB allowance;
+// nothing here can produce an overage bill.
+const MAX_DUMP_BYTES = 50 * 1024 * 1024; // skip an anomalous single dump
+const TOTAL_BUDGET_BYTES = 5 * 1024 * 1024 * 1024; // half the 10 GB allowance
+export const RETENTION_DAYS = 30;
+
+export type BackupObject = { key: string; uploaded: Date; size: number };
+
+export type PruneOpts = { retentionDays: number; totalBudgetBytes: number };
+
+/** Pure prune policy: drop anything past the retention window, then the
+ *  oldest-first until the remaining backups plus the incoming dump fit the
+ *  free-tier byte budget. Whether the incoming dump itself gets written is the
+ *  caller's call (it must also sit under the single-dump cap). */
+export function prunePlan(
+  objects: BackupObject[],
+  incomingSize: number,
+  now: Date,
+  opts: PruneOpts = { retentionDays: RETENTION_DAYS, totalBudgetBytes: TOTAL_BUDGET_BYTES },
+): string[] {
+  const cutoff = now.getTime() - opts.retentionDays * DAY_MS;
+  const sorted = [...objects].sort((a, b) => a.uploaded.getTime() - b.uploaded.getTime());
+  const expired = sorted.filter((o) => o.uploaded.getTime() < cutoff);
+  const kept = sorted.filter((o) => o.uploaded.getTime() >= cutoff);
+  let total = incomingSize + kept.reduce((n, o) => n + o.size, 0);
+  const drop = expired.map((o) => o.key);
+  for (const o of kept) {
+    if (total <= opts.totalBudgetBytes) break;
+    drop.push(o.key);
+    total -= o.size;
+  }
+  return drop;
+}
+
 /** DatabaseBackupJob: gated by DATABASE_BACKUP_ENABLED; a table-dump JSON per
- *  night into R2 under backups/, pruned to the newest 30 days. (The D1
- *  binding's dump() only applied to deprecated alpha v1 databases.)
+ *  night into R2 under backups/, pruned to the newest 30 days AND a hard
+ *  free-tier byte budget (prunePlan), with an oversized dump skipped outright.
+ *  (The D1 binding's dump() only applied to deprecated alpha v1 databases.)
  *  ponytail: the whole dump is built in memory — fine at household scale;
  *  revisit if dumps grow past ~100 MB. */
 export async function databaseBackup(env: Bindings, now: Date = new Date()): Promise<void> {
   if (env.DATABASE_BACKUP_ENABLED !== 'true') return;
   const nowIso = now.toISOString();
   const stamp = `${nowIso.slice(0, 10).replace(/-/g, '')}_${nowIso.slice(11, 19).replace(/:/g, '')}`;
+  const key = `backups/sampada_backup_${stamp}.json`;
 
   const tables = await env.DB.prepare(
     "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'",
@@ -50,19 +89,35 @@ export async function databaseBackup(env: Bindings, now: Date = new Date()): Pro
     dump.tables[t.name] = (results[i]?.results ?? []) as unknown[];
   });
   const body = JSON.stringify(dump);
-  await putFile(env, `backups/sampada_backup_${stamp}.json`, body);
-  console.log(JSON.stringify({ job: 'database_backup', bytes: body.length, key: stamp }));
+  const bytes = new TextEncoder().encode(body).length; // exact UTF-8 size
+  if (bytes > MAX_DUMP_BYTES) {
+    console.error(JSON.stringify({ job: 'database_backup', skipped: 'dump exceeds single-dump cap', bytes }));
+    return;
+  }
 
   const bucket = env.FILES;
   if (!bucket) return;
-  const cutoff = new Date(now.getTime() - 30 * DAY_MS);
+  const existing: BackupObject[] = [];
   let cursor: string | undefined;
   for (;;) {
     const page = await bucket.list({ prefix: 'backups/', cursor, limit: 1000 });
-    for (const object of page.objects) {
-      if (object.uploaded < cutoff) await bucket.delete(object.key);
-    }
+    for (const o of page.objects) existing.push({ key: o.key, uploaded: o.uploaded, size: o.size });
     if (!page.truncated) break;
     cursor = (page as { cursor?: string }).cursor; // typing varies across workers-types versions
   }
+
+  const dropped = prunePlan(existing, bytes, now);
+  for (const stale of dropped) await bucket.delete(stale);
+
+  const droppedSet = new Set(dropped);
+  const keptBytes = existing.reduce((n, o) => (droppedSet.has(o.key) ? n : n + o.size), 0);
+  if (keptBytes + bytes > TOTAL_BUDGET_BYTES) {
+    // unreachable while a single dump ≤ 50 MB < 5 GB budget — belt and braces
+    console.error(JSON.stringify({ job: 'database_backup', skipped: 'kept backups exceed budget', bytes }));
+    return;
+  }
+  await putFile(env, key, body);
+  console.log(
+    JSON.stringify({ job: 'database_backup', bytes, kept: existing.length - dropped.length, dropped: dropped.length }),
+  );
 }
