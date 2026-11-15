@@ -4,6 +4,8 @@
 // without D1. Rails hours were treated as UTC; config.time_zone was not set.
 
 import type { Bindings } from '../index';
+import { exchangeRateSync, importMarketData, priceRefresh } from './data';
+import { checkDeletions, cleanupStatementImports, netWorthSnapshot, syncCleaner } from './maintenance';
 
 export type JobName =
   | 'check_deletions'
@@ -61,18 +63,18 @@ export function jobsForCron(cron: string, now: Date): JobName[] {
 
 export type JobHandler = (env: Bindings, now: Date) => Promise<void>;
 
-/** Filled in by the job modules; chunk 1 ships logging stubs. */
+/** Real bodies live in ./data and ./maintenance; chunk-4 jobs are stubs. */
 export const HANDLERS: Record<JobName, JobHandler> = {
-  check_deletions: async () => {},
-  sync_cleaner: async () => {},
-  cleanup_statement_imports: async () => {},
-  price_refresh: async () => {},
-  exchange_rate_sync: async () => {},
-  import_market_data: async () => {},
-  security_health_check: async () => {},
-  database_backup: async () => {},
-  net_worth_snapshot: async () => {},
-  expense_reminder_check: async () => {},
+  check_deletions: checkDeletions,
+  sync_cleaner: syncCleaner,
+  cleanup_statement_imports: cleanupStatementImports,
+  price_refresh: priceRefresh,
+  exchange_rate_sync: exchangeRateSync,
+  import_market_data: importMarketData,
+  net_worth_snapshot: netWorthSnapshot,
+  security_health_check: async () => {}, // chunk 4
+  database_backup: async () => {}, // chunk 4
+  expense_reminder_check: async () => {}, // chunk 4
 };
 
 /** Run one job, never throwing: cron handlers must not take down the sweep. */
