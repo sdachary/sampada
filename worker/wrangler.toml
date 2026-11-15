@@ -11,6 +11,9 @@ database_id = "d37831a5-f712-49d6-861f-83a0bdfa7ac4"
 
 [vars]
 ENVIRONMENT = "production"
+RP_ID = "vayalabs.in"
+RP_NAME = "Sampada"
+ALLOWED_ORIGINS = "https://sampada.vayalabs.in"
 
 [triggers]
 crons = []

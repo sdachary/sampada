@@ -1,0 +1,49 @@
+import { describe, expect, it } from 'vitest';
+import app from './index';
+import { clearSessionCookieHeader, randomToken, readSessionToken, sessionCookieFlags, sha256Hex } from './session';
+
+describe('session primitives', () => {
+  it('hashes deterministically and never equals the raw token', async () => {
+    expect(await sha256Hex('sampada')).toBe(await sha256Hex('sampada'));
+    expect(await sha256Hex('sampada')).not.toBe('sampada');
+  });
+
+  it('issues 43-char base64url tokens', () => {
+    expect(randomToken()).toMatch(/^[A-Za-z0-9_-]{43}$/);
+  });
+
+  it('marks cookies Secure on https and plain on http+localhost', () => {
+    expect(sessionCookieFlags('https://sampada.vayalabs.in')).toContain('Secure');
+    expect(sessionCookieFlags('http://localhost:8787')).not.toContain('Secure');
+    expect(sessionCookieFlags('https://sampada.vayalabs.in')).toContain('HttpOnly');
+  });
+
+  it('parses the session cookie and builds the clearing header', () => {
+    expect(readSessionToken('foo=bar; sampada_session=tok123')).toBe('tok123');
+    expect(readSessionToken('foo=bar')).toBeNull();
+    expect(readSessionToken(null)).toBeNull();
+    expect(clearSessionCookieHeader()).toContain('Max-Age=0');
+  });
+});
+
+describe('auth routes', () => {
+  it('GET /api/v1/auth/verify returns 401 {valid:false} without a cookie (no DB needed)', async () => {
+    const res = await app.request('/api/v1/auth/verify');
+    expect(res.status).toBe(401);
+    expect(await res.json()).toEqual({ valid: false });
+  });
+
+  it('rejects cross-origin POSTs with a 403 (origin guard)', async () => {
+    const res = await app.request('/api/v1/auth/login/begin', {
+      method: 'POST',
+      headers: { Origin: 'https://evil.example.com', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'x@y.com' }),
+    });
+    expect(res.status).toBe(403);
+  });
+
+  it('GET /up still answers 200', async () => {
+    const res = await app.request('/up');
+    expect(res.status).toBe(200);
+  });
+});
