@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { auth } from './auth';
 import type { SafeUser } from './session';
 import { HALF_HOUR_CRON, DAILY_CRON, handleScheduled } from './jobs/dispatch';
+import { drainDue } from './jobs/queue';
 
 export type Bindings = {
   DB: D1Database;
@@ -37,7 +38,12 @@ app.notFound(() => {
 const worker = {
   fetch: app.fetch,
   scheduled: async (event: ScheduledEvent, env: Bindings, ctx: ExecutionContext): Promise<void> => {
-    ctx.waitUntil(handleScheduled(event.cron, env));
+    ctx.waitUntil(
+      (async () => {
+        await handleScheduled(event.cron, env);
+        await drainDue(env);
+      })(),
+    );
   },
 };
 
