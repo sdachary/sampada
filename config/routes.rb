@@ -3,8 +3,7 @@ require 'sidekiq/web'
 Rails.application.routes.draw do
   mount Sidekiq::Web => '/sidekiq'
 
-  # Cloud Run health check
-  get 'up' => 'rails/health#show', as: :rails_health_check
+  get 'up' => 'health#show', as: :rails_health_check
 
   # API Auth
   scope '/api/v1', module: 'api' do
