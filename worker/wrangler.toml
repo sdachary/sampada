@@ -2,6 +2,10 @@ name = "sampada-api-production"
 main = "src/index.ts"
 compatibility_date = "2024-11-01"
 compatibility_flags = ["nodejs_compat"]
+# Legal pages are imported as text modules in src/index.ts.
+rules = [
+  { type = "Text", globs = ["**/*.html"], fallthrough = true }
+]
 account_id = "58282ee997b7a801c27e7d0276f9ae8e"
 
 [[d1_databases]]

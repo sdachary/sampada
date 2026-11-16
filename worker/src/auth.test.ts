@@ -47,3 +47,41 @@ describe('auth routes', () => {
     expect(res.status).toBe(200);
   });
 });
+
+describe('DPDP 18+ attestation gate', () => {
+  it('rejects register/begin without adultAttested before any DB access', async () => {
+    const res = await app.request('/api/v1/auth/register/begin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'a@b.com' }),
+    });
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: '18+ attestation required' });
+  });
+
+  it('origin guard still runs before the attestation gate', async () => {
+    const res = await app.request('/api/v1/auth/register/begin', {
+      method: 'POST',
+      headers: { Origin: 'https://evil.example.com', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'a@b.com', adultAttested: true }),
+    });
+    expect(res.status).toBe(403);
+  });
+});
+
+describe('legal pages', () => {
+  it('serves the privacy policy at /privacy', async () => {
+    const res = await app.request('/privacy');
+    expect(res.status).toBe(200);
+    expect(res.headers.get('content-type')).toContain('text/html');
+    const html = await res.text();
+    expect(html).toContain('Sampada');
+    expect(html).toContain('grievance@acharylab.app');
+  });
+
+  it('serves the terms at /terms', async () => {
+    const res = await app.request('/terms');
+    expect(res.status).toBe(200);
+    expect(await res.text()).toContain('Terms of Service');
+  });
+});

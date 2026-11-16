@@ -219,7 +219,7 @@ function expectedOrigin(c: Context<AppEnv>): string {
 // Routes
 // ---------------------------------------------------------------------------
 
-type RegBeginBody = { email?: string; firstName?: string; lastName?: string };
+type RegBeginBody = { email?: string; firstName?: string; lastName?: string; adultAttested?: boolean };
 type RegFinishBody = { credential?: RegistrationResponseJSON; email?: string };
 type LoginBeginBody = { email?: string };
 type LoginFinishBody = { credential?: AuthenticationResponseJSON; email?: string };
@@ -236,14 +236,17 @@ auth.post('/register/begin', async (c) => {
   const email = body.email?.trim().toLowerCase();
   if (!email || !email.includes('@')) return c.json({ error: 'valid email required' }, 400);
 
+  // DPDP: attestation must exist before any account data is written or read.
+  if (!body.adultAttested) return c.json({ error: '18+ attestation required' }, 400);
+
   const existing = await c.env.DB.prepare(LOOKUP_EMAIL).bind(email).first<{ id: string }>();
   const userId = existing?.id ?? crypto.randomUUID();
   if (!existing) {
     const now = new Date().toISOString();
     await c.env.DB.prepare(
-      `INSERT INTO users (id, email, first_name, last_name, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO users (id, email, first_name, last_name, adult_attested_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)`,
     )
-      .bind(userId, email, body.firstName?.trim() || null, body.lastName?.trim() || null, now, now)
+      .bind(userId, email, body.firstName?.trim() || null, body.lastName?.trim() || null, now, now, now)
       .run();
   }
 

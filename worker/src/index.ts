@@ -3,6 +3,8 @@ import { auth } from './auth';
 import type { SafeUser } from './session';
 import { HALF_HOUR_CRON, DAILY_CRON, handleScheduled } from './jobs/dispatch';
 import { drainDue } from './jobs/queue';
+import privacyHtml from './legal/privacy.html';
+import termsHtml from './legal/terms.html';
 
 export type Bindings = {
   DB: D1Database;
@@ -30,6 +32,10 @@ app.get('/up', (c) => {
 });
 
 app.route('/api/v1/auth', auth);
+
+// DPDP legal pages: self-rendering, CONFIG-driven HTML imported as text modules.
+app.get('/privacy', (c) => c.html(privacyHtml));
+app.get('/terms', (c) => c.html(termsHtml));
 
 app.notFound(() => {
   return Response.json({ error: 'not found' }, { status: 404 });
