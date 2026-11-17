@@ -50,21 +50,30 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
 
-  // API calls: network-first with a 3s timeout, cached response as fallback.
-  // Only 2xx responses are ever cached, so auth failures are never replayed.
+  // API calls: network-first with a 3s timeout. The cache answers ONLY when
+  // the network itself fails (timeout/offline) — a server response, including
+  // any error, is authoritative and always passes through, so a logged-out or
+  // auth-failed call is never masked by a stale cached 2xx.
   if (url.pathname.startsWith('/api/')) {
+    const offline = () =>
+      new Response(JSON.stringify({ success: false, message: 'Offline' }), {
+        status: 503,
+        headers: { 'Content-Type': 'application/json' },
+      });
     event.respondWith(
       fetchWithTimeout(event.request, 3000).then(async (response) => {
-        if (response && response.ok) {
+        if (response === undefined) {
+          const cached = await caches.match(event.request);
+          return cached || offline();
+        }
+        if (response.ok) {
           const cache = await caches.open(CACHE_NAME);
           cache.put(event.request, response.clone());
-          return response;
         }
+        return response;
+      }).catch(async () => {
         const cached = await caches.match(event.request);
-        return cached || response || new Response(JSON.stringify({ success: false, message: 'Offline' }), {
-          status: 503,
-          headers: { 'Content-Type': 'application/json' },
-        });
+        return cached || offline();
       })
     );
     return;

@@ -71,6 +71,12 @@ export function honeypotTriggered(reqPath, bodyText) {
   }
 }
 
+// Build the upstream URL for the /api/worker/* proxy branch:
+// prefix stripped, query string preserved.
+export function workerProxyTarget(WORKER_URL, reqPath, search) {
+  return `${WORKER_URL}${reqPath.slice('/api/worker'.length)}${search}`
+}
+
 // Shaped per endpoint so a swallowed request is indistinguishable from the
 // real success response.
 const HONEYPOT_SUCCESS = {
@@ -207,6 +213,57 @@ export async function onRequest(context) {
     } catch {
       return new Response(
         JSON.stringify({ error: 'Auth server unreachable', meta: { request_id: rid, timestamp: new Date().toISOString() } }),
+        {
+          status: 502,
+          headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': allowOrigin, ...securityHeaders },
+        },
+      )
+    }
+  }
+
+  // Worker auth proxy — /api/worker/* → env WORKER_URL (prefix stripped)
+  // Forward Origin + Cookie so the worker can run originGuard and session lookup.
+  if (reqPath.startsWith('/api/worker/')) {
+    try {
+      const WORKER_URL = env.WORKER_URL
+      if (!WORKER_URL) return misconfigured(rid, 'Worker')
+
+      // Strip /api/worker prefix, preserve query string
+      const targetUrl = `${WORKER_URL}${reqPath.slice('/api/worker'.length)}${url.search}`
+
+      const modifiedHeaders = new Headers(request.headers)
+      modifiedHeaders.delete('host')
+      // Forward Origin for worker originGuard
+      const origin = request.headers.get('Origin')
+      if (origin) modifiedHeaders.set('Origin', origin)
+
+      // Forward body if present (already buffered by the honeypot check)
+      let body = null
+      if (request.method !== 'GET' && request.method !== 'HEAD') {
+        body = rawBody
+      }
+
+      const response = await fetch(targetUrl, {
+        method: request.method,
+        headers: modifiedHeaders,
+        body,
+        redirect: 'follow',
+      })
+
+      const setCookies = cookiesFrom(response)
+
+      // Pass through response headers, rebuild Set-Cookie
+      const headers = new Headers(response.headers)
+      headers.delete('set-cookie')
+      headers.set('Access-Control-Allow-Origin', allowOrigin)
+      headers.set('Vary', 'Origin')
+      headers.set('X-Request-Id', rid)
+      setCookies.forEach((c) => headers.append('Set-Cookie', c))
+
+      return new Response(response.body, { status: response.status, headers })
+    } catch {
+      return new Response(
+        JSON.stringify({ error: 'Worker unreachable', meta: { request_id: rid, timestamp: new Date().toISOString() } }),
         {
           status: 502,
           headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': allowOrigin, ...securityHeaders },

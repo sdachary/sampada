@@ -8,7 +8,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
-    "test": "node --test test/honeypot.test.js",
+    "test": "node --test test/honeypot.test.js test/worker-proxy.test.js",
     "preview": "vite preview",
     "size": "size-limit",
     "lhci": "lhci autorun"

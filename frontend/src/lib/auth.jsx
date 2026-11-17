@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { auth } from './api'
+import { auth, workerAuth, WORKER_AUTH_ENABLED } from './api'
+import { mapWorkerUser } from './auth-context'
 import { AuthContext } from './auth-context'
 
 export function AuthProvider({ children }) {
@@ -11,23 +12,35 @@ export function AuthProvider({ children }) {
   }, [])
 
   const checkAuth = async () => {
+    // Better-Auth stays preferred when both sessions exist (it drives data calls pre-cutover).
+    // The worker fallback runs on empty session AND on throw — Rails down ≠ logged out.
+    let session = null
     try {
-      const session = await auth.me()
-      if (session?.user) {
-        setUser({
-          id: session.user.id,
-          email: session.user.email,
-          first_name: session.user.name?.split(' ')[0] || '',
-          last_name: session.user.name?.split(' ').slice(1).join(' ') || '',
-          currency: session.user.currency || 'INR',
-          onboarded: session.user.onboarded ?? false,
-        })
-      }
+      session = await auth.me()
     } catch {
-      // Not authenticated
-    } finally {
-      setLoading(false)
+      // Better-Auth unavailable; fall through to the Worker session.
     }
+    if (session?.user) {
+      setUser({
+        id: session.user.id,
+        email: session.user.email,
+        first_name: session.user.name?.split(' ')[0] || '',
+        last_name: session.user.name?.split(' ').slice(1).join(' ') || '',
+        currency: session.user.currency || 'INR',
+        onboarded: session.user.onboarded ?? false,
+      })
+    } else if (WORKER_AUTH_ENABLED) {
+      // Worker session via the same-origin /api/worker proxy.
+      try {
+        const workerUser = await workerAuth.me()
+        if (workerUser?.user) {
+          setUser(mapWorkerUser(workerUser.user))
+        }
+      } catch {
+        // Not authenticated
+      }
+    }
+    setLoading(false)
   }
 
   const login = async (email, password, website = '') => {
@@ -46,6 +59,10 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     try { await auth.logout() } catch {}
+    // Best-effort: a live worker session would resurrect the user on next checkAuth.
+    if (WORKER_AUTH_ENABLED) {
+      try { await workerAuth.logout() } catch {}
+    }
     setUser(null)
   }
 
@@ -67,4 +84,3 @@ export function AuthProvider({ children }) {
     </AuthContext.Provider>
   )
 }
-

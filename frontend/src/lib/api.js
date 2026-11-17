@@ -4,6 +4,10 @@ const API = import.meta.env.VITE_API_URL || ''
 // Same-origin path — served by the CF Pages Functions proxy in functions/[[path]].js
 const BETTER_AUTH_URL = import.meta.env.VITE_BETTER_AUTH_URL || '/api/auth'
 
+// A5.2 parallel-stack gate: worker auth is opt-in at build time only.
+// Production builds do NOT set VITE_WORKER_AUTH; gate-off UI is byte-identical.
+export const WORKER_AUTH_ENABLED = import.meta.env.VITE_WORKER_AUTH === 'true'
+
 async function request(path, options = {}) {
   let res
   try {
@@ -52,6 +56,56 @@ async function requestRaw(path, options = {}) {
   const res = await fetch(`${API}${path}`, { ...options })
   if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || res.statusText)
   return res
+}
+
+// Worker auth client — same-origin via the /api/worker proxy branch.
+// Own tiny fetch wrapper mirroring betterAuthRequest (15s timeout, {error} parsing, err.status).
+const WORKER_AUTH_URL = '/api/worker/api/v1/auth'
+
+async function workerRequest(path, options = {}) {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 15000) // 15s timeout
+  try {
+    const res = await fetch(`${WORKER_AUTH_URL}${path}`, {
+      headers: { 'Content-Type': 'application/json', ...options.headers },
+      credentials: 'include', // sampada_session cookie via the same-origin proxy
+      ...options,
+      signal: controller.signal,
+    })
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}))
+      throw new Error(error.error || error.message || res.statusText)
+    }
+    return res.status === 204 ? null : res.json()
+  } finally {
+    clearTimeout(timeoutId)
+  }
+}
+
+export const workerAuth = {
+  beginRegister: (data) => workerRequest('/register/begin', {
+    method: 'POST',
+    body: JSON.stringify({ email: data.email, firstName: data.firstName, lastName: data.lastName, adultAttested: true }),
+  }),
+
+  finishRegister: (credentialJSON, email) => workerRequest('/register/finish', {
+    method: 'POST',
+    body: JSON.stringify({ credential: credentialJSON, email }),
+  }),
+
+  beginLogin: (email) => workerRequest('/login/begin', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  }),
+
+  finishLogin: (credentialJSON, email) => workerRequest('/login/finish', {
+    method: 'POST',
+    body: JSON.stringify({ credential: credentialJSON, email }),
+  }),
+
+  me: () => workerRequest('/me'),
+
+  logout: () => workerRequest('/logout', { method: 'POST', body: '{}' }),
 }
 
 export const api = {
