@@ -44,6 +44,10 @@ export function credentialToJSON(credential) {
     }
   }
 
+  // @simplewebauthn/server v13 reads clientExtensionResults — always include it
+  // (real credentials always carry it; `|| {}` covers exotic/empty responses).
+  out.response.clientExtensionResults = credential.clientExtensionResults || {}
+
   if (credential.authenticatorAttachment) out.authenticatorAttachment = credential.authenticatorAttachment
   return out
 }

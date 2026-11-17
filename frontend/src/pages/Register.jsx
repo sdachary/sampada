@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/useAuth'
-import { api } from '../lib/api'
+import { api, workerAuth, WORKER_AUTH_ENABLED } from '../lib/api'
 import AuthLayout from './AuthLayout'
 import { Input, Select, Button, Card } from '../components/ui'
+import { credentialToJSON, jsonToCredentialOptions, isPasskeySupported } from '../lib/passkeys'
 
 const MIN_PASSWORD_LENGTH = 8
 
@@ -27,7 +28,7 @@ const PwToggle = ({ show, setShow }) => (
 )
 
 export default function Register() {
-  const { user, register } = useAuth()
+  const { user, register, checkAuth } = useAuth()
   const navigate = useNavigate()
   const [form, setForm] = useState({ email: '', password: '', password_confirmation: '', first_name: '', last_name: '' })
   const [website, setWebsite] = useState('')
@@ -39,6 +40,16 @@ export default function Register() {
   const [ai, setAi] = useState({ provider: '', api_key: '' })
   const [aiSaving, setAiSaving] = useState(false)
   const [aiMsg, setAiMsg] = useState('')
+
+  // Passkey-first block (worker auth) — own local state
+  const [pkForm, setPkForm] = useState({ firstName: '', lastName: '', email: '' })
+  const [pkAttested, setPkAttested] = useState(false)
+  const [pkSubmitting, setPkSubmitting] = useState(false)
+  const [pkSupported, setPkSupported] = useState(false)
+
+  useEffect(() => {
+    isPasskeySupported().then(setPkSupported)
+  }, [])
 
   if (user && !registered) return <Navigate to="/dashboard" replace />
 
@@ -54,6 +65,38 @@ export default function Register() {
     } catch (err) {
       setError(err.message)
       setSubmitting(false)
+    }
+  }
+
+  const handlePasskeyRegister = async (e) => {
+    e.preventDefault()
+    if (!pkAttested) return setError('I confirm I am 18 years of age or older')
+    setPkSubmitting(true)
+    setError('')
+    try {
+      const options = await workerAuth.beginRegister({
+        email: pkForm.email,
+        firstName: pkForm.firstName,
+        lastName: pkForm.lastName,
+        adultAttested: true,
+      })
+      const publicKey = jsonToCredentialOptions(options)
+      const credential = await navigator.credentials.create({ publicKey })
+      if (!credential) {
+        setPkSubmitting(false)
+        return
+      }
+      const credentialJSON = credentialToJSON(credential)
+      await workerAuth.finishRegister(credentialJSON, pkForm.email)
+      await checkAuth()
+      navigate('/dashboard', { replace: true })
+    } catch (err) {
+      if (err.name === 'NotAllowedError' || err.name === 'AbortError') {
+        // User dismissed the dialog — silent (match Login.jsx)
+      } else {
+        setError(err.message)
+      }
+      setPkSubmitting(false)
     }
   }
 
@@ -76,6 +119,7 @@ export default function Register() {
   }
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value })
+  const setPk = (k) => (e) => setPkForm({ ...pkForm, [k]: e.target.value })
 
   return (
     <AuthLayout
@@ -93,6 +137,39 @@ export default function Register() {
       )}
       foot={<><span>Already have one? </span><Link to="/login" className="text-accent font-medium">Sign in</Link></>}
     >
+      {WORKER_AUTH_ENABLED && pkSupported && (
+        <>
+          <form onSubmit={handlePasskeyRegister} className="space-y-3">
+            <div className="grid gap-2 grid-cols-1 sm:grid-cols-2">
+              <Input placeholder="First name" autoComplete="given-name" value={pkForm.firstName} onChange={setPk('firstName')} required />
+              <Input placeholder="Last name" autoComplete="family-name" value={pkForm.lastName} onChange={setPk('lastName')} required />
+            </div>
+            <Input type="email" placeholder="Email" autoComplete="email" value={pkForm.email} onChange={setPk('email')} required />
+            <label className="flex items-start gap-2 text-sm text-muted">
+              <input
+                type="checkbox"
+                checked={pkAttested}
+                onChange={e => setPkAttested(e.target.checked)}
+                required
+                className="mt-1"
+              />
+              <span>I confirm I am 18 years of age or older</span>
+            </label>
+            <p className="text-xs text-muted">
+              By creating an account you acknowledge our <Link to="/privacy" className="text-accent font-medium">Privacy Policy</Link>.
+            </p>
+            <Button type="submit" loading={pkSubmitting} className="w-full sm:w-auto mx-auto sm:mx-0">
+              {pkSubmitting ? 'Creating account…' : 'Create account with passkey'}
+            </Button>
+          </form>
+          <div className="flex items-center gap-3 text-muted text-sm my-4">
+            <div className="flex-1 h-px bg-border" />
+            <span>or create your account with a password</span>
+            <div className="flex-1 h-px bg-border" />
+          </div>
+        </>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-3">
         <input
           type="text" name="website" value={website} onChange={e => setWebsite(e.target.value)}

@@ -4,10 +4,10 @@ import { useAuth } from '../lib/useAuth'
 import AuthLayout from './AuthLayout'
 import { Input, Button } from '../components/ui'
 import { credentialToJSON, jsonToCredentialOptions, isPasskeySupported, isConditionalMediationSupported } from '../lib/passkeys'
-import { api } from '../lib/api'
+import { api, workerAuth, WORKER_AUTH_ENABLED } from '../lib/api'
 
 export default function Login() {
-  const { user, login } = useAuth()
+  const { user, login, checkAuth } = useAuth()
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -44,22 +44,39 @@ export default function Login() {
     setSubmitting(true)
     setError('')
     try {
-      const { options } = await api.request(`/api/v1/auth/passkeys/auth/options?email=${encodeURIComponent(email)}`)
-      const publicKey = jsonToCredentialOptions(options)
-      const credential = await navigator.credentials.get({
-        publicKey,
-        mediation: email ? 'required' : 'conditional'
-      })
-      if (!credential) {
-        setSubmitting(false)
-        return
+      if (WORKER_AUTH_ENABLED) {
+        const options = await workerAuth.beginLogin(email)
+        const publicKey = jsonToCredentialOptions(options)
+        const credential = await navigator.credentials.get({
+          publicKey,
+          mediation: email ? 'required' : 'conditional'
+        })
+        if (!credential) {
+          setSubmitting(false)
+          return
+        }
+        const credentialJSON = credentialToJSON(credential)
+        await workerAuth.finishLogin(credentialJSON, email)
+        await checkAuth()
+        navigate('/dashboard')
+      } else {
+        const { options } = await api.request(`/api/v1/auth/passkeys/auth/options?email=${encodeURIComponent(email)}`)
+        const publicKey = jsonToCredentialOptions(options)
+        const credential = await navigator.credentials.get({
+          publicKey,
+          mediation: email ? 'required' : 'conditional'
+        })
+        if (!credential) {
+          setSubmitting(false)
+          return
+        }
+        const credentialJSON = credentialToJSON(credential)
+        const _res = await api.request('/api/v1/auth/passkeys/auth/verify', {
+          method: 'POST',
+          body: JSON.stringify({ email, credential: credentialJSON })
+        })
+        navigate('/dashboard')
       }
-      const credentialJSON = credentialToJSON(credential)
-      const _res = await api.request('/api/v1/auth/passkeys/auth/verify', {
-        method: 'POST',
-        body: JSON.stringify({ email, credential: credentialJSON })
-      })
-      navigate('/dashboard')
     } catch (err) {
       if (err.name === 'NotAllowedError' || err.name === 'AbortError') {
         // User dismissed the dialog - silent
