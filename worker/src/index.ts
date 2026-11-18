@@ -5,6 +5,12 @@ import { HALF_HOUR_CRON, DAILY_CRON, handleScheduled } from './jobs/dispatch';
 import { drainDue } from './jobs/queue';
 import privacyHtml from './legal/privacy.html';
 import termsHtml from './legal/terms.html';
+import onboarding from './api/onboarding';
+import journey from './api/journey';
+import push from './api/push';
+import featureFlags from './api/featureFlags';
+import sectors from './api/sectors';
+import reports from './api/reports';
 
 export type Bindings = {
   DB: D1Database;
@@ -32,6 +38,14 @@ app.get('/up', (c) => {
 });
 
 app.route('/api/v1/auth', auth);
+// Data routers — requireAuth + originGuard live inside each router (a global
+// /api/v1/* gate would also cover auth's unauthenticated begin/finish).
+app.route('/api/v1/onboarding', onboarding);
+app.route('/api/v1/journey', journey);
+app.route('/api/v1/push_subscriptions', push);
+app.route('/api/v1/feature_flags', featureFlags);
+app.route('/api/v1/sectors', sectors);
+app.route('/api/v1/reports', reports);
 
 // DPDP legal pages: self-rendering, CONFIG-driven HTML imported as text modules.
 app.get('/privacy', (c) => c.html(privacyHtml));
