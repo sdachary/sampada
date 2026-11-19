@@ -66,6 +66,7 @@ function CardComponent({ variant = 'default', className = '', style, children, p
     variantClass,
     legacyPaddingClass,
     children && 'card--has-children',
+    className,
   ].filter(Boolean).join(' ')
 
   return (

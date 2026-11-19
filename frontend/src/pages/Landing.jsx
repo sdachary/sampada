@@ -3,7 +3,7 @@ import ThemeToggle from '../components/ThemeToggle'
 import { Reveal } from '../lib/motion-primitives'
 import { Check, X, TrendingDown, PiggyBank, RefreshCw, MessageSquare, AlertTriangle, Globe, Users, Cpu, Lock, Shield, Zap, Star, ArrowRight } from 'lucide-react'
 import { Button, Card } from '../components/ui'
-import HeroVisual from '../landing/hero3d/HeroVisual'
+import HeroPoster from '../landing/hero3d/HeroPoster'
 
 const FEATURES = [
   { icon: TrendingDown, accent: 'var(--accent)', title: 'Debt payoff tracker', body: 'Avalanche or snowball order, a full EMI calendar, and a month-by-month projection to your debt-free date.' },
@@ -53,7 +53,7 @@ function FeatureCard({ f, index }) {
         </div>
         <h3 className="font-display text-base font-semibold tracking-tight mb-2">{f.title}</h3>
         <p className="text-sm text-muted leading-relaxed flex-1">{f.body}</p>
-        <div className="mt-4 h-1.5 w-12 rounded-full bg-opacity-60 group-hover:w-20 transition-all duration-500 ease-spring" style={{ background: f.accent }} />
+        <div className="mt-4 h-1.5 w-12 rounded-full group-hover:w-20 transition-all duration-500 ease-spring" style={{ background: f.accent }} />
       </Card>
     </Reveal>
   )
@@ -124,7 +124,7 @@ export default function Landing() {
             </div>
             <div className="w-full max-w-[560px] mx-auto">
               <div className="w-full max-w-[560px] mx-auto min-w-[300px]" style={{ aspectRatio: '1 / 1' }}>
-                <HeroVisual />
+                <HeroPoster />
               </div>
             </div>
           </div>

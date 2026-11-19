@@ -35,40 +35,14 @@ export function useCountUp(value, { duration = 0.9, decimals = 0, enabled = true
 // Single fade-up entrance, once, when scrolled into view. No repeat, no stagger.
 // FIX: If element is already in viewport on mount, show immediately without animation
 export function Reveal({ children, y = 12, delay = 0, ...props }) {
+  const seconds = delay > 1 ? delay / 1000 : delay
   const reduce = prefersReducedMotion()
-  const ref = useRef(null)
-  // When reduced, disable viewport detection entirely; hook still called (rules of hooks)
-  const inView = useInView(ref, { once: true, margin: '-10% 0px', disabled: reduce })
-  // Reduced motion: mounted immediately so content shows without animation
-  const [mounted, setMounted] = useState(reduce)
-  
-  // One observer, one effect, one fallback timer per Reveal. The old version
-  // mounted useInView + whileInView observers and three effects on every card
-  // (20+ per data page), which dominated scroll cost on mobile.
-  useEffect(() => {
-    if (mounted || inView) {
-      setMounted(true)
-      return
-    }
-    const el = ref.current
-    if (el && isElementInViewport(el)) {
-      setMounted(true)
-      return
-    }
-    // Fallback for tall cards that never count as fully in view.
-    const timer = setTimeout(() => setMounted(true), 500)
-    return () => clearTimeout(timer)
-  }, [inView, mounted])
-  
-  // Reduced motion: render children immediately WITH ref attached
-  if (reduce) return <div ref={ref} {...props}>{children}</div>
-  
+  if (reduce) return <div {...props}>{children}</div>
   return (
     <m.div
-      ref={ref}
-      initial={mounted ? false : { opacity: 0, y }}
-      animate={mounted || inView ? { opacity: 1, y: 0 } : undefined}
-      transition={{ duration: DUR.slow, ease: EASE, delay }}
+      initial={{ opacity: 0, y }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: DUR.slow, ease: EASE, delay: seconds }}
       {...props}
     >
       {children}
