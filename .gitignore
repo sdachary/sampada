@@ -38,6 +38,12 @@ docs-installer/
 # Local env overrides
 .env.local
 .env.development.local
+
+# Local tooling state and decommission archives.
+# .wrangler/cache holds CF account IDs; sampada-orphans.json holds user financial rows.
+.wrangler/
+frontend/.lighthouseci/
+ops-migration-archive/
 .env.test.local
 .env.production.local
 
