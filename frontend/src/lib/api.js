@@ -1,12 +1,6 @@
 import { enqueue } from './offlineQueue'
 
 const API = import.meta.env.VITE_API_URL || ''
-// Same-origin path — served by the CF Pages Functions proxy in functions/[[path]].js
-const BETTER_AUTH_URL = import.meta.env.VITE_BETTER_AUTH_URL || '/api/auth'
-
-// Worker auth is enabled in production (VITE_WORKER_AUTH=true since the A5.4 cutover).
-// The flag stays so local/dev can still exercise the Better-Auth-only fallback.
-export const WORKER_AUTH_ENABLED = import.meta.env.VITE_WORKER_AUTH === 'true'
 
 async function request(path, options = {}) {
   let res
@@ -32,26 +26,6 @@ async function request(path, options = {}) {
   return res.status === 204 ? null : res.json()
 }
 
-async function betterAuthRequest(path, options = {}) {
-  const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), 15000) // 15s timeout
-  try {
-    const res = await fetch(`${BETTER_AUTH_URL}${path}`, {
-      headers: { 'Content-Type': 'application/json', ...options.headers },
-      credentials: 'include', // Cookie-only sessions via the same-origin proxy
-      ...options,
-      signal: controller.signal,
-    })
-    if (!res.ok) {
-      const error = await res.json().catch(() => ({}))
-      throw new Error(error.error || error.message || res.statusText)
-    }
-    return res.status === 204 ? null : res.json()
-  } finally {
-    clearTimeout(timeoutId)
-  }
-}
-
 async function requestRaw(path, options = {}) {
   const res = await fetch(`${API}${path}`, { ...options })
   if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || res.statusText)
@@ -59,12 +33,12 @@ async function requestRaw(path, options = {}) {
 }
 
 // Worker auth client — same-origin via the /api/worker proxy branch.
-// Own tiny fetch wrapper mirroring betterAuthRequest (15s timeout, {error} parsing, err.status).
+// 15s timeout, {error} parsing, err.status preserved for callers.
 const WORKER_AUTH_URL = '/api/worker/api/v1/auth'
 
 async function workerRequest(path, options = {}) {
   const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), 15000) // 15s timeout
+  const timeoutId = setTimeout(() => controller.abort(), 15000)
   try {
     const res = await fetch(`${WORKER_AUTH_URL}${path}`, {
       headers: { 'Content-Type': 'application/json', ...options.headers },
@@ -149,33 +123,4 @@ export const api = {
       body: formData,
     })
   },
-}
-
-export const auth = {
-  // Better-Auth direct endpoints.
-  // `website` is the honeypot field (see functions/[[path]].js): always sent,
-  // empty for humans, filled only by form-filling bots.
-  register: (data) => betterAuthRequest('/sign-up/email', {
-    method: 'POST',
-    body: JSON.stringify({ email: data.email, password: data.password, name: `${data.first_name} ${data.last_name}`.trim(), app: 'sampada', website: data.website || '' }),
-  }),
-
-  login: (data) => betterAuthRequest('/sign-in/email', {
-    method: 'POST',
-    body: JSON.stringify({ email: data.email, password: data.password, website: data.website || '' }),
-  }),
-
-  logout: () => betterAuthRequest('/sign-out', { method: 'POST', body: '{}' }),
-
-  me: () => betterAuthRequest('/get-session'),
-
-  forgotPassword: (email, website = '') => betterAuthRequest('/request-password-reset', {
-    method: 'POST',
-    body: JSON.stringify({ email, redirectTo: `${window.location.origin}/reset-password`, website, app: 'sampada' }),
-  }),
-
-  resetPassword: (token, newPassword) => betterAuthRequest('/reset-password', {
-    method: 'POST',
-    body: JSON.stringify({ token, newPassword }),
-  }),
 }

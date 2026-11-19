@@ -1,32 +1,14 @@
 /**
  * Sampada — Cloudflare Pages Functions
- * Same-origin proxy for Better-Auth (/api/auth/* → oradb:4000).
- *
- * Better-Auth cookies are httpOnly + SameSite=lax and oradb has no HTTPS,
- * so a cross-origin call can't hold the session. This worker makes the
- * browser talk to /api/auth on ITS OWN origin (sampada.vayalabs.in) and
- * forwards Set-Cookie headers so the cookie sticks.
+ * Same-origin proxy for the Worker API (/api/worker/* → sampada-api-production).
+ * Better-Auth (/api/auth/*) was retired in A8; those paths now fall through to
+ * static-asset handling and 404.
  */
-
-const APP_NAME = 'sampada'
 
 const securityHeaders = {
   'X-Content-Type-Options': 'nosniff',
   'X-Frame-Options': 'DENY',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
-}
-
-// Fallbacks are local/dev-only origins.
-// They are NEVER reached in production: they require ALLOW_INSECURE_ORIGIN === 'true'
-// (a flag that must not be set in the deployed Cloudflare Pages project). With the
-// flag absent, a missing ORADB_URL fails closed with a 502 instead of
-// silently degrading the transport to plaintext HTTP over the public internet.
-const ORADB_FALLBACK = 'https://api.vayalabs.in'
-
-function originFor(env, primaryKey, fallback) {
-  if (env[primaryKey]) return env[primaryKey]
-  if (env.ALLOW_INSECURE_ORIGIN === 'true') return fallback
-  return null
 }
 
 function misconfigured(rid, name) {
@@ -47,54 +29,9 @@ function cookiesFrom(res) {
   return setCookies.filter(Boolean)
 }
 
-// Honeypot. The auth forms carry a `website` field hidden off-screen (see
-// src/pages/Register.jsx); a human never sees it, a form-filling bot does.
-// A filled value is swallowed here, server-side, with a response a bot can't
-// distinguish from success — no account, no password attempt, no mail sent.
-// Server-side is the only place it can be enforced: the browser has no secret
-// to check against, and the worker is the single choke point both the form and
-// any direct API caller must pass.
-export const HONEYPOT_PATHS = [
-  '/api/auth/sign-up/email',
-  '/api/auth/sign-in/email',
-  '/api/auth/request-password-reset',
-]
-
-export function honeypotTriggered(reqPath, bodyText) {
-  if (!HONEYPOT_PATHS.includes(reqPath) || !bodyText) return false
-  try {
-    const parsed = JSON.parse(bodyText)
-    return typeof parsed?.website === 'string' && parsed.website.trim() !== ''
-  } catch {
-    return false
-  }
-}
-
-// Build the upstream URL for the /api/worker/* proxy branch:
-// prefix stripped, query string preserved.
+// Build the upstream URL for /api/worker/*: prefix stripped, query preserved.
 export function workerProxyTarget(WORKER_URL, reqPath, search) {
   return `${WORKER_URL}${reqPath.slice('/api/worker'.length)}${search}`
-}
-
-// Shaped per endpoint so a swallowed request is indistinguishable from the
-// real success response.
-const HONEYPOT_SUCCESS = {
-  '/api/auth/sign-up/email': { user: null, session: null, token: null },
-  '/api/auth/sign-in/email': { user: null, session: null, token: null },
-  '/api/auth/request-password-reset': { status: true },
-}
-
-function honeypotResponse(reqPath, rid, allowOrigin) {
-  return new Response(JSON.stringify(HONEYPOT_SUCCESS[reqPath] ?? { status: true }), {
-    status: 200,
-    headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': allowOrigin,
-      'Vary': 'Origin',
-      'X-Request-Id': rid,
-      ...securityHeaders,
-    },
-  })
 }
 
 export async function onRequest(context) {
@@ -103,174 +40,64 @@ export async function onRequest(context) {
   const reqPath = url.pathname
   const rid = crypto.randomUUID().slice(0, 8)
 
-  const requestOrigin = request.headers.get('Origin')
-  const allowOrigin =
-    requestOrigin && requestOrigin !== 'null' ? requestOrigin : new URL(request.url).origin
-
-  // OPTIONS preflight
-  if (request.method === 'OPTIONS' && reqPath.startsWith('/api/auth/')) {
-    return new Response(null, {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': allowOrigin,
-        'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        'Access-Control-Allow-Credentials': 'true',
-        'Access-Control-Max-Age': '86400',
-        'Vary': 'Origin',
-        ...securityHeaders,
-      },
+  // A8: /api/auth/* is retired. Return a hard 404 instead of letting the SPA
+  // fallback serve index.html with a 200 for a dead auth endpoint.
+  if (reqPath.startsWith('/api/auth/')) {
+    return new Response(JSON.stringify({ error: 'not found' }), {
+      status: 404,
+      headers: { 'Content-Type': 'application/json', ...securityHeaders },
     })
   }
 
-  // Honeypot, before anything is forwarded or any account is touched.
-  let rawBody = null
-  if (request.method !== 'GET' && request.method !== 'HEAD') {
-    const jsonBody = HONEYPOT_PATHS.includes(reqPath) && (request.headers.get('content-type') ?? '').includes('json')
-    rawBody = jsonBody ? await request.text() : await request.arrayBuffer()
-  }
-  if (honeypotTriggered(reqPath, rawBody)) return honeypotResponse(reqPath, rid, allowOrigin)
+  if (!reqPath.startsWith('/api/worker/')) return context.next()
 
-  // Better-Auth proxy
-  if (reqPath.startsWith('/api/auth/')) {
-    try {
-      const ORADB = originFor(env, 'ORADB_URL', ORADB_FALLBACK)
-      if (!ORADB) return misconfigured(rid, 'Auth')
-      const proxyUrl = `${ORADB}${reqPath}${url.search}`
+  const requestOrigin = request.headers.get('Origin')
+  const allowOrigin =
+    requestOrigin && requestOrigin !== 'null' ? requestOrigin : url.origin
 
-      const modifiedHeaders = new Headers(request.headers)
-      modifiedHeaders.delete('host')
-      // Set x-app-name so Better-Auth knows which app this request is for
-      modifiedHeaders.set('x-app-name', APP_NAME)
-      // Forward Origin for Better-Auth app derivation (via hostname map)
-      const origin = request.headers.get('Origin')
-      if (origin) modifiedHeaders.set('Origin', origin)
+  try {
+    const WORKER_URL = env.WORKER_URL
+    if (!WORKER_URL) return misconfigured(rid, 'Worker')
 
-      const response = await fetch(proxyUrl, {
-        method: request.method,
-        headers: modifiedHeaders,
-        body: rawBody,
-        redirect: 'follow',
-      })
+    const targetUrl = workerProxyTarget(WORKER_URL, reqPath, url.search)
 
-      const setCookies = cookiesFrom(response)
+    const modifiedHeaders = new Headers(request.headers)
+    modifiedHeaders.delete('host')
+    // Forward Origin so the Worker can run originGuard.
+    const origin = request.headers.get('Origin')
+    if (origin) modifiedHeaders.set('Origin', origin)
 
-      // App isolation: only accounts registered for sampada pass
-      const appCheckPaths = ['/api/auth/sign-in/email', '/api/auth/session', '/api/auth/sign-up/email', '/api/auth/verify']
-      if (
-        appCheckPaths.some((p) => reqPath === p || reqPath.startsWith(p)) &&
-        response.ok &&
-        response.headers.get('content-type')?.includes('json')
-      ) {
-        const body = await response.json()
-        const user = body?.user || body?.data?.user || null
-        if (user && !user.app) user.app = APP_NAME
-        if (user && user.app !== APP_NAME) {
-          return new Response(
-            JSON.stringify({ error: `Access denied: this account is not registered with ${APP_NAME}.` }),
-            {
-              status: 403,
-              headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': allowOrigin, ...securityHeaders },
-            },
-          )
-        }
-        const headers = new Headers({
+    let body = null
+    if (request.method !== 'GET' && request.method !== 'HEAD') {
+      body = await request.arrayBuffer()
+    }
+
+    const response = await fetch(targetUrl, {
+      method: request.method,
+      headers: modifiedHeaders,
+      body,
+      redirect: 'follow',
+    })
+
+    const headers = new Headers(response.headers)
+    headers.delete('set-cookie')
+    headers.set('Access-Control-Allow-Origin', allowOrigin)
+    headers.set('Vary', 'Origin')
+    headers.set('X-Request-Id', rid)
+    cookiesFrom(response).forEach((c) => headers.append('Set-Cookie', c))
+
+    return new Response(response.body, { status: response.status, headers })
+  } catch {
+    return new Response(
+      JSON.stringify({ error: 'Worker unreachable', meta: { request_id: rid, timestamp: new Date().toISOString() } }),
+      {
+        status: 502,
+        headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': allowOrigin,
-          'Vary': 'Origin',
-          'X-Request-Id': rid,
           ...securityHeaders,
-        })
-        setCookies.forEach((c) => headers.append('Set-Cookie', c))
-        return new Response(JSON.stringify(body), { status: response.status, headers })
-      }
-
-      // Generic pass-through — rebuild headers so multi-value Set-Cookie survives
-      const headers = new Headers(response.headers)
-      headers.delete('set-cookie')
-      headers.set('Access-Control-Allow-Origin', allowOrigin)
-      headers.set('Vary', 'Origin')
-      headers.set('X-Request-Id', rid)
-      setCookies.forEach((c) => headers.append('Set-Cookie', c))
-
-      // Force clear Better-Auth cookies on sign-out
-      if (reqPath === '/api/auth/sign-out') {
-        ;[
-          'better-auth.session_token',
-          'better-auth.session_data',
-          'better-auth.dont_remember',
-          '__Secure-better-auth.session_token',
-          '__Secure-better-auth.session_data',
-          '__Secure-better-auth.dont_remember',
-          'sampada-better-auth',
-        ].forEach((name) =>
-          headers.append('Set-Cookie', `${name}=; Path=/; Max-Age=0; SameSite=Lax; Secure`),
-        )
-      }
-
-      return new Response(response.body, { status: response.status, headers })
-    } catch {
-      return new Response(
-        JSON.stringify({ error: 'Auth server unreachable', meta: { request_id: rid, timestamp: new Date().toISOString() } }),
-        {
-          status: 502,
-          headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': allowOrigin, ...securityHeaders },
         },
-      )
-    }
+      },
+    )
   }
-
-  // Worker auth proxy — /api/worker/* → env WORKER_URL (prefix stripped)
-  // Forward Origin + Cookie so the worker can run originGuard and session lookup.
-  if (reqPath.startsWith('/api/worker/')) {
-    try {
-      const WORKER_URL = env.WORKER_URL
-      if (!WORKER_URL) return misconfigured(rid, 'Worker')
-
-      // Strip /api/worker prefix, preserve query string
-      const targetUrl = `${WORKER_URL}${reqPath.slice('/api/worker'.length)}${url.search}`
-
-      const modifiedHeaders = new Headers(request.headers)
-      modifiedHeaders.delete('host')
-      // Forward Origin for worker originGuard
-      const origin = request.headers.get('Origin')
-      if (origin) modifiedHeaders.set('Origin', origin)
-
-      // Forward body if present (already buffered by the honeypot check)
-      let body = null
-      if (request.method !== 'GET' && request.method !== 'HEAD') {
-        body = rawBody
-      }
-
-      const response = await fetch(targetUrl, {
-        method: request.method,
-        headers: modifiedHeaders,
-        body,
-        redirect: 'follow',
-      })
-
-      const setCookies = cookiesFrom(response)
-
-      // Pass through response headers, rebuild Set-Cookie
-      const headers = new Headers(response.headers)
-      headers.delete('set-cookie')
-      headers.set('Access-Control-Allow-Origin', allowOrigin)
-      headers.set('Vary', 'Origin')
-      headers.set('X-Request-Id', rid)
-      setCookies.forEach((c) => headers.append('Set-Cookie', c))
-
-      return new Response(response.body, { status: response.status, headers })
-    } catch {
-      return new Response(
-        JSON.stringify({ error: 'Worker unreachable', meta: { request_id: rid, timestamp: new Date().toISOString() } }),
-        {
-          status: 502,
-          headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': allowOrigin, ...securityHeaders },
-        },
-      )
-    }
-  }
-
-  // Static assets from dist; unknown paths 404 via context.next()
-  return context.next()
 }

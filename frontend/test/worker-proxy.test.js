@@ -14,6 +14,16 @@ test('workerProxyTarget with no search string', () => {
   assert.equal(target, 'https://worker.example.dev/api/v1/auth/me')
 })
 
+test('onRequest hard-404s retired /api/auth paths', async () => {
+  const request = new Request('https://pages.example/api/auth/get-session')
+  const nextCalled = []
+  const context = { request, env: {}, next: () => { nextCalled.push(true); return new Response('next') } }
+  const res = await onRequest(context)
+  assert.equal(res.status, 404)
+  assert.equal(nextCalled.length, 0)
+  assert.deepEqual(await res.json(), { error: 'not found' })
+})
+
 test('onRequest returns 502 when WORKER_URL is unset', async () => {
   const request = new Request('https://pages.example/api/worker/api/v1/auth/me')
   const context = { request, env: {}, next: () => new Response('next') }

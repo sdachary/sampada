@@ -9,7 +9,6 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import ForgotPassword from './pages/ForgotPassword'
 import MagicLinkVerify from './pages/MagicLinkVerify'
-import ResetPassword from './pages/ResetPassword'
 
 const Dashboard = lazy(() => import('./pages/Dashboard'))
 const Debts = lazy(() => import('./pages/Debts'))
@@ -61,7 +60,7 @@ export default function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/magic-link/verify" element={<MagicLinkVerify />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/reset-password" element={<Navigate to="/forgot-password" replace />} />
           <Route path="/dashboard" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
             <Route index element={<Dashboard />} />
             <Route path="onboarding" element={<Onboarding />} />
