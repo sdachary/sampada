@@ -1,5 +1,5 @@
 // A5.2 — first real browser WebAuthn ceremony test of the whole auth stack.
-// Self-contained: local D1 migrations + wrangler dev + vite dev with VITE_WORKER_AUTH=true.
+// Self-contained: local D1 migrations + wrangler dev + vite dev.
 // Chromium-only (virtual authenticator via CDP).
 import { test, expect } from '@playwright/test'
 import { execSync, spawn } from 'node:child_process'
@@ -32,7 +32,6 @@ test.beforeAll(async () => {
     cwd: '.',
     detached: true,
     stdio: 'pipe',
-    env: { ...process.env, VITE_WORKER_AUTH: 'true' },
   })
 
   const workerUp = await waitFor(`http://localhost:${WORKER_PORT}/up`)

@@ -7,7 +7,6 @@ import Turnstile from '../components/Turnstile'
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('')
-  const [website, setWebsite] = useState('')
   const [turnstileToken, setTurnstileToken] = useState('')
   const [sent, setSent] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -36,17 +35,12 @@ export default function ForgotPassword() {
 
   return (
     <AuthLayout
-      title="Reset password"
-      subtitle="Enter your email and we'll send you a link."
+      title="Get a sign-in link"
+      subtitle="Enter your email and we'll send you a one-time link."
       error={error}
       foot={<Link className="text-accent font-medium" to="/login">Back to sign in</Link>}
     >
       <form onSubmit={handleSubmit} className="space-y-3">
-        <input
-          type="text" name="website" value={website} onChange={e => setWebsite(e.target.value)}
-          tabIndex={-1} autoComplete="off" aria-hidden="true"
-          className="absolute -left-9999 w-1 h-1 opacity-0"
-        />
         <Input type="email" placeholder="Email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} required />
         <Turnstile onToken={setTurnstileToken} />
         <Button type="submit" loading={submitting} className="w-full sm:w-auto mx-auto sm:mx-0">

@@ -1,226 +1,90 @@
 import { useState, useEffect } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/useAuth'
-import { api, workerAuth, WORKER_AUTH_ENABLED } from '../lib/api'
+import { workerAuth } from '../lib/api'
 import AuthLayout from './AuthLayout'
-import { Input, Select, Button, Card } from '../components/ui'
+import { Input, Button } from '../components/ui'
 import { credentialToJSON, jsonToCredentialOptions, isPasskeySupported } from '../lib/passkeys'
 
-const MIN_PASSWORD_LENGTH = 8
-
-function passwordStrength(pw) {
-  if (!pw) return 0
-  let score = 0
-  if (pw.length >= MIN_PASSWORD_LENGTH) score += 1
-  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score += 1
-  if (/\d/.test(pw)) score += 1
-  if (/[^A-Za-z0-9]/.test(pw)) score += 1
-  return score
-}
-
-const STRENGTH_LABEL = ['', 'Weak', 'Fair', 'Good', 'Strong']
-const STRENGTH_VARIANTS = ['', 'danger', 'warning', 'success', 'success']
-
-const PwToggle = ({ show, setShow }) => (
-  <button type="button" onClick={() => setShow(!show)} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted hover:text-ink transition-colors" aria-label={show ? 'Hide password' : 'Show password'}>
-    {show ? '◔' : '◑'}
-  </button>
-)
-
 export default function Register() {
-  const { user, register, checkAuth } = useAuth()
+  const { user, checkAuth } = useAuth()
   const navigate = useNavigate()
-  const [form, setForm] = useState({ email: '', password: '', password_confirmation: '', first_name: '', last_name: '' })
-  const [website, setWebsite] = useState('')
-  const [showPw, setShowPw] = useState(false)
-  const [showConfirm, setShowConfirm] = useState(false)
+  const [form, setForm] = useState({ firstName: '', lastName: '', email: '' })
+  const [attested, setAttested] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
-  const [registered, setRegistered] = useState(false)
-  const [ai, setAi] = useState({ provider: '', api_key: '' })
-  const [aiSaving, setAiSaving] = useState(false)
-  const [aiMsg, setAiMsg] = useState('')
-
-  // Passkey-first block (worker auth) — own local state
-  const [pkForm, setPkForm] = useState({ firstName: '', lastName: '', email: '' })
-  const [pkAttested, setPkAttested] = useState(false)
-  const [pkSubmitting, setPkSubmitting] = useState(false)
-  const [pkSupported, setPkSupported] = useState(false)
+  const [supported, setSupported] = useState(false)
 
   useEffect(() => {
-    isPasskeySupported().then(setPkSupported)
+    isPasskeySupported().then(setSupported)
   }, [])
 
-  if (user && !registered) return <Navigate to="/dashboard" replace />
+  if (user) return <Navigate to="/dashboard" replace />
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (form.password.length < MIN_PASSWORD_LENGTH) return setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters`)
-    if (form.password !== form.password_confirmation) return setError('Passwords do not match')
+    if (!attested) return setError('I confirm I am 18 years of age or older')
     setSubmitting(true)
     setError('')
     try {
-      await register({ ...form, website })
-      setRegistered(true)
-    } catch (err) {
-      setError(err.message)
-      setSubmitting(false)
-    }
-  }
-
-  const handlePasskeyRegister = async (e) => {
-    e.preventDefault()
-    if (!pkAttested) return setError('I confirm I am 18 years of age or older')
-    setPkSubmitting(true)
-    setError('')
-    try {
       const options = await workerAuth.beginRegister({
-        email: pkForm.email,
-        firstName: pkForm.firstName,
-        lastName: pkForm.lastName,
+        email: form.email,
+        firstName: form.firstName,
+        lastName: form.lastName,
         adultAttested: true,
       })
       const publicKey = jsonToCredentialOptions(options)
       const credential = await navigator.credentials.create({ publicKey })
       if (!credential) {
-        setPkSubmitting(false)
+        setSubmitting(false)
         return
       }
-      const credentialJSON = credentialToJSON(credential)
-      await workerAuth.finishRegister(credentialJSON, pkForm.email)
+      await workerAuth.finishRegister(credentialToJSON(credential), form.email)
       await checkAuth()
       navigate('/dashboard', { replace: true })
     } catch (err) {
-      if (err.name === 'NotAllowedError' || err.name === 'AbortError') {
-        // User dismissed the dialog — silent (match Login.jsx)
-      } else {
+      if (err.name !== 'NotAllowedError' && err.name !== 'AbortError') {
         setError(err.message)
       }
-      setPkSubmitting(false)
-    }
-  }
-
-  const skipAi = () => navigate('/dashboard')
-
-  const saveAi = async (e) => {
-    e.preventDefault()
-    if (!ai.provider || !ai.api_key) return
-    setAiSaving(true)
-    try {
-      await api.request('/api/v1/ai_settings', {
-        method: 'PUT',
-        body: JSON.stringify({ provider: ai.provider, api_key: ai.api_key }),
-      })
-      navigate('/dashboard')
-    } catch (err) {
-      setAiMsg(err.message)
-      setAiSaving(false)
+      setSubmitting(false)
     }
   }
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value })
-  const setPk = (k) => (e) => setPkForm({ ...pkForm, [k]: e.target.value })
 
   return (
     <AuthLayout
       title="Create account"
-      subtitle="Start your financial journey"
+      subtitle="One passkey, no password to remember"
       error={error}
-      after={registered && (
-        <Card className="card-shell card-shell--elevated card-core--pad-xl border-l-3 border-l-success mt-4">
-          <h2 className="text-base font-semibold tracking-tight mb-1">Welcome to Sampada!</h2>
-          <p className="text-sm text-muted mb-4">
-            Your account is ready. You can enable the AI assistant anytime from Settings → AI Assistant.
-          </p>
-          <Button onClick={skipAi} className="w-full">Continue to dashboard</Button>
-        </Card>
-      )}
       foot={<><span>Already have one? </span><Link to="/login" className="text-accent font-medium">Sign in</Link></>}
     >
-      {WORKER_AUTH_ENABLED && pkSupported && (
-        <>
-          <form onSubmit={handlePasskeyRegister} className="space-y-3">
-            <div className="grid gap-2 grid-cols-1 sm:grid-cols-2">
-              <Input placeholder="First name" autoComplete="given-name" value={pkForm.firstName} onChange={setPk('firstName')} required />
-              <Input placeholder="Last name" autoComplete="family-name" value={pkForm.lastName} onChange={setPk('lastName')} required />
-            </div>
-            <Input type="email" placeholder="Email" autoComplete="email" value={pkForm.email} onChange={setPk('email')} required />
-            <label className="flex items-start gap-2 text-sm text-muted">
-              <input
-                type="checkbox"
-                checked={pkAttested}
-                onChange={e => setPkAttested(e.target.checked)}
-                required
-                className="mt-1"
-              />
-              <span>I confirm I am 18 years of age or older</span>
-            </label>
-            <p className="text-xs text-muted">
-              By creating an account you acknowledge our <Link to="/privacy" className="text-accent font-medium">Privacy Policy</Link>.
-            </p>
-            <Button type="submit" loading={pkSubmitting} className="w-full sm:w-auto mx-auto sm:mx-0">
-              {pkSubmitting ? 'Creating account…' : 'Create account with passkey'}
-            </Button>
-          </form>
-          <div className="flex items-center gap-3 text-muted text-sm my-4">
-            <div className="flex-1 h-px bg-border" />
-            <span>or create your account with a password</span>
-            <div className="flex-1 h-px bg-border" />
-          </div>
-        </>
+      {!supported && (
+        <p className="text-sm text-danger" role="alert">
+          This browser does not support passkeys. Use a browser with WebAuthn enabled.
+        </p>
       )}
-
       <form onSubmit={handleSubmit} className="space-y-3">
-        <input
-          type="text" name="website" value={website} onChange={e => setWebsite(e.target.value)}
-          tabIndex={-1} autoComplete="off" aria-hidden="true"
-          className="absolute -left-9999 w-1 h-1 opacity-0"
-        />
         <div className="grid gap-2 grid-cols-1 sm:grid-cols-2">
-          <Input placeholder="First name" autoComplete="given-name" value={form.first_name} onChange={set('first_name')} />
-          <Input placeholder="Last name" autoComplete="family-name" value={form.last_name} onChange={set('last_name')} />
+          <Input placeholder="First name" autoComplete="given-name" value={form.firstName} onChange={set('firstName')} required />
+          <Input placeholder="Last name" autoComplete="family-name" value={form.lastName} onChange={set('lastName')} required />
         </div>
         <Input type="email" placeholder="Email" autoComplete="email" value={form.email} onChange={set('email')} required />
-        <div className="relative">
-          <Input type={showPw ? 'text' : 'password'} placeholder="Password" autoComplete="new-password" minLength={MIN_PASSWORD_LENGTH} value={form.password} onChange={set('password')} required />
-          <PwToggle show={showPw} setShow={setShowPw} />
-        </div>
-        {form.password && (
-          <div>
-            <div className="flex items-center gap-2">
-              <div className="flex-1 flex gap-1">
-                {[1, 2, 3, 4].map(i => {
-                  const strength = passwordStrength(form.password)
-                  const variant = STRENGTH_VARIANTS[strength]
-                  const filled = i <= strength
-                  return (
-                    <div key={i} className={`h-1.5 flex-1 rounded-full transition-colors duration-fast ${filled ? `bg-${variant}` : 'bg-border'}`} />
-                  )
-                })}
-              </div>
-              <span className="text-xs text-muted min-w-[36px] text-right">{STRENGTH_LABEL[passwordStrength(form.password)]}</span>
-            </div>
-            <p className="text-xs text-muted mt-1">Use at least {MIN_PASSWORD_LENGTH} characters with a mix of uppercase, lowercase, numbers, and symbols.</p>
-          </div>
-        )}
-        <div className="relative">
-          <Input
-            type={showConfirm ? 'text' : 'password'}
-            placeholder="Confirm password"
-            autoComplete="new-password"
-            minLength={MIN_PASSWORD_LENGTH}
-            value={form.password_confirmation}
-            onChange={set('password_confirmation')}
+        <label className="flex items-start gap-2 text-sm text-muted">
+          <input
+            type="checkbox"
+            checked={attested}
+            onChange={e => setAttested(e.target.checked)}
             required
-            aria-invalid={form.password_confirmation && form.password !== form.password_confirmation}
+            className="mt-1"
           />
-          <PwToggle show={showConfirm} setShow={setShowConfirm} />
-          {form.password_confirmation && form.password !== form.password_confirmation && (
-            <p className="field__error" role="alert">Passwords do not match</p>
-          )}
-        </div>
-        <Button type="submit" loading={submitting} className="w-full sm:w-auto mx-auto sm:mx-0">
-          {submitting ? 'Creating account…' : 'Create account'}
+          <span>I confirm I am 18 years of age or older</span>
+        </label>
+        <p className="text-xs text-muted">
+          By creating an account you acknowledge our <Link to="/privacy" className="text-accent font-medium">Privacy Policy</Link>.
+        </p>
+        <Button type="submit" loading={submitting} disabled={!supported} className="w-full sm:w-auto mx-auto sm:mx-0">
+          {submitting ? 'Creating account…' : 'Create account with passkey'}
         </Button>
       </form>
     </AuthLayout>
