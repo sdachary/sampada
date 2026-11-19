@@ -2,32 +2,18 @@ node_modules/
 dist/
 frontend/node_modules/
 frontend/dist/
+worker/node_modules/
 .env
 .DS_Store
 *.log
 
-# Rails credentials — use ENV vars instead (SECRET_KEY_BASE)
-config/master.key
-config/credentials/production.key
-
-# Bundler
-vendor/bundle
-.bundle
-
-# Rails logs and temp
-log/
-tmp/
+# Cloudflare Worker local state / secrets
+worker/.dev.vars
+.wrangler/
+frontend/.lighthouseci/
 
 # Test coverage
 coverage/
-
-# Storage (Active Storage local disk)
-storage/
-
-# Compiled assets
-public/assets
-public/packs
-app/assets/builds
 
 # Generated reports
 reports/
@@ -38,14 +24,12 @@ docs-installer/
 # Local env overrides
 .env.local
 .env.development.local
-
-# Local tooling state and decommission archives.
-# .wrangler/cache holds CF account IDs; sampada-orphans.json holds user financial rows.
-.wrangler/
-frontend/.lighthouseci/
-ops-migration-archive/
 .env.test.local
 .env.production.local
+
+# Local tooling state and decommission archives.
+# sampada-orphans.json holds user financial rows.
+ops-migration-archive/
 
 # IDE/editor files
 .vscode/
@@ -60,5 +44,4 @@ ops-migration-archive/
 # AI assistant cache
 .superpowers/
 session-ses_02ae.md
-spec/examples.txt
 CLAUDE-PROMPT-*.md

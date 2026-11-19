@@ -151,20 +151,18 @@
 /* ══════════════ CONFIG — edit per app, nothing else ══════════════ */
 const CONFIG = {
   name: "Sampada",
-  lastUpdated: "September 11, 2026",
-  description: "Sampada is a personal-finance application for debt freedom and financial clarity: debts, investments, goals and savings in one place.",
-  // noBackend: set TRUE for browser-only tools (no server, data never leaves device).
+  lastUpdated: "November 19, 2026",
+  description: "A household finance OS for tracking accounts, transactions, budgets and documents.",
   noBackend: false,
-  // dataCollected: list of {t: title, d: detail} shown as bullet items in §3.
   dataCollected: [
-    { t: "Account details", d: "name and email address you provide at signup" },
-    { t: "Financial data", d: "the debts, accounts, transactions and goals you enter" },
-    { t: "Usage data", d: "consent choices, session timestamps, feature usage" }
+    { t: "Account details", d: "name, email address, currency and timezone you provide at signup" },
+    { t: "Financial records", d: "household accounts, transactions, budgets and statement documents you enter or upload" },
+    { t: "Passkey credentials", d: "the public half of the device passkeys used for passwordless sign-in; the private key never leaves your device" }
   ],
-  storage: "Your data is stored on secured servers operated by our hosting providers in India, encrypted in transit (TLS) and at rest. You control what is exported or erased.",
+  storage: "Your data is stored in Cloudflare D1 (SQLite) and R2 object storage and replicated across Cloudflare's global edge network, which includes data centres outside India. Data is encrypted in transit (TLS) and at rest, and backups, when enabled, live in the same Cloudflare infrastructure. Your 18+ age attestation is recorded with your account.",
   thirdParties: [
-    { name: "Better-Auth (AcharyLab)", purpose: "shared single sign-on and session tokens", data: "email, display name, session token" },
-    { name: "Cloudflare", purpose: "CDN, DNS, DDoS protection", data: "IP address and request metadata" }
+    { name: "Cloudflare", purpose: "API hosting, database (D1), file storage (R2) and CDN", data: "account details, financial records, uploaded documents" },
+    { name: "Resend", purpose: "transactional email delivery", data: "your email address" }
   ],
   hasPayments: false,
   payNote: "Payments are processed by Razorpay. We do not see or store your full payment card details.",

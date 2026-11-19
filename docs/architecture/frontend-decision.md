@@ -1,5 +1,9 @@
 # Frontend Decision: React 19 SPA + Rails API
 
+> **HISTORICAL (pre-cutover).** Written when the API was Rails. The React 19 SPA
+> decision still stands, but the backend is now a Cloudflare Worker (Hono + D1).
+> Live architecture: `docs/architecture/ARCHITECTURE.md`.
+
 ## Decision
 
 The frontend is a **React 19 SPA** built with Vite, located in `frontend/`. Rails is API-only — `app/views/` only contains a layout template and a mailer. All dynamic UI is served by the React SPA.

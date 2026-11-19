@@ -2,131 +2,116 @@
 
 ## Overview
 
-Sampada is a **Rails 8.1 (API-only) backend** + **React 19 SPA frontend**. Rails serves `/api/v1/*`, `/sidekiq` and `/up`; all UI is the Vite-built SPA in `frontend/` deployed to Cloudflare Pages. It follows a debt-first financial philosophy: **Negative → Zero → Positive**. Since the A6 data-API port, the `/api/v1` surface is served by the Cloudflare Worker (`worker/`, Hono + D1) behind the same auth gates; Rails remains the source of truth until the A5.4 cutover.
+Sampada is a **Cloudflare Worker API** (Hono + D1 + R2) behind a **React 19 SPA**
+built with Vite and deployed to Cloudflare Pages. There is no Rails app, Postgres
+database, Redis/Sidekiq, or shared Better-Auth service in the Sampada request path.
+The retired Rails source was removed from the repo after the cutover; git history
+retains it for rollback. Sampada follows a debt-first financial philosophy:
+**Negative → Zero → Positive**.
+
+```
+Browser → https://sampada.vayalabs.in (Cloudflare Pages SPA)
+              │  same-origin /api/worker/*
+              ▼
+        Pages Function [[path]].js  (proxy via WORKER_URL; /api/auth/* hard-404)
+              │
+              ▼
+        Worker sampada-api-production  (Hono)
+              ├── D1  sampada-db      (SQLite: data + sessions + magic links)
+              ├── R2  sampada-storage (backups / uploaded documents)
+              └── Resend REST         (magic-link + notification email)
+```
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
-| Framework | Rails 8.1.3.1 — **API-only** (no server-rendered views, no Stimulus) |
-| Database | PostgreSQL 16 |
+| API | Cloudflare Worker, Hono 4, TypeScript (`worker/`) |
+| Database | Cloudflare D1 (SQLite), migrations `0001`–`0007` |
+| File storage | Cloudflare R2 (`sampada-storage`) |
+| Auth | Passkeys (`@simplewebauthn/server`) primary + magic-link recovery (Resend); D1 sessions |
+| Edge abuse control | Pages Function honeypot + Turnstile on magic-link request |
+| Background | Worker Cron Triggers (`worker/wrangler.toml`): FX sync, snapshots, deletion checks |
 | Frontend | React 19 + Vite SPA (`frontend/`), hand-rolled CSS (no Tailwind), recharts + lucide-react |
-| Background | Sidekiq (Redis) + Sidekiq-Cron (host-networked on oradb) |
-| Auth | Better-Auth shared identity service — JWT verified per request |
-| Authorization | Ownership scoping via `ScopedCrud` concern + household membership roles |
-| Rate limiting | Rack::Attack |
-| AI | OpenAI-compatible API (OpenRouter, Ollama, Claude) via `Ai::Provider` |
-| Market Data | Yahoo Finance (free, no API key) |
-| Exchange Rates | Yahoo Finance → cached in DB, refreshed every 6h |
+| Rate limiting | D1-backed + origin guard in `worker/src/auth.ts` |
 | Format Support | CSV, JSON exports |
-| Testing | RSpec + FactoryBot + SimpleCov |
+| Testing | Vitest (Worker), node:test + Playwright + Lighthouse CI (frontend) |
 
 ## Directory Structure
 
 ```
 sampada/
-├── app/
-│   ├── controllers/       # Namespaced API controllers (app/controllers/api/v1)
-│   ├── jobs/              # Sidekiq jobs (import, FX sync, backups, reminders)
-│   ├── mailers/           # ActionMailer classes + notification templates
-│   ├── models/            # 30+ ActiveRecord models
-│   ├── services/          # Business logic services
-│   │   └── providers/     # Yahoo Finance adapter, market data
-│   ├── lib/               # feature_flags.rb (Setting-backed kill switches)
-│   ├── middleware/        # idempotency_key_replay.rb (offline queue replay)
-│   └── views/             # Mailer views only (no HTML views)
-├── config/
-│   ├── initializers/      # sidekiq_schedule.rb (cron), rack_attack.rb, cors.rb, auth.rb
-│   └── sidekiq.yml
-├── db/
-│   ├── migrate/           # Fresh migrations (sequence reset after Rails 8.1 upgrade)
-│   └── schema.rb          # Current database schema (generated — do not hand-edit)
-├── frontend/              # React 19 SPA (Vite) — NOT under app/
-│   ├── src/               # pages/ components/ lib/ i18n/
-│   ├── public/            # _headers (CSP/HSTS), sw.js (offline cache v2), manifest, legal pages
-│   ├── wrangler.toml      # Cloudflare Pages config
-│   └── vite.config.js     # dev proxy → http://localhost:3002
-├── lib/                   # Money, AiResponse, Semver, SystemDetector
-├── docs/                  # Architecture, roadmap, operations docs
-└── spec/                  # RSpec test suite (mirrors app/)
+├── worker/                   # Hono Worker — the only API
+│   ├── src/
+│   │   ├── index.ts          # route registry (mounts every /api/v1/* router)
+│   │   ├── auth.ts           # originGuard, requireAuth, session cookie, passkeys
+│   │   ├── api/              # one router per resource (debts, goals, dpdp, ...)
+│   │   ├── jobs/             # cron jobs (comms/deletions, FX, snapshots)
+│   │   └── email.ts          # Resend REST wrapper
+│   ├── migrations/           # D1 SQL migrations
+│   ├── wrangler.toml         # sampada-api-production, D1/R2 bindings, vars, crons
+│   └── vitest tests
+├── frontend/                 # React 19 SPA (Vite)
+│   ├── src/                  # pages/ components/ lib/ styles/
+│   ├── public/               # _headers (CSP/HSTS), sw.js, manifest, legal pages
+│   ├── functions/[[path]].js # /api/worker/* proxy; /api/auth/* hard-404
+│   ├── wrangler.toml         # Cloudflare Pages config
+│   └── vite.config.js        # dev proxy → local Worker on :8787
+└── docs/                     # architecture, roadmap, operations docs
 ```
 
-## Models
+## Data Model
 
-- **Core financial**: `User`, `Debt`, `DebtPayoff` (+`DebtPayoffDebt`), `Portfolio`, `Investment`, `DividendSip`, `RecurringExpense`, `InsurancePolicy`, `Journey`, `NetWorthSnapshot`, `Transaction`, `Budget`, `BudgetCategory`
-- **Multi-currency**: `Currency` (32), `ExchangeRate` (cached, 6h refresh, auto-inversion)
-- **Collaboration**: `Household`, `HouseholdMembership` (owner/admin/member/viewer), `Trip` (+`TripMember`, `TripExpense`, `TripSettlement`, `TripCategory`)
-- **AI chat**: `Conversation`, `Message`
-- **DPDP / compliance**: `ConsentRecord`, `DeletionRequest`, `Grievance`
-- **Supporting**: `Setting`, `Notification`, `PushSubscription`, `ApiCredential` (encrypted), `ActiveStorage*`
+D1 schema is defined in `worker/migrations/0001_initial.sql` (`0002`–`0007` add
+indexes and later features).
 
-## Key Services
+- **Core financial**: users, debts, payoff plans, portfolios, holdings, investments,
+  dividend SIPs, recurring expenses, insurance policies, journeys, net-worth snapshots,
+  transactions, budgets, budget categories
+- **Multi-currency**: currencies, exchange rates (cached, 6h refresh)
+- **Collaboration**: households, household memberships (owner/admin/member/viewer),
+  trips + trip members/expenses/settlements/categories
+- **AI chat**: conversations, messages
+- **DPDP / compliance**: consent records, deletion requests, grievances
+- **Supporting**: notifications, API credentials, webauthn credentials, magic links,
+  active_storage blobs/attachments, statement imports, recurring detections
 
-- `DebtPayoffService` — avalanche/snowball strategies
-- `DividendSipService` + `DividendScreenerService` — dividend SIP planning / AI suggestions
-- `PortfolioService` — MPT optimization (expected return, volatility, Sharpe)
-- `WealthJourneyTracker` — currency-aware debt/SIP/net-worth aggregation
-- `RecurringExpenseService` — EMI/subscription calendar event generation
-- `ExchangeRateService` + `Providers::YahooFinanceAdapter` — FX sync/conversion
-- `CashFlowForecastService` — 12-month projection, financial health scoring
-- `AnomalyDetectionService` — 3-sigma outliers, spending surges, budget breaches
-- `Ai::AdviceService` + `Ai::CommandParser` — NL transactions/budgets, categorisation, forecasting
-- `ExportService`, `AnnualReportService`, `GoalChartService` — reporting & export
-- `HouseholdDashboardService` — aggregated net worth, per-member summaries
-- `Trip::Settlement` — simplified debt settlement math
+## Key Modules
 
-## Background Jobs (app/jobs, Sidekiq)
-
-| Job | Schedule (sidekiq_schedule.rb) | Purpose |
-|-----|-------------------------------|---------|
-| `ImportMarketDataJob` | Weekdays 21:30 | Refresh investment prices/dividends |
-| `ExchangeRateSyncJob` | Every 6h | Sync all exchange rates |
-| `SecurityHealthCheckJob` | Daily 02:00 | Detect stale investments, queue imports |
-| `SyncCleanerJob` | Hourly | Trigger rate sync if rates stale |
-| `ExpenseReminderCheckJob` | Daily 09:00 | Due-date checks for recurring expenses |
-| `DatabaseBackupJob` | Daily 03:00 | `pg_dump` (custom, compressed), 7-day local retention |
-| `NetWorthSnapshotJob` | Daily 04:00 | Periodic net-worth snapshots |
-| `CheckDeletionsJob` / `ProcessDeletionJob` | — | DPDP erasure workflow (48h cancel window) |
-| `AiResponseJob` | — | Async AI model responses |
-
-## Data Flow
-
-```
-React SPA → /api/v1/* → Rails Controller → Service Object → Model → PostgreSQL
-                                       ↕
-                       Market Data Provider (Yahoo Finance — quotes, dividends, FX)
-                                       ↕
-                       Sidekiq Jobs (import, FX sync, backups, reminders)
-```
-
-## API Endpoints
-
-Rails serves no pages — the full surface is `/api/v1/*` under `config/routes.rb`:
-
-- **Auth**: `GET /api/v1/auth/me`, `PATCH /api/v1/auth/profile`
-- **DPDP**: `POST /api/v1/dpdp/{consent,erasure,cancel-deletion,full-export,grievance}`, `GET /api/v1/dpdp/consent`
-- **Financial**: `debts` (+`simulate`), `payoff_plans`, `insurance_policies`, `portfolios` (+`rebalance`, `prices`), `investments`, `goals`, `dividend_sips` (+`suggest`), `journey` (+`progress`, `net_worth`), `net_worth_snapshots`, `recurring_expenses` (+`calendar`)
-- **Tracking**: `transactions` (+`monthly_totals`, `bulk_create`), `budgets` (+`overview`), `budget_categories` (+`seed`), `dashboard` (+`projection`), `reports/*`
-- **Collaboration**: `households` (+`members`, `invite`, `dashboard`), `trips` + nested membership/expenses/settlements
-- **AI chat**: `conversations` + nested `messages`
-- **Misc**: `ai_settings`, `notifications` (+`mark_all_read`), `push_subscriptions` (+`vapid_public_key`), `api_credentials`, `onboarding/*`, `exports/*`, `feature_flags` (+`feature_flags/:key` toggle)
-- **Ops**: `GET /up`, `/sidekiq`
+- `debt` routers — avalanche/snowball payoff and simulation
+- `portfolio` routers — holdings, prices, rebalance
+- `reports` + `exports` — CSV/JSON downloads and full DPDP export
+- `goals` — projection + risk comparison
+- `households` — aggregated dashboard; role-scoped invites (pending accept/decline)
+- `trips` — simplified settlement math
+- `dpdp` — consent, erasure (48h cancel window; anonymizes, does not hard-delete),
+  grievances
+- `jobs/comms` — cron-driven deletion processing and notifications
 
 ## Auth & Security
 
-- `Api::BaseController` includes `BetterAuthVerification` — every request resolves the session token through the shared Better-Auth service (`BETTER_AUTH_VERIFY_URL`, default `http://localhost:4000/api/auth/verify`), `BETTER_AUTH_APP_ID=sampada`, 300s cache.
-- Authorization is per-resource via ownership scoping (`ScopedCrud`) and household membership roles. Rate limiting via Rack::Attack. Sensitive columns encrypted with Active Record `encrypts` (keys via env — not Rails credentials).
-- Frontend headers (CSP, HSTS, XFO, nosniff) served via `frontend/public/_headers` on Cloudflare Pages. Known gap: edge→origin HTTPS (see `SAMPADA_UAT_TRACKER.md` SEC-03).
+- Sessions live in D1 (`sessions` table) via the `sampada_session` cookie; passkeys
+  are the primary sign-in. Magic-link recovery verifies Turnstile, stores a hashed
+  single-use token with ~10 min TTL, and sends via Resend.
+- Every `/api/v1/*` router runs `originGuard` + `requireAuth` from `worker/src/auth.ts`.
+- Secrets (`TURNSTILE_SECRET_KEY`, `RESEND_API_KEY`, `D1_PROBE_TOKEN`) are Worker
+  secrets / SOPS only — never in git, wikis, or Notion.
+- Frontend security headers (CSP, HSTS, XFO, nosniff) are in `frontend/public/_headers`.
+  CSP `connect-src` is same-origin (`'self'`) plus Sentry; no external API host.
 
 ## Configuration
 
-Key environment variables (full set in `.env.example`): Auth (`BETTER_AUTH_*`), encryption (`ACTIVE_RECORD_ENCRYPTION_*`), DB/Redis (`DATABASE_URL`/`DB_HOST`/`DB_PORT`/`POSTGRES_USER`/`POSTGRES_DB`, `REDIS_HOST`), server (`PORT=3002`, `RAILS_MAX_THREADS`, `WEB_CONCURRENCY`), CORS (`CORS_ORIGINS`), backup (`DATABASE_BACKUP_ENABLED`), market data (`SECURITIES_PROVIDER`, `EXCHANGE_RATE_PROVIDER`, both `yahoo_finance`), AI + SMTP settings. Google/GitHub OAuth keys (`GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`) exist as placeholders only — OAuth is not provisioned.
+Worker bindings and vars are in `worker/wrangler.toml` (D1 `sampada-db`, R2
+`sampada-storage`, cron triggers). Frontend uses the same-origin default
+`VITE_API_URL=/api/worker`; Pages binding `WORKER_URL` points at the Worker and is
+load-bearing (missing → `502 Worker origin not configured`). See `.env.example`.
 
-## Deployment (oradb)
+## Deployment
 
-- `docker-compose.yml` runs `app` + `sidekiq`, **both `network_mode: host`** — required to reach PG/Redis/Better-Auth on the shared VM (defaults `DB_HOST`/`REDIS_HOST` → `10.0.1.46`).
-- Secrets via sops (`secrets.enc.env`, `.sops.yaml`), decrypted into `.env` by `deploy.sh`.
-- Dockerfile uses **jemalloc** (`LD_PRELOAD` + `MALLOC_CONF`) for all Ruby processes.
-- Memory baseline: app ~23 MiB, sidekiq ~78 MiB (1 GB VM).
-- Frontend deploys separately to Cloudflare Pages (`sampada.vayalabs.in`, `wrangler.toml`), API set via `VITE_API_URL`.
-- See `docs/DEPLOYMENT.md` for the full runbook.
+- Worker: `cd worker && npm run deploy` (`sampada-api-production`).
+- Frontend: `npm run build` in `frontend/`, deploy the directory to Cloudflare Pages
+  (`sampada.vayalabs.in`).
+- Health: `GET /api/worker/up` through the Pages proxy →
+  `{"status":"ok","service":"sampada-api"}`.
+- Backups: R2 `sampada-storage` objects and D1 exports are retained for rollback.
+- See `docs/DEPLOYMENT.md` for the runbook.

@@ -7,9 +7,6 @@ on:
       - '*.md'
       - 'docs/**'
       - '.github/**'
-  # Without this, PR checks were only the Cloudflare Pages preview: rubocop,
-  # brakeman, bundler-audit, rspec and the frontend build all ran after the
-  # merge, never before it. Same blind spot bepara and sadhan had.
   pull_request:
     branches: [main]
     paths-ignore:
@@ -22,30 +19,35 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint:
+  security:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: .ruby-version
-          # Disable built-in bundler cache — we handle it manually to allow Gemfile.lock updates
-          bundler-cache: false
-      - name: Install dependencies (with lockfile update)
-        run: |
-          bundle config set frozen false
-          bundle install --jobs 4 --path vendor/bundle
       - name: gitleaks
         run: docker run -v ${{ github.workspace }}:/repo ghcr.io/gitleaks/gitleaks:latest detect -c /repo/.gitleaks.toml -s /repo
-      - name: Run RuboCop (auto-fix)
-        run: bundle exec rubocop -A || true
-      - name: Run RuboCop (verify)
-        run: bundle exec rubocop
-      - name: Run Brakeman
-        run: bundle exec brakeman -A --no-pager --exit-on-warn --except EOLRails
-      - name: Run Bundler Audit (warn only)
-        run: bundle exec bundle-audit check --update || true
+
+  worker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: worker/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+        working-directory: worker
+      - name: Type check
+        run: npm run tsc
+        working-directory: worker
+      - name: Test
+        run: npm test
+        working-directory: worker
+      - name: Deploy dry-run
+        run: npx wrangler deploy --dry-run
+        working-directory: worker
 
   frontend:
     runs-on: ubuntu-latest
@@ -99,62 +101,3 @@ jobs:
       - name: Visual smoke tests (warn only)
         run: npx playwright test test/visual-smoke.test.js || true
         working-directory: frontend
-
-  test:
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: sampada
-          POSTGRES_PASSWORD: sampada
-          POSTGRES_DB: sampada_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-      redis:
-        image: redis:7
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
-    steps:
-      - uses: actions/checkout@v7
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: .ruby-version
-          # Disable built-in bundler cache — we handle it manually to allow Gemfile.lock updates
-          bundler-cache: false
-      - name: Install dependencies (with lockfile update)
-        run: |
-          bundle config set frozen false
-          bundle install --jobs 4 --path vendor/bundle
-      - name: Setup database
-        env:
-          DATABASE_URL: postgres://sampada:sampada@localhost:5432/sampada_test
-          RAILS_ENV: test
-        run: |
-          bin/rails db:drop db:create db:migrate 2>&1
-      - name: Run RSpec
-        env:
-          DATABASE_URL: postgres://sampada:sampada@localhost:5432/sampada_test
-          RAILS_ENV: test
-          REDIS_URL: redis://localhost:6379/1
-          SECRET_KEY_BASE: test_secret_key_base_for_ci
-        run: bundle exec rspec
-      - name: gitleaks
-        run: docker run -v ${{ github.workspace }}:/repo ghcr.io/gitleaks/gitleaks:latest detect -c /repo/.gitleaks.toml -s /repo
-      - name: Upload coverage
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: coverage-report
-          path: coverage/
