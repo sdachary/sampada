@@ -32,6 +32,32 @@ export async function cleanupStatementImports(env: Bindings, now: Date = new Dat
     .run();
 }
 
+/** Session rows are read-filtered for expiry, never deleted, so hashed tokens
+ *  accumulate. Sweep expired + revoked rows hourly (retention gap 2). */
+export const SESSION_PURGE_SQL = 'DELETE FROM sessions WHERE expires_at < ? OR revoked_at IS NOT NULL';
+
+export async function purgeExpiredSessions(env: Bindings, now: Date = new Date()): Promise<void> {
+  await env.DB.prepare(SESSION_PURGE_SQL).bind(now.toISOString()).run();
+}
+
+export const DEAD_LETTER_RETENTION_DAYS = 14;
+
+/** Cutoff for the dead-letter sweep, in ISO-8601 (D1 stores ISO text). */
+export function deadLetterCutoff(now: Date): string {
+  return new Date(now.getTime() - DEAD_LETTER_RETENTION_DAYS * DAY_MS).toISOString();
+}
+
+/** Dead-lettered queue rows keep their payload + last_error forever otherwise.
+ *  Purge only rows that exhausted retries AND carry an error older than 14
+ *  days — successful rows (last_error IS NULL) are left alone. The retention
+ *  doc's `dead_at` column never existed in the live schema (gap 3). */
+export const DEAD_LETTER_PURGE_SQL =
+  'DELETE FROM job_queue WHERE processed_at < ? AND attempts >= max_attempts AND last_error IS NOT NULL';
+
+export async function purgeDeadLetters(env: Bindings, now: Date = new Date()): Promise<void> {
+  await env.DB.prepare(DEAD_LETTER_PURGE_SQL).bind(deadLetterCutoff(now)).run();
+}
+
 /** CheckDeletionsJob: pending deletion requests whose cancel window has ended
  *  (scheduled_for <= now) get a process_deletion queue job. DPDP semantics:
  *  the 48h cancel window is enforced by scheduled_for; the processor (chunk 4)

@@ -7,12 +7,21 @@ import type { Bindings } from '../index';
 import { exchangeRateSync, importMarketData, priceRefresh } from './data';
 import { securityHealthCheck, databaseBackup } from './backup';
 import { expenseReminderCheck } from './comms';
-import { checkDeletions, cleanupStatementImports, netWorthSnapshot, syncCleaner } from './maintenance';
+import {
+  checkDeletions,
+  cleanupStatementImports,
+  netWorthSnapshot,
+  purgeDeadLetters,
+  purgeExpiredSessions,
+  syncCleaner,
+} from './maintenance';
 
 export type JobName =
   | 'check_deletions'
   | 'sync_cleaner'
   | 'cleanup_statement_imports'
+  | 'purge_expired_sessions'
+  | 'purge_dead_letters'
   | 'price_refresh'
   | 'exchange_rate_sync'
   | 'import_market_data'
@@ -28,7 +37,8 @@ export const DAILY_CRON = '0 2,3,4,9 * * *';
  * Which jobs fire for a given cron event at `now` (UTC).
  * - every 30 min: check_deletions (was the Sidekiq cron with a 30-minute interval)
  * - at minute 0 of every hour: sync_cleaner, cleanup_statement_imports
- *   (Rails ran cleanup at :45 — moved to :00), price_refresh;
+ *   (Rails ran cleanup at :45 — moved to :00), purge_expired_sessions,
+ *   purge_dead_letters, price_refresh;
  *   exchange_rate_sync when hour % 6 == 0;
  *   import_market_data at 21:00 UTC Mon–Fri (after market close).
  * - 02/03/04/09 UTC daily: security_health_check, database_backup,
@@ -42,7 +52,7 @@ export function jobsForCron(cron: string, now: Date): JobName[] {
   if (cron === HALF_HOUR_CRON) {
     const jobs: JobName[] = ['check_deletions'];
     if (minute === 0) {
-      jobs.push('sync_cleaner', 'cleanup_statement_imports', 'price_refresh');
+      jobs.push('sync_cleaner', 'cleanup_statement_imports', 'purge_expired_sessions', 'purge_dead_letters', 'price_refresh');
       if (hour % 6 === 0) jobs.push('exchange_rate_sync');
       if (hour === 21 && day >= 1 && day <= 5) jobs.push('import_market_data');
     }
@@ -70,6 +80,8 @@ export const HANDLERS: Record<JobName, JobHandler> = {
   check_deletions: checkDeletions,
   sync_cleaner: syncCleaner,
   cleanup_statement_imports: cleanupStatementImports,
+  purge_expired_sessions: purgeExpiredSessions,
+  purge_dead_letters: purgeDeadLetters,
   price_refresh: priceRefresh,
   exchange_rate_sync: exchangeRateSync,
   import_market_data: importMarketData,
