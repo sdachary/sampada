@@ -6,13 +6,22 @@ import { convertAmount } from '../jobs/data';
 
 export type AppContext = Context<AppEnv>;
 
-/** `render_success` — Rails merges an optional message into the data hash. */
-export function success<T extends Record<string, unknown>>(c: AppContext, data: T, message?: string) {
-  return c.json(message ? { ...data, message } : data);
+/** `render_success` — Rails merges an optional message into the data hash;
+ *  arrays render raw (no message). */
+export function success(c: AppContext, data: unknown, message?: string) {
+  const body = message && data && typeof data === 'object' && !Array.isArray(data)
+    ? { ...(data as Record<string, unknown>), message }
+    : data;
+  return c.json(body);
 }
 
 /** `render_error` — always carries success:false + message (+ optional errors). */
-export function error(c: AppContext, message: string, status: 400 | 401 | 403 | 404 | 422 | 501, errors?: string[]) {
+export function error(
+  c: AppContext,
+  message: string,
+  status: 400 | 401 | 403 | 404 | 409 | 422 | 501,
+  errors?: string[] | Record<string, unknown>,
+) {
   return c.json({ success: false, message, ...(errors ? { errors } : {}) }, status);
 }
 
@@ -60,6 +69,9 @@ export function symbolFor(code: string | null | undefined): string {
   return CURRENCY_SYMBOLS[code] ?? code;
 }
 
+/** Currency::CURRENCY_SYMBOLS.keys — the Transaction inclusion list. */
+export const CURRENCY_CODES = Object.keys(CURRENCY_SYMBOLS);
+
 /** FeatureFlags::FEATURES — per-user flags persist in the settings table. */
 export const FEATURE_FLAGS = ['pdf_import', 'recurring_detection', 'passkeys'] as const;
 
@@ -73,6 +85,13 @@ export async function featureFlagEnabled(
     .bind(userId, `${key}_enabled`)
     .first<{ value: string | null }>();
   return row?.value !== 'off';
+}
+
+/** Rails ActiveRecord BigDecimal cast: nil/''/garbage → nil. */
+export function castDecimal(v: unknown): number | null {
+  if (v === null || v === undefined || v === '') return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
 }
 
 /** Settings find_or_initialize_by + update! (value stored as text). */
@@ -90,6 +109,16 @@ export async function setSetting(c: AppContext, userId: string, key: string, val
       .bind(crypto.randomUUID(), key, value, userId, now, now)
       .run();
   }
+}
+
+export function getSetting(c: AppContext, userId: string, key: string): Promise<string | null> {
+  return c.env.DB.prepare('SELECT value FROM settings WHERE user_id = ? AND key = ?')
+    .bind(userId, key).first<{ value: string | null }>().then((r) => (r ? r.value : null));
+}
+
+export function deleteSetting(c: AppContext, userId: string, key: string): Promise<void> {
+  return c.env.DB.prepare('DELETE FROM settings WHERE user_id = ? AND key = ?')
+    .bind(userId, key).run().then(() => undefined);
 }
 
 /** notifications.metadata is a JSON column in Rails; D1 stores TEXT. */
@@ -148,16 +177,38 @@ export function monthLabel(date: Date): string {
 
 export type PayoffDebt = { id: string; balance: number; interest_rate: number; min_payment: number };
 
-/** DebtPayoffService#calculate_plan on the highest-interest-first ordering.
- *  Mirrors the Ruby loop exactly, including its `payment` accumulation quirk
- *  (extra only carries while the top-of-stack debt is the first positive one). */
-export function avalanchePlan(debts: PayoffDebt[]): { months: number; total_interest: number } {
-  const ordered = debts.map((d) => ({ ...d })).sort((a, b) => b.interest_rate - a.interest_rate);
+export type PayoffOptions = {
+  extra_payment?: number;
+  lump_sum_amount?: number;
+  annual_extra?: number;
+  custom_extra_payments?: Record<number, number>;
+  strategy?: 'avalanche' | 'snowball';
+};
+
+/** DebtPayoffService#calculate_plan. avalanche = highest-interest-first,
+ *  snowball = smallest-balance-first (Rails sort_by). Mirrors the Ruby loop
+ *  exactly, including its `payment` accumulation quirk (extra only carries
+ *  while the top-of-stack debt is the first positive one). */
+export function avalanchePlan(
+  debts: PayoffDebt[],
+  opts: PayoffOptions = {},
+): { months: number; total_interest: number; schedule: Array<Record<string, number>> } {
+  const ordered = debts.map((d) => ({ ...d })).sort(
+    opts.strategy === 'snowball' ? (a, b) => a.balance - b.balance : (a, b) => b.interest_rate - a.interest_rate,
+  );
+  const extra = opts.extra_payment ?? 0;
+  const lumpSum = opts.lump_sum_amount ?? 0;
+  const annualExtra = opts.annual_extra ?? 0;
+  const custom = opts.custom_extra_payments ?? {};
   let months = 0;
   let totalInterest = 0;
-  while (ordered.some((d) => d.balance > 0)) {
+  const schedule: Array<Record<string, number>> = [];
+  // ponytail: 1200-month cap — Rails loops forever (schedule grows unbounded)
+  // when a debt has 0 min_payment and no extra; real plans end in < 100y.
+  const MAX_MONTHS = 1200;
+  while (ordered.some((d) => d.balance > 0) && months < MAX_MONTHS) {
     months += 1;
-    let payment = 0;
+    let payment = extra;
     let monthInterest = 0;
     let monthPrincipal = 0;
     ordered.forEach((debt, index) => {
@@ -171,14 +222,28 @@ export function avalanchePlan(debts: PayoffDebt[]): { months: number; total_inte
       monthPrincipal += monthlyMin;
       if (index === ordered.findIndex((d) => d.balance > 0)) payment += monthlyMin;
     });
+
+    let extraAmount = payment;
+    if (months === 1) extraAmount += lumpSum;
+    if (months % 12 === 0) extraAmount += annualExtra;
+    if (custom[months]) extraAmount += custom[months];
+
     const priorityDebt = ordered.find((d) => d.balance > 0);
-    if (priorityDebt && payment > 0) {
-      const amount = Math.min(payment, priorityDebt.balance);
+    if (priorityDebt && extraAmount > 0) {
+      const amount = Math.min(extraAmount, priorityDebt.balance);
       priorityDebt.balance -= amount;
       monthPrincipal += amount;
     }
+
+    schedule.push({
+      month: months,
+      payment: round2(monthPrincipal + monthInterest),
+      interest: round2(monthInterest),
+      principal: round2(monthPrincipal),
+      balance: round2(ordered.reduce((s, d) => s + d.balance, 0)),
+    });
   }
-  return { months, total_interest: round2(totalInterest) };
+  return { months, total_interest: round2(totalInterest), schedule };
 }
 
 // ---- net worth snapshots (NetWorthSnapshot.current / .create_snapshot) ----
