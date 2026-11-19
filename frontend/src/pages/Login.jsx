@@ -5,6 +5,7 @@ import AuthLayout from './AuthLayout'
 import { Input, Button } from '../components/ui'
 import { credentialToJSON, jsonToCredentialOptions, isPasskeySupported, isConditionalMediationSupported } from '../lib/passkeys'
 import { api, workerAuth, WORKER_AUTH_ENABLED } from '../lib/api'
+import Turnstile from '../components/Turnstile'
 
 export default function Login() {
   const { user, login, checkAuth } = useAuth()
@@ -17,6 +18,8 @@ export default function Login() {
   const [error, setError] = useState('')
   const [passkeySupported, setPasskeySupported] = useState(false)
   const [conditionalSupported, setConditionalSupported] = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState('')
+  const [sentLink, setSentLink] = useState(false)
   const emailRef = useRef(null)
 
   useEffect(() => {
@@ -35,6 +38,19 @@ export default function Login() {
       navigate('/dashboard')
     } catch (err) {
       setError(err.message)
+      setSubmitting(false)
+    }
+  }
+
+  const handleMagicLink = async () => {
+    setSubmitting(true)
+    setError('')
+    try {
+      await workerAuth.magicLinkRequest(email, turnstileToken)
+      setSentLink(true)
+    } catch (err) {
+      setError(err.message || 'Could not send sign-in link')
+    } finally {
       setSubmitting(false)
     }
   }
@@ -155,6 +171,32 @@ export default function Login() {
             >
               {submitting ? 'Signing in…' : 'Use passkey'}
             </Button>
+          </>
+        )}
+
+        {WORKER_AUTH_ENABLED && (
+          <>
+            <div className="flex items-center gap-3 text-muted text-sm">
+              <div className="flex-1 h-px bg-border" />
+              <span>or</span>
+              <div className="flex-1 h-px bg-border" />
+            </div>
+            <Turnstile onToken={setTurnstileToken} />
+            <Button
+              variant="secondary"
+              type="button"
+              onClick={handleMagicLink}
+              loading={submitting}
+              disabled={submitting || !email}
+              className="w-full sm:w-auto mx-auto sm:mx-0"
+            >
+              Email me a sign-in link
+            </Button>
+            {sentLink && (
+              <p className="text-sm text-accent" role="status">
+                If an account exists for that email, a sign-in link is on its way. It expires in 10 minutes.
+              </p>
+            )}
           </>
         )}
       </form>

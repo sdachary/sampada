@@ -105,6 +105,16 @@ export const workerAuth = {
 
   me: () => workerRequest('/me'),
 
+  magicLinkRequest: (email, turnstileToken) => workerRequest('/magic-link/request', {
+    method: 'POST',
+    body: JSON.stringify({ email, turnstileToken }),
+  }),
+
+  magicLinkVerify: (token) => workerRequest('/magic-link/verify', {
+    method: 'POST',
+    body: JSON.stringify({ token }),
+  }),
+
   logout: () => workerRequest('/logout', { method: 'POST', body: '{}' }),
 }
 
