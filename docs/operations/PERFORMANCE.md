@@ -1,5 +1,9 @@
 # Performance & Latency Baseline
 
+> **HISTORICAL (pre-cutover).** Measured against the retired Rails VM on oradb.
+> The live API is a Cloudflare Worker; these numbers are retained as a baseline
+> only and are not representative of the current stack.
+
 > Task #258b (ACHA-258). Measured 2026-08-12 via public URL
 > `http://sampada.140.245.227.176.nip.io`. Fresh user, empty data set.
 

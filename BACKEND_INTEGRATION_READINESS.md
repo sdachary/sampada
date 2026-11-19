@@ -1,171 +1,59 @@
 # Sampada — Backend Integration Readiness Checklist
 
-**Prerequisite:** All UAT gates passed (see `UAT_TESTING_PLAN.md`)
+**Prerequisite:** All UAT gates passed (see `UAT_TESTING_PLAN.md`).
+
+**Stack:** Cloudflare Worker (`sampada-api-production`, Hono + D1 + R2) behind the
+Cloudflare Pages SPA (`sampada.vayalabs.in`). Pages Functions in
+`frontend/functions/[[path]].js` proxy `/api/worker/*` to the Worker via the
+`WORKER_URL` binding. Auth is passkey-first with a magic-link recovery path;
+sessions live in D1. There is no Rails app, Postgres database, or shared
+Better-Auth service in the Sampada request path.
 
 ---
 
 ## API Contract Verification
 
-### Authentication (`/api/v1/auth/*`)
-| Endpoint | Method | Request | Response | Status |
-|----------|--------|---------|----------|--------|
-| `/register` | POST | `{email, password, first_name, last_name}` | `{user, token}` | |
-| `/login` | POST | `{email, password}` | `{user, token}` | |
-| `/logout` | POST | — | `{success: true}` | |
-| `/me` | GET | — | `{user}` | |
-| `/profile` | PATCH | `{first_name, last_name, currency}` | `{user}` | |
-| `/forgot-password` | POST | `{email}` | `{success: true}` | |
-| `/reset-password` | POST | `{token, password, password_confirmation}` | `{success: true}` | |
+All data routes are mounted in `worker/src/index.ts` under `/api/v1/*` and require
+the `sampada_session` cookie. Unauthenticated requests return `401`.
 
-### Passkeys (`/api/v1/auth/passkeys/*`)
-| Endpoint | Method | Request | Response | Status |
-|----------|--------|---------|----------|--------|
-| `/register/options` | GET | — | `{options: PublicKeyCredentialCreationOptions}` | |
-| `/register` | POST | `{credential, label}` | `{credential}` | |
-| `/auth/options` | GET | `?email=` | `{options: PublicKeyCredentialRequestOptions}` | |
-| `/auth/verify` | POST | `{email, credential}` | `{user, token}` | |
-| `/` | GET | — | `{credentials: [...]}` | |
-| `/:id` | DELETE | — | `{success: true}` | |
+| Area | Routes | Notes |
+|------|--------|-------|
+| Auth | `/api/v1/auth/me`, `/profile`, `/passkeys/*`, `/magic-link/request`, `/magic-link/verify` | Passkey primary; magic-link recovery via Resend |
+| Dashboard | `/api/v1/dashboard`, `/dashboard/projection` | Net worth, debt/investment totals, projections |
+| Transactions | `/api/v1/transactions*`, `/monthly_totals`, `/bulk_create` | CSV import, recurring detection |
+| Debts | `/api/v1/debts*`, `/debts/:id/simulate`, `/payoff_plans` | Avalanche/snowball payoff |
+| Budgets | `/api/v1/budgets*`, `/budget_categories` | Overview with spend/remaining |
+| Goals | `/api/v1/goals*` | Projection + risk comparison |
+| Portfolios | `/api/v1/portfolios*`, `/investments*`, `/sips`, `/dividend_sips` | Holdings, prices, rebalance |
+| Reports/Exports | `/api/v1/reports*`, `/exports*`, `/dpdp/full-export` | CSV/JSON downloads via `api.raw()` |
+| Households/Trips | `/api/v1/households*`, `/api/v1/trips*` | Shared budgets, trip settlements |
+| Conversations | `/api/v1/conversations*` | Data CRUD; AI provider actions return 501 |
+| DPDP | `/api/v1/dpdp/*` | Consent, erasure, cancel, grievance, full export |
+| Settings | `/api/v1/ai_settings`, `/api/v1/api_credentials`, `/api/v1/feature_flags`, `/api/v1/onboarding/*` | Per-user settings |
+| Notifications | `/api/v1/notifications*` | In-app notifications |
 
-### Dashboard (`/api/v1/dashboard*`)
-| Endpoint | Method | Response | Status |
-|----------|--------|----------|--------|
-| `/` | GET | `{net_worth, total_debt, total_investments, monthly_expenses, wealth_score, debt_free_progress_pct, debt_free_date, recent_snapshots[], debt_delta, debt_count, portfolio_count, sip_count, currency_symbol, unread_notifications}` | |
-| `/projection` | GET | `{projection: [{month, debt, investments, net_worth}]}` | |
-
-### Transactions (`/api/v1/transactions*`)
-| Endpoint | Method | Request/Query | Response | Status |
-|----------|--------|---------------|----------|--------|
-| `/` | GET | `?transaction_type=&page=&per_page=` | `{transactions: [], pagination}` | |
-| `/` | POST | `{description, amount, transaction_type, category_id, date, merchant, recurring, tags}` | `{transaction}` | |
-| `/:id` | PATCH | `{...}` | `{transaction}` | |
-| `/:id` | DELETE | — | `{success: true}` | |
-| `/monthly_totals` | GET | — | `[{month, income, expenses, net, label}]` | |
-| `/bulk_create` | POST | `{transactions_csv: string}` | `{imported, errors[]}` | |
-
-### Debts (`/api/v1/debts*`)
-| Endpoint | Method | Request | Response | Status |
-|----------|--------|---------|----------|--------|
-| `/` | GET | — | `[{id, name, amount, paid_amount, interest_rate, emi_amount, category, status, due_date, started_at, currency_code, currency_symbol, debt_free_date, months_remaining}]` | |
-| `/` | POST | `{name, amount, interest_rate, emi_amount, category, due_date, started_at, currency_code, notes}` | `{debt}` | |
-| `/:id` | GET | — | `{debt}` | |
-| `/:id` | PATCH | `{...}` | `{debt}` | |
-| `/:id` | DELETE | — | `{success: true}` | |
-
-### Budgets (`/api/v1/budgets*`)
-| Endpoint | Method | Request | Response | Status |
-|----------|--------|---------|----------|--------|
-| `/overview` | GET | — | `[{id, budget_category_id, category_name, monthly_limit, spent, remaining, usage_pct, on_track, period}]` | |
-| `/` | POST | `{budget_category_id, monthly_limit, period, alert_threshold, rollover}` | `{budget}` | |
-| `/:id` | PATCH | `{...}` | `{budget}` | |
-| `/:id` | DELETE | — | `{success: true}` | |
-
-### Goals (`/api/v1/goals*`)
-| Endpoint | Method | Request | Response | Status |
-|----------|--------|---------|----------|--------|
-| `/` | GET | — | `[{id, name, target_amount, target_year, monthly_sip, top_up_amount, top_up_frequency, allocation, equity_growth, debt_growth, gold_growth, final_corpus, risk_comparison, projection, currency_code}]` | |
-| `/` | POST | `{...}` | `{goal}` | |
-| `/:id` | PUT | `{...}` | `{goal}` | |
-| `/:id` | DELETE | — | `{success: true}` | |
-
-### Portfolios/Investments (`/api/v1/portfolios*`, `/api/v1/investments*`)
-| Endpoint | Method | Notes | Status |
-|----------|--------|-------|--------|
-| `/portfolios` | GET/POST | Portfolio CRUD | |
-| `/portfolios/:id/holdings` | GET | Holdings with current prices | |
-| `/portfolios/:id/rebalance` | POST | Buy-only engine input | |
-| `/investments` | GET | Investment transactions | |
-| `/sips` | GET/POST | SIP CRUD | |
-
-### Reports/Exports (`/api/v1/reports*`, `/api/v1/exports*`, `/api/v1/dpdp*`)
-| Endpoint | Method | Response | Status |
-|----------|--------|----------|--------|
-| `/reports/spending` | GET | Category breakdown | |
-| `/reports/net-worth` | GET | Historical snapshots | |
-| `/exports/transactions` | GET | CSV/JSON stream | |
-| `/dpdp/full-export` | POST | Complete user data JSON | |
-
-### Settings (`/api/v1/*`)
-| Area | Endpoints | Status |
-|------|-----------|--------|
-| AI | `/ai_settings` GET/PUT/DELETE | |
-| API Credentials | `/api_credentials` GET/POST, `/:id` DELETE | |
-| Push | `/push/subscribe`, `/push/unsubscribe` | |
-| Onboarding | `/onboarding/snapshot`, `/onboarding/complete` | |
+Full endpoint inventory: `worker/src/index.ts` + `worker/src/api/*.ts`.
 
 ---
 
-## Data Model Alignment
+## Data Model
 
-### User
-```ruby
-# Must match frontend expectations
-User:
-  id, email, first_name, last_name, currency, onboarded, created_at
-```
-
-### Transaction
-```ruby
-Transaction:
-  id, user_id, description, amount, transaction_type, category_id, 
-  transaction_date, merchant, recurring, recurring_rule, tags, created_at
-```
-
-### Debt
-```ruby
-Debt:
-  id, user_id, name, amount, paid_amount, interest_rate, emi_amount,
-  category, status, due_date, started_at, currency_code, notes,
-  debt_free_date, months_remaining, created_at
-```
-
-### Budget
-```ruby
-Budget:
-  id, user_id, budget_category_id, monthly_limit, period, alert_threshold, rollover
-```
-
-### Goal
-```ruby
-Goal:
-  id, user_id, name, target_amount, target_year, monthly_sip, top_up_amount,
-  top_up_frequency, allocation, equity_growth, debt_growth, gold_growth,
-  final_corpus, risk_comparison, projection, currency_code
-```
-
-### Portfolio/Holding
-```ruby
-Portfolio: id, user_id, name, currency, broker
-Holding: id, portfolio_id, symbol, name, quantity, avg_buy_price, current_price, asset_type
-```
+D1 schema lives in `worker/migrations/0001_initial.sql` through `0007_*`.
+Apply with `npm run db:migrate:remote` in `worker/`. Core user-owned tables:
+`users`, `sessions`, `magic_links`, `webauthn_credentials`, `transactions`,
+`debts`, `budgets`, `budget_categories`, `goals`, `portfolios`, `holdings`,
+`investments`, `sips`, `consent_records`, `deletion_requests`, `grievances`,
+`households`, `trips`, `conversations`, `messages`, `notifications`,
+`net_worth_snapshots`.
 
 ---
 
-## Error Response Format (Must Match Frontend)
+## Error Response Format
 
-```json
-{
-  "error": "Human-readable message",
-  "details": { "field": "specific issue" },
-  "code": "ERROR_CODE"
-}
-```
-
-Frontend expects:
-- `err.message` for toast display
-- `err.status` for conditional handling (e.g., 501 = not implemented)
-- 422 for validation errors with `details`
-
----
-
-## Webhook/Async Endpoints
-
-| Event | Endpoint | Payload | Status |
-|-------|----------|---------|--------|
-| Transaction created | `/webhooks/transactions` | `{transaction}` | |
-| Debt payment recorded | `/webhooks/debts/payment` | `{debt_id, amount}` | |
-| Goal milestone reached | `/webhooks/goals/milestone` | `{goal_id, pct}` | |
-| Rebalance executed | `/webhooks/portfolio/rebalance` | `{portfolio_id, trades[]}` | |
+`success(c, data)` → `{ success: true, ...data }`.
+`error(c, message, status, details?)` → `{ error: message, status, details? }`.
+Frontend reads `err.message` for toasts and `err.status` for conditional handling.
+`422` for validation errors; `501` for actions with no Worker implementation.
 
 ---
 
@@ -173,147 +61,57 @@ Frontend expects:
 
 | Metric | Target |
 |--------|--------|
-| API p95 latency | ≤ 200ms |
+| Worker p95 latency | ≤ 200ms |
 | Dashboard aggregation | ≤ 500ms |
 | CSV import (1000 rows) | ≤ 5s |
-| Rebalance calculation (50 holdings) | ≤ 1s |
 | Full DPDP export | ≤ 10s |
 
 ---
 
 ## Security Checklist
 
-- [ ] All endpoints require authentication (except register/login/forgot-password)
-- [ ] Rate limiting on auth endpoints (rack-attack configured)
-- [ ] CORS restricted to frontend origin
-- [ ] API credentials encrypted at rest (ActiveRecord encryption)
-- [ ] Passkey credentials stored as credential IDs only (no private keys)
-- [ ] Push subscription keys encrypted
-- [ ] DPDP export includes ALL user data (GDPR Art. 15)
-- [ ] Deletion request triggers 30-day grace period (DPDP)
-- [ ] Audit logs for sensitive actions (settings changes, exports, deletions)
+- [ ] Every `/api/v1/*` route behind `originGuard` + `requireAuth` (except magic-link request/verify)
+- [ ] Turnstile verified on magic-link request; secret in Worker secrets only
+- [ ] Passkey public credentials only; no private keys or password hashes stored
+- [ ] Household role matrix enforced (owner/admin update+invite, owner destroy, invites pending)
+- [ ] DPDP export scoped to the authenticated user
+- [ ] Secrets (`TURNSTILE_SECRET_KEY`, `RESEND_API_KEY`, `D1_PROBE_TOKEN`) in Worker secrets / SOPS, never in git
 
----
-
-## Database Migrations (Verify Applied)
-
-```bash
-# Check migration status
-rails db:migrate:status
-
-# Required tables (non-exhaustive)
-- users
-- transactions
-- budget_categories
-- budgets
-- debts
-- goals
-- portfolios
-- holdings
-- investment_transactions
-- sips
-- api_credentials
-- webauthn_credentials
-- push_subscriptions
-- consent_records
-- deletion_requests
-- households
-- household_memberships
-- trips
-- trip_members
-- trip_expenses
-- conversations
-- messages
-- notifications
-- net_worth_snapshots
-- recurring_expenses
-- recurring_detections
-- statement_imports
-- insurance_policies
-```
-
----
-
-## Environment Variables (Production)
-
-```bash
-# Frontend (Vite)
-VITE_API_URL=https://api.sampada.app
-
-# Backend (Rails)
-DATABASE_URL=postgresql://...
-RAILS_MASTER_KEY=...
-SECRET_KEY_BASE=...
-BETTER_AUTH_SECRET=...
-WEB_PUSH_VAPID_PUBLIC_KEY=...
-WEB_PUSH_VAPID_PRIVATE_KEY=...
-WEB_PUSH_CONTACT=mailto:admin@sampada.app
-
-# Optional AI
-OPENAI_API_KEY=...
-GEMINI_API_KEY=...
-GROK_API_KEY=...
-OPENROUTER_API_KEY=...
-
-# Exchange Rates
-EXCHANGE_RATE_API_KEY=...
-```
+### Retention note
+`processDeletion` in `worker/src/jobs/comms.ts` anonymizes user data after the
+48-hour cancel window; it does not hard-delete. Hard-delete is a separate backlog item.
 
 ---
 
 ## Deployment Verification
 
-### Health Checks
-| Endpoint | Expected |
-|----------|----------|
-| `GET /up` | 200 OK (Rails health) |
-| `GET /api/v1/dashboard` (auth) | 200 with data |
-
-### Smoke Test Script
 ```bash
-#!/bin/bash
-# Run after deploy
+# From repo root — Worker
+cd worker && npx tsc --noEmit && npm test && npm run deploy
 
-API="https://api.sampada.app"
-FRONTEND="https://sampada.app"
+# Health (through the Pages proxy; the Worker custom domain is intentionally absent)
+curl -sf https://sampada.vayalabs.in/api/worker/up
+# => {"status":"ok","service":"sampada-api"}
 
-# 1. Health
-curl -sf "$API/up" > /dev/null || exit 1
+# Representative authenticated route (needs a valid session cookie)
+curl -sf -b cookies.txt https://sampada.vayalabs.in/api/worker/api/v1/dashboard | jq .
 
-# 2. Auth flow
-TOKEN=$(curl -s -X POST "$API/api/v1/auth/login" \
-  -H "Content-Type: application/json" \
-  -d '{"email":"test@test.com","password":"password"}' | jq -r .token)
-
-# 3. Dashboard
-curl -sf -H "Authorization: Bearer $TOKEN" "$API/api/v1/dashboard" | jq .net_worth
-
-# 4. Frontend loads
-curl -sf "$FRONTEND" | grep -q "Sampada" || exit 1
-
-echo "✅ Deploy verification passed"
+# Frontend + security headers
+curl -sI https://sampada.vayalabs.in/ | grep -i content-security-policy
+curl -sf  https://sampada.vayalabs.in/login | grep -q "Sampada"
 ```
 
----
-
-## Rollback Plan
-
-1. **Frontend:** `vercel rollback` or Cloudflare Pages rollback to previous build
-2. **Backend:** `cap production deploy:rollback` or Kubernetes rollout undo
-3. **Database:** No auto-rollback — migrations are forward-only. Hotfix via new migration.
+Pages `WORKER_URL` binding is load-bearing: if missing, `/api/worker/*` returns
+`502 Worker origin not configured`.
 
 ---
 
-## Post-Integration Monitoring (First 48h)
+## Rollback
 
-| Metric | Alert Threshold |
-|--------|-----------------|
-| API error rate | > 1% |
-| API p99 latency | > 2s |
-| Failed logins | > 10/min |
-| Queue depth (Sidekiq) | > 1000 |
-| Database connections | > 80% pool |
-| Memory usage | > 85% |
+- **Frontend:** Cloudflare Pages rollback to a previous build.
+- **Worker:** `wrangler deployments list` / `wrangler rollback` in `worker/`.
+- **Database:** D1 migrations are forward-only; hotfix via a new migration.
+- **R2:** `sampada-storage` backups are retained as rollback data; no objects are purged.
 
 ---
 
@@ -322,8 +120,6 @@ echo "✅ Deploy verification passed"
 | Role | Name | Date | Signature |
 |------|------|------|-----------|
 | Frontend Lead | | | |
-| Backend Lead | | | |
-| QA Lead | | | |
 | Product Owner | | | |
 
-**Backend integration may begin ONLY after all UAT gates pass AND this checklist is complete.**
+**Integration is complete when all UAT gates pass and every `/api/v1/*` route the SPA calls returns data with a valid session.**

@@ -1,5 +1,13 @@
 # Sampada — UAT Report & Implementation Tracker
 
+> **HISTORICAL (pre-cutover).** This tracker was written against the retired
+> Rails/Better-Auth/oradb stack. Findings tied to that topology (notably SEC-03,
+> the plaintext `nip.io` origin) are resolved by the Worker cutover: all traffic
+> is HTTPS at the Cloudflare edge with no plaintext origin hop, and the
+> `ORADB_URL` / `API_URL` Pages fallbacks no longer exist (the proxy now uses a
+> single `WORKER_URL` binding and fails closed with 502). Retained as a record —
+> do not implement from it. Live architecture: `docs/architecture/ARCHITECTURE.md`.
+
 > **This file is a living tracker, not a one-time report.**
 > Claude Code (or any implementer) should:
 > 1. Pick the highest-severity `Status: Open` item.

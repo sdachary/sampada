@@ -1,10 +1,10 @@
 # Sampada Frontend
 
-React 19 + Vite SPA for Sampada — the user interface companion to the Rails 8.1 API-only backend. See [`../docs/architecture/ARCHITECTURE.md`](../docs/architecture/ARCHITECTURE.md) and [`../docs/design/DESIGN.md`](../docs/design/DESIGN.md) (design system) for full context.
+React 19 + Vite SPA for Sampada — the user interface for the Cloudflare Worker/D1 API. See [`../docs/architecture/ARCHITECTURE.md`](../docs/architecture/ARCHITECTURE.md) and [`../docs/design/DESIGN.md`](../docs/design/DESIGN.md) (design system) for full context.
 
 ## Stack
 
-- **React 19**, **Vite 8** (`vite.config.js` proxies `/api` → `http://localhost:3002` in dev)
+- **React 19**, **Vite 8** (`vite.config.js` proxies `/api/worker` → `http://localhost:8787` / `wrangler dev` in dev)
 - **Hand-rolled CSS** — design tokens from [`../docs/design/DESIGN.md`](../docs/design/DESIGN.md), nothing pre-made (no Tailwind, no component library)
 - **recharts** — charts (dashboard, goal projections); **lucide-react** — icons
 - **Cloudflare Pages** — deployment via `wrangler.toml` (`sampada.vayalabs.in`); security headers in `public/_headers`
@@ -39,7 +39,8 @@ frontend/
 
 ```bash
 npm install      # use the installed Vite version; no lockfile churn
-npm run dev      # http://localhost:5173, API proxied to localhost:3002
+# in a second terminal, run the Worker locally: cd ../worker && npx wrangler dev
+npm run dev      # http://localhost:5173, API proxied to the local Worker on :8787
 VITE_API_URL=... # set only when not using the local dev proxy; see .env.example
 npm run lint     # oxlint
 npm test         # node --test
@@ -58,7 +59,7 @@ npx playwright test test/visual-smoke.test.js
 
 ## Deploy
 
-Build (`npm run build` → `dist/`) and push the `frontend/` directory with Cloudflare Pages; the backend URL goes in `VITE_API_URL` at build time.
+Build (`npm run build` → `dist/`) and push the `frontend/` directory with Cloudflare Pages. Pages Functions in `functions/[[path]].js` proxy `/api/worker/*` to the Worker via the `WORKER_URL` binding, so production uses the same-origin default (`VITE_API_URL=/api/worker`); no backend hostname is baked into the build.
 
 ## Legal pages
 

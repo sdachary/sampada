@@ -30,18 +30,16 @@ We use the following third-party services:
 
 | Service | Purpose | Data Shared |
 |---------|---------|-------------|
-| Better-Auth (AcharyaLab shared service) | Authentication (email/password, JWT) | Account data |
-| Cloudflare Inc. | CDN, DNS, DDoS protection | IP address, request metadata |
-| N/A (no payments integrated) | Payment processing | Payment details (PCI-DSS compliant) |
-| PostgreSQL | Database storage (self-hosted) | All user data
+| Cloudflare Inc. | API hosting (Workers), database (D1), file storage (R2), CDN, DNS, DDoS protection | Account details, financial records, uploaded documents, IP address, request metadata |
+| Resend | Transactional email delivery (magic-link sign-in, notifications) | Email address |
 
 Each third-party service has its own privacy policy governing the use of your data.
 
 ## 4. Data Storage & Security
-- Data is stored in a self-hosted PostgreSQL 16 database on servers in India
-- We implement encryption in transit (HTTPS at the edge) and at rest (Active Record encryption)
-- Access controls and application-level authorization (Pundit policies) restrict data access
-- Backups are performed daily with 7-day retention
+- Data is stored in Cloudflare D1 (SQLite) and R2 object storage, replicated across Cloudflare's edge network (which may include locations outside India)
+- Encryption in transit (HTTPS/TLS at the edge) and at rest (Cloudflare-managed)
+- Per-user ownership scoping and household role checks in the Worker restrict data access; secrets are held in Worker secrets / SOPS
+- Backups are retained in R2 / D1 exports for rollback
 
 ## 5. Data Retention
 We retain your data for as long as your account is active. After account deletion, data is purged within 30 days unless required for legal or compliance purposes.

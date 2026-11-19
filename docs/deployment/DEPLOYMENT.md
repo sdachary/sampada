@@ -1,207 +1,112 @@
 # Deploying Sampada
 
-Sampada is a **local-first, open-source** Rails app. You deploy it yourself on your own infrastructure.
+Sampada runs entirely on Cloudflare: a Hono Worker (`sampada-api-production`)
+with D1 + R2 bindings, and a React SPA on Cloudflare Pages (`sampada.vayalabs.in`).
+There is no VM, Docker host, Postgres, Redis, or self-managed auth service.
 
-> **Supported deployment path — Docker Compose + sops.** This is the one actively-maintained
-> deploy story: `deploy.sh` + `docker-compose.yml`, with secrets encrypted via `sops`
-> in `secrets.enc.env`. Every config and SSL change in this app is validated against this
-> path only. Use it for any real deployment.
->
-> **Unsupported / retired alternatives.** The Render.com buildpack path (`bin/render-build.sh`)
-> was dropped 2026-06-12 during the DPDP overhaul (US-hosted infra retired — see
-> `docs/CONTEXT.md`); the manual bare-metal / Nginx + Certbot steps below are kept as
-> reference only. Neither is maintained, exercised in CI, or a valid target for new config
-> changes. Prefer `deploy.sh` for production.
+Production identifiers:
 
-This guide covers:
-
-- **Quick Start (local Docker)** — run the same Compose stack locally for development
-- **Single VM Deploy** — production-style self-hosted deploy on a cloud VM (Oracle Cloud / Hostinger)
+- Worker: `sampada-api-production`
+- D1 database: `sampada-db`
+- R2 bucket: `sampada-storage`
+- Pages project: `sampada` (`https://sampada.vayalabs.in`)
+- Cloudflare account: `58282ee997b7a801c27e7d0276f9ae8e`
 
 ---
 
 ## Prerequisites
 
-- Docker & Docker Compose (v2.24+)
-- A Google Cloud OAuth 2.0 Client ID + Secret ([setup guide](#google-oauth-setup))
-- A domain or subdomain (optional, for SSL)
+- Wrangler authenticated for the Cloudflare account (OAuth token with D1/R2/Workers/Pages scope).
+- Node/npm installed in `worker/` and `frontend/`.
+- Secrets available (Worker secrets / SOPS — never in git): `TURNSTILE_SECRET_KEY`,
+  `RESEND_API_KEY`, `D1_PROBE_TOKEN`.
 
 ---
 
-## Quick Start (Local Docker)
+## Deploy the Worker
 
 ```bash
-# 1. Clone the repo
-git clone https://github.com/sdachary/sampada.git
-cd sampada
-
-# 2. Copy env config
-cp .env.example .env
-
-# 3. Edit .env — fill in required values:
-#    - SECRET_KEY_BASE (run: rails secret or openssl rand -hex 64)
-#    - POSTGRES_PASSWORD (choose a strong password)
-#    - GOOGLE_CLIENT_ID
-#    - GOOGLE_CLIENT_SECRET
-#    - APP_DOMAIN (e.g. localhost:3000)
-
-# 4. Start everything
-docker compose up -d
-
-# 5. Visit http://localhost:3000
+cd worker
+npx tsc --noEmit          # type check
+npm test                  # Vitest suite
+npm run deploy            # wrangler deploy -> sampada-api-production
 ```
 
-> **First run**: The app auto-creates the database and runs migrations via `db:prepare`. Give it 10-15 seconds on first startup.
-
----
-
-## Single VM Deploy (Oracle Cloud / Hostinger)
-
-### Step 1: Provision the VM
-
-**Oracle Cloud Mumbai (free):**
-- Create an Ubuntu 22.04 VM (1 OCPU, 1GB RAM, boot volume)
-- Open ports 22, 80, 443 in security lists
-- SSH in and install Docker: `curl -fsSL https://get.docker.com | sh`
-
-**Hostinger VPS India (₹99/mo):**
-- Order VPS with Ubuntu 22.04
-- SSH in and install Docker: `curl -fsSL https://get.docker.com | sh`
-
-### Step 2: Set up the app
+Bindings, vars and cron triggers are declared in `worker/wrangler.toml`. Set or
+rotate secrets with:
 
 ```bash
-git clone https://github.com/sdachary/sampada.git
-cd sampada
-cp .env.example .env
-# Edit .env with your values
-docker compose up -d
+npx wrangler secret put TURNSTILE_SECRET_KEY
+npx wrangler secret put RESEND_API_KEY
+npx wrangler secret put D1_PROBE_TOKEN
 ```
 
-### Step 3: Nginx + SSL (optional)
+Migrations are forward-only; apply with `npm run db:migrate:remote`.
 
-```nginx
-# /etc/nginx/sites-available/sampada
-server {
-    listen 80;
-    server_name sampada.yourdomain.com;
-
-    location / {
-        proxy_pass http://127.0.0.1:3000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-```
-
-Then get SSL: `sudo certbot --nginx -d sampada.yourdomain.com`
-
-Set `RAILS_FORCE_SSL=true` in `.env` after SSL is configured.
-
-### Step 4: Keep alive (prevent idle sleep)
-
-Free-tier VMs may idle-stop after inactivity. Set up a cron job or use [cron-job.org](https://cron-job.org) (free):
-
-```
-URL: https://sampada.yourdomain.com/api/health
-Interval: every 10 minutes
-```
+> D1 note: run D1 commands with the Wrangler OAuth token from
+> `~/.config/.wrangler/config/default.toml`. The SOPS Cloudflare token is not
+> authorized for D1 (`7403 account not valid`). Clear `CLOUDFLARE_API_TOKEN` /
+> `CLOUDFLARE_ACCOUNT_ID` from the environment when using the OAuth profile:
+> `env -u CLOUDFLARE_API_TOKEN -u CLOUDFLARE_ACCOUNT_ID npx wrangler d1 ...`
 
 ---
 
-## Environment Variables
+## Deploy the Frontend
 
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `SECRET_KEY_BASE` | ✅ | — | Rails secret key base. Run `rails secret` |
-| `POSTGRES_PASSWORD` | ✅ | — | PostgreSQL password |
-| `GOOGLE_CLIENT_ID` | ✅ | — | Google OAuth client ID |
-| `GOOGLE_CLIENT_SECRET` | ✅ | — | Google OAuth client secret |
-| `APP_DOMAIN` | ✅ | — | Your app domain (e.g. `localhost:3000` or `sampada.app`) |
-| `POSTGRES_USER` | — | `sampada` | PostgreSQL user |
-| `POSTGRES_DB` | — | `sampada_production` | PostgreSQL database name |
-| `DB_HOST` | — | `postgres` (Docker) / `localhost` | PostgreSQL host |
-| `DB_PORT` | — | `5432` | PostgreSQL port |
-| `PORT` | — | `3002` (host) / `3000` (Docker) | Puma listen port |
-| `REDIS_URL` | — | `redis://localhost:6379/0` | Redis connection URL |
-| `RAILS_MAX_THREADS` | — | `3` | Puma thread count |
-| `WEB_CONCURRENCY` | — | `1` | Puma worker count |
-| `RAILS_FORCE_SSL` | — | `true` | Force HTTPS redirect |
-| `RAILS_ASSUME_SSL` | — | `true` | Assume SSL in proxy mode |
-| `SIDEKIQ_WEB_USERNAME` | — | `sampada` | Sidekiq dashboard username |
-| `SIDEKIQ_WEB_PASSWORD` | — | `sampada` | Sidekiq dashboard password |
-| `ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY` | **recommended** | derived from `SECRET_KEY_BASE` | Rails encryption key (set independently for real deployments — see note below) |
-| `ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY` | **recommended** | derived from `SECRET_KEY_BASE` | Rails deterministic key |
-| `ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT` | **recommended** | derived from `SECRET_KEY_BASE` | Rails encryption salt |
+```bash
+cd frontend
+npm run build             # -> dist/
+npx wrangler pages deploy dist --project-name sampada
+```
 
-> **Encryption keys:** if the three `ACTIVE_RECORD_ENCRYPTION_*` vars are not set, the app
-> derives them from `SECRET_KEY_BASE`. Deriving them lets a single leaked `SECRET_KEY_BASE`
-> also reconstruct the keys protecting encrypted columns (`ApiCredential#encrypted_value`,
-> encrypted `User` fields), so the app logs a loud boot-time warning in production whenever
-> the fallback is active. Any real deployment should set the three vars independently —
-> ship them via sops, see `.sops.yaml`.
-| `SMTP_ADDRESS` | — | — | SMTP server for emails |
-| `SMTP_PORT` | — | `587` | SMTP port |
-| `SMTP_USERNAME` | — | — | SMTP username |
-| `SMTP_PASSWORD` | — | — | SMTP password |
-| `SMTP_TLS_ENABLED` | — | `false` | Enable TLS for SMTP |
-| `CORS_ORIGINS` | — | `*` | Allowed CORS origins (comma-separated) |
+Configuration:
 
-#### Rotating the encryption keys (SEC-05)
-
-Encrypted columns (`ApiCredential#encrypted_value`, encrypted `User` fields) are
-protected by the three `ACTIVE_RECORD_ENCRYPTION_*` keys. If your deployment has
-been relying on the `SECRET_KEY_BASE`-derived fallback (no explicit vars set),
-**rotating to independent keys requires the old derived keys as `PREVIOUS_*`**
-so existing rows stay readable — otherwise the app boots but can no longer
-decrypt existing data.
-
-1. **Generate three new independent keys** (different from each other and from anything else):
-   ```
-   openssl rand -hex 32   # repeat 3× → PRIMARY, DETERMINISTIC, DERIVATION_SALT
-   ```
-2. **Store the new keys** in `ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY` / `_DETERMINISTIC_KEY` / `_KEY_DERIVATION_SALT` (via sops, see `.sops.yaml`).
-3. **Store the old keys** in `ACTIVE_RECORD_ENCRYPTION_PREVIOUS_PRIMARY_KEY` / `_PREVIOUS_DETERMINISTIC_KEY` / `_PREVIOUS_KEY_DERIVATION_SALT`.
-   - If the old keys were the derived fallback, recompute them from the current `SECRET_KEY_BASE`:
-     ```
-     ruby -rdigest -e 'k=ENV["SECRET_KEY_BASE"]; puts Digest::SHA256.hexdigest("#{k}:primary_key")[0..63]'
-     ruby -rdigest -e 'k=ENV["SECRET_KEY_BASE"]; puts Digest::SHA256.hexdigest("#{k}:deterministic_key")[0..63]'
-     ruby -rdigest -e 'k=ENV["SECRET_KEY_BASE"]; puts Digest::SHA256.hexdigest("#{k}:key_derivation_salt")[0..63]'
-     ```
-4. **Deploy.** The app reads old rows via the previous keys (a boot log line confirms: `previous keys configured (rotation in progress)`).
-5. **Re-encrypt every row** under the new keys:
-   ```
-   RAILS_ENV=production bundle exec rake sampada:reencrypt
-   ```
-6. **Verify** a sample of encrypted rows decrypts (read them via the API / console), then **remove the `PREVIOUS_*` vars** and redeploy — old keys are no longer needed.
+- `VITE_API_URL=/api/worker` (same-origin; no backend hostname baked into the build).
+- Pages Function `frontend/functions/[[path]].js` proxies `/api/worker/*` to the
+  Worker using binding `WORKER_URL`, and hard-404s the retired `/api/auth/*`.
+  If `WORKER_URL` is missing, `/api/worker/*` returns `502 Worker origin not configured`.
+- Security headers are in `frontend/public/_headers`.
 
 ---
 
-## Google OAuth Setup
+## Verify
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project (or select existing)
-3. Go to **APIs & Services → Credentials**
-4. Click **Create Credentials → OAuth 2.0 Client ID**
-5. Application type: **Web application**
-6. Add authorized redirect URI: `https://YOUR_DOMAIN/auth/google_oauth2/callback`
-   - For local dev: `http://localhost:3000/auth/google_oauth2/callback`
-7. Copy the Client ID and Client Secret
+```bash
+# Worker health via the Pages proxy (the Worker custom domain is intentionally absent)
+curl -s https://sampada.vayalabs.in/api/worker/up
+# => {"status":"ok","service":"sampada-api"}
+
+# Auth-gated route returns 401 without a session (proves the router is mounted)
+curl -s -o /dev/null -w '%{http_code}\n' https://sampada.vayalabs.in/api/worker/api/v1/goals
+# => 401
+
+# Frontend + headers
+curl -s -o /dev/null -w '%{http_code}\n' https://sampada.vayalabs.in/login       # => 200
+curl -sI https://sampada.vayalabs.in/ | grep -i content-security-policy
+```
+
+For authenticated checks, use a real session cookie from a passkey/magic-link
+sign-in; do not create test users in production (signups must stay clean for UAT).
+
+---
+
+## Rollback
+
+- **Frontend:** Cloudflare Pages → previous build.
+- **Worker:** `npx wrangler deployments list` then `npx wrangler rollback` in `worker/`.
+- **Database:** D1 migrations are forward-only; hotfix via a new migration.
+- **Data:** R2 `sampada-storage` objects and D1 exports are retained as rollback data;
+  no objects are purged.
 
 ---
 
 ## Production Checklist
 
-- [ ] Strong `SECRET_KEY_BASE` (64+ hex chars)
-- [ ] Strong `POSTGRES_PASSWORD` (20+ chars)
-- [ ] Google OAuth credentials configured
-- [ ] Rails encryption keys set independently (`ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY`/`_DETERMINISTIC_KEY`/`_KEY_DERIVATION_SALT`, via sops) — do NOT rely on the `SECRET_KEY_BASE`-derived fallback in production
-- [ ] SMTP configured for emails
-- [ ] SSL enabled (Let's Encrypt + Nginx)
-- [ ] Firewall: ports 22, 80, 443 only
-- [ ] fail2ban installed and configured
-- [ ] Daily PostgreSQL backup (add to crontab: `pg_dump ... > /backups/sampada_$(date +%F).sql`)
-- [ ] Health check monitoring (cron-job.org or similar)
-- [ ] `RAILS_FORCE_SSL=true` after SSL setup
+- [ ] Worker secrets set (`TURNSTILE_SECRET_KEY`, `RESEND_API_KEY`, `D1_PROBE_TOKEN`)
+- [ ] Pages binding `WORKER_URL` set to the Worker origin
+- [ ] D1 migrations applied (`npm run db:migrate:remote`)
+- [ ] `GET /api/worker/up` returns ok
+- [ ] Representative `/api/v1/*` route returns 401 unauthenticated (not 404)
+- [ ] `https://sampada.vayalabs.in/login` returns 200
+- [ ] CSP `connect-src` is `'self'` (no external API host)
+- [ ] No test users/rows created in production after the UAT data wipe

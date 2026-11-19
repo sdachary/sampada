@@ -2,7 +2,7 @@
 
 > **Deadline**: May 14, 2027 (18 months from Rules notification). Build for sooner — MeitY proposed compressing to 12 months.
 > **Penalty**: Up to ₹250 crore per contravention.
-> **Sampada status**: Non-profit SaaS, India-only, Better-Auth (email/password; Google/GitHub OAuth not provisioned), self-hosted PG in India.
+> **Sampada status**: Non-profit SaaS; passkey-first auth with magic-link recovery (Resend); data in Cloudflare D1/R2 at the edge (replication may include locations outside India).
 
 > **Reconciliation — 2026-09-17.** The table below was written as a pre-launch gap analysis and several ❌ rows are now materially wrong; read them as "what was still missing when this was drafted". Shipped since:
 >
@@ -10,12 +10,12 @@
 > |-----|-------------|
 > | D1, D5 | Standalone legal pages exist at `frontend/public/privacy.html` + `terms.html` (linked from the landing page and Privacy screen). English only — no Hindi yet, so D5 stays open. |
 > | D2, D3, D4 | `consent_records` table + `POST/GET /api/v1/dpdp/consent` (`DpdpController`) with per-feature toggles, revocation, timestamps, IP and user-agent. UI lives on the Privacy screen. Consent *version* is still not stored. |
-> | D16, D17, D21 | Erasure is implemented server-side: `POST /api/v1/dpdp/erasure` opens a 48-hour cooling-off window with a cancel token, `POST /api/v1/dpdp/cancel-deletion` cancels it, and `GET /api/v1/dpdp/deletion-requests` lists what is still pending. Hard delete + anonymisation run from the scheduler after the window. |
+> | D16, D17, D21 | Erasure is implemented server-side: `POST /api/v1/dpdp/erasure` opens a 48-hour cooling-off window with a cancel token, `POST /api/v1/dpdp/cancel-deletion` cancels it, and `GET /api/v1/dpdp/deletion-requests` lists what is still pending. After the window the Worker cron **anonymises** user data; hard-delete is not yet implemented (separate backlog card). |
 > | D18, D19 | Self-service portal: `/api/v1/dpdp/full-export` (all tables, machine-readable JSON), the Privacy screen (consent, erasure + cancel, grievance) and the Exports screen (CSV/JSON per data type). |
 > | D22 | Grievance mechanism: `POST /api/v1/dpdp/grievance` persists a `grievances` row with a `GRF-YYYYMM-XXXXXXXX` reference, acknowledges in 72 hours and promises resolution in 90 days. Filed from the Privacy screen; the published Grievance Officer is `grievance@acharylab.app`. |
 > | D23 | Contact published is `grievance@acharylab.app`, not the `dpo@sampada.app` named below. Reconcile to one address. |
 >
-> Still genuinely open: D5 (Hindi), D6 (DPAs), D7 (encryption at rest), D8 (TLS in front of oradb — blocked on the vayalabs.in migration), D9–D14, D15, D20 (correction), D24, D26 (age gate), D27, D28, D29, D30.
+> Still genuinely open: D5 (Hindi), D6 (DPAs), D7 (encryption at rest), D9–D14, D15, D20 (correction), D24, D26 (age gate), D27, D28, D29, D30. D8 (TLS) is resolved — traffic is HTTPS at the Cloudflare edge with no plaintext origin hop.
 
 ## Compliance Summary
 

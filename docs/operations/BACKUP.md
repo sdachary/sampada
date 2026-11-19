@@ -1,34 +1,55 @@
 # Backup Strategy — Sampada
 
-## System of Record
+Sampada's data lives in Cloudflare D1 (`sampada-db`) and R2 (`sampada-storage`).
+There is no Postgres VM, `pg_dump`, or on-host cron backup.
 
-All postgres on the India VM is covered by the shared house backup that runs on **oradb**:
+## System of record
 
-- **Cron**: `/etc/cron.d/acharylab-backup` → `0 2 * * * postgres /opt/scripts/pg-backup.sh` (daily 02:00).
-- **Script**: `acharylab-infrastructure/oradb/scripts/pg-backup.sh` (hosted in that repo).
-- **Output**: `/backup/pg_dump/<db>-<YYYYMMDD-HHMMSS>.sql.gz.gpg` — `pg_dump | gzip`, then symmetric **AES-256** `gpg` (passphrase file `/opt/scripts/.gpg-pass`, root-only 0600; master copy held offline, never committed).
-- **Coverage**: every non-template DB (excludes `kanak`, `kubera_production`, `unnati`, `sampada_test`), plus `globals-*.sql.gz.gpg` (`pg_dumpall --globals-only`).
-- **Transport**: `/backup` is a git repo — each run commits and pushes (`git add -A && git commit && git push`), so the encrypted dumps are replicated off-box if the push target is a remote.
-- **Retention**: 7 days (`find -mtime +7 -delete`). (Cron header comment still says "30-day retention" — the script's 7 days is authoritative.)
-- **Verify** on oradb: `ls -la /backup/pg_dump/sampada_production-*.gpg | tail` — expect a fresh file every day.
+- **D1 (`sampada-db`)** — all user data, sessions, magic links, and relational state.
+- **R2 (`sampada-storage`)** — uploaded documents and rollback objects. Retained
+  intentionally; no objects are purged.
 
-## App-level backup (secondary, non-durable)
+## Export a D1 snapshot
 
-Sidekiq's `DatabaseBackupJob` (daily 03:00, `DATABASE_BACKUP_ENABLED=true`) also runs `pg_dump` in `--format=custom --compress=9` to `/tmp` and keeps the last 7. This is a local-only, unencrypted snapshot — treat it as an in-process convenience, not the durable backup.
+From `worker/` with Wrangler authenticated (use the OAuth profile — the SOPS
+Cloudflare token is not authorized for D1):
+
+```bash
+env -u CLOUDFLARE_API_TOKEN -u CLOUDFLARE_ACCOUNT_ID \
+  npx wrangler d1 export sampada-db --remote --output /path/to/sampada-$(date +%F).sql
+```
+
+Keep exports outside the repo (e.g. `.secrets/backups/`, gitignored, mode 600).
+Never commit database dumps or secrets.
+
+## Point-in-time recovery
+
+Cloudflare D1 may offer point-in-time recovery in the dashboard depending on the
+database plan. Verify the current setting there before relying on it; do not
+assume it is enabled.
 
 ## Restore
 
+D1 migrations are forward-only. To restore, import a snapshot into a target
+database and redeploy the Worker against it:
+
 ```bash
-# Decrypt + decompress a sampada backup
-gpg -d /backup/pg_dump/sampada_production-20260912-020000.sql.gz.gpg | gunzip > sampada.sql
-# Load into a target DB (run against the same PG16 as postgres)
-psql -d <target_db> -f sampada.sql
+env -u CLOUDFLARE_API_TOKEN -u CLOUDFLARE_ACCOUNT_ID \
+  npx wrangler d1 execute <target-db> --remote --file=/path/to/sampada-YYYY-MM-DD.sql
 ```
 
-For a full-user recovery: load the newest daily dump, then `globals-*.sql.gz.gpg` to restore roles/grants.
+Test restores against a non-production database first. R2 objects restore via
+the R2 dashboard / `wrangler r2 object put`.
+
+## Pre-wipe snapshots
+
+Before the 2026-11-19 test-data wipe, snapshots were taken and retained outside
+git in `.secrets/backups/` (`sampada-db-prewipe-20261119.sql` and
+`better_auth-sampada-prewipe-20261119.sql`). Checksums are recorded in the
+cleanup Notion card and wiki session log.
 
 ## RTO / RPO
 
-- **RTO**: < 1 hour (manual restore)
-- **RPO**: < 24 hours (daily 02:00 dump)
-- **Encryption**: AES-256 at rest; passphrase offline only
+- **RTO**: depends on the restore target; D1 import of a modest dataset is minutes.
+- **RPO**: bounded by the most recent manual export / PITR window (verify in dashboard).
+- **Encryption**: TLS in transit; Cloudflare manages at-rest encryption.

@@ -6,7 +6,7 @@
 **A free-forever, hosted personal finance web app that takes you from debt → zero → wealth.**
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
-[![Ruby on Rails](https://img.shields.io/badge/Ruby%20on%20Rails-8.1-CC0000?logo=rubyonrails&logoColor=white)](https://rubyonrails.org/)
+[![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F68220?logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![Hosted](https://img.shields.io/badge/Hosted%20SaaS-free%20forever-2fa39a)](https://sampada.vayalabs.in)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](docs/contributing/CONTRIBUTING.md)
@@ -132,22 +132,22 @@ Sign up at [https://sampada.vayalabs.in](https://sampada.vayalabs.in) — no ins
 
 ### For Developers
 
-```bash
-git clone https://github.com/sdachary/sampada.git
-cd sampada
-cp .env.example .env
-# Edit .env — set SECRET_KEY_BASE, POSTGRES_PASSWORD, BETTER_AUTH_VERIFY_URL at minimum
-docker compose up -d
-curl http://localhost:3002/up          # API health check
-```
-
-**Frontend (run separately — it deploys to Cloudflare Pages, not Rails):**
+The API is a Cloudflare Worker; the frontend is a Vite SPA on Cloudflare Pages.
 
 ```bash
+# Worker (terminal 1)
+cd worker
+npm install
+npx wrangler dev                       # http://localhost:8787
+curl http://localhost:8787/up          # => {"status":"ok","service":"sampada-api"}
+
+# Frontend (terminal 2)
 cd frontend
 npm install
-npm run dev                            # http://localhost:5173, proxies /api → :3002
+npm run dev                            # http://localhost:5173, proxies /api/worker → :8787
 ```
+
+See `.env.example` and `docs/deployment/DEPLOYMENT.md` for configuration and deploy.
 
 ---
 
@@ -169,23 +169,24 @@ Configure under **Settings → AI Assistant** in the app.
 
 ## Architecture
 
-Sampada is a **Rails 8.1 API-only backend** + **React 19/Vite SPA frontend**, deployed as a hosted SaaS.
+Sampada is a **Cloudflare Worker API** (Hono + D1 + R2) + **React 19/Vite SPA frontend**, deployed as a hosted SaaS at the edge. There is no VM, Postgres, Redis, or shared auth service.
 
 | Layer | Stack |
 |---|---|
 | **Frontend** | React 19, Vite 8, React Router 7, hand-rolled CSS design tokens (no framework), motion (LazyMotion) animations, Recharts 3, lucide-react, lazy Three.js/R3F hero |
-| **Backend** | Ruby on Rails 8.1 (API-only), PostgreSQL 16, Redis, Sidekiq |
-| **Background jobs** | Sidekiq + Sidekiq-Cron (market data, FX sync, recurring auto-log, backups, reminders) |
-| **Auth** | Better-Auth (shared identity service, JWT verification per request) |
-| **AI** | Modular `Ai::` namespace, pluggable providers (Ollama, OpenRouter, etc.), BYOK |
-| **API** | Standardized JSON response layer (`Api::BaseController`) with global exception handling |
-| **Multi-currency** | Exchange rates fetched from Yahoo Finance, cached in DB, refreshed every 6 hours |
+| **API** | Cloudflare Worker (`sampada-api-production`), Hono 4 + TypeScript, same-origin proxy via Pages Function |
+| **Database** | Cloudflare D1 (SQLite), migrations in `worker/migrations/` |
+| **File storage** | Cloudflare R2 (`sampada-storage`) for backups / documents |
+| **Background jobs** | Worker Cron Triggers (market data, FX sync, snapshots, deletion checks) |
+| **Auth** | Passkeys primary + magic-link recovery (Resend); D1 sessions, Turnstile abuse control |
+| **AI** | Pluggable OpenAI-compatible providers (Ollama, OpenRouter, etc.), BYOK |
+| **Multi-currency** | Exchange rates from Yahoo Finance, cached in D1, refreshed every 6 hours |
 | **Export** | CSV and JSON export across all financial modules |
 | **Households** | Multi-user sharing with role-based access control |
 | **DPDP Compliance** | Granular consent, full data export, erasure workflow, grievance redressal |
-| **Testing** | RSpec + FactoryBot + SimpleCov (413 examples green); frontend: oxlint, node --test, Playwright |
-| **CI gates** | RuboCop, Brakeman, gitleaks, RSpec; size-limit, Lighthouse CI, mount smoke test (hard gate), axe + visual smoke (warn only) |
-| **Deployment** | Docker Compose + sops secrets on shared VM (oradb); frontend on Cloudflare Pages |
+| **Testing** | Worker: Vitest + `tsc --noEmit`; frontend: oxlint, node --test, Playwright |
+| **CI gates** | gitleaks; size-limit, Lighthouse CI, mount smoke test (hard gate), axe + visual smoke (warn only) |
+| **Deployment** | Worker via `wrangler deploy`; SPA via Cloudflare Pages (`sampada.vayalabs.in`) |
 
 ---
 
@@ -194,33 +195,17 @@ Sampada is a **Rails 8.1 API-only backend** + **React 19/Vite SPA frontend**, de
 ```
 sampada/
 ├── .github/                    # CI/CD workflows
-├── app/                        # Rails 8.1 API-only backend
-│   ├── controllers/            # API controllers (Api::V1::*, Admin::*)
-│   ├── jobs/                   # Sidekiq background jobs
-│   ├── lib/                    # Shared Rails lib code
-│   ├── mailers/                # ActionMailer classes
-│   ├── middleware/             # Custom Rack middleware
-│   ├── models/                 # ActiveRecord models
-│   ├── services/               # Business logic services
-│   └── views/                  # API serializers (JSON)
-├── bin/                        # Executable scripts (rails, rake, deploy)
-├── config/                     # Rails configuration
-├── db/                         # Migrations, seeds, schema
-├── deploy/                     # Deployment configs (docker-compose, cloudflared, scripts)
-├── docs/                       # All documentation
-│   ├── architecture/           # System design, ADRs, master specs
-│   ├── api/                    # API contracts, provider configs
-│   ├── contributing/           # Contribution guidelines, code of conduct
-│   ├── deployment/             # Deployment guides, runbooks
-│   ├── design/                 # Design system, UI specs, UAT tracker
-│   ├── legal/                  # Privacy, DPDP, terms, security
-│   ├── operations/             # Backup, performance, ops runbooks
-│   ├── specs/                  # Feature specs by phase (phase1–4)
-│   ├── ARCHITECTURE.md         # High-level architecture overview
-│   ├── CHANGELOG.md            # Version history
-│   ├── CONTEXT.md              # AI agent context
-│   └── roadmap-updated.md      # Product roadmap
-├── frontend/                   # React 19 + Vite SPA (separate deploy)
+├── worker/                     # Cloudflare Worker — the only API
+│   ├── src/
+│   │   ├── index.ts            # route registry (mounts every /api/v1/* router)
+│   │   ├── auth.ts             # originGuard, requireAuth, session cookie, passkeys
+│   │   ├── api/                # one router per resource (debts, goals, dpdp, …)
+│   │   ├── jobs/               # cron jobs (comms/deletions, FX, snapshots)
+│   │   └── email.ts            # Resend REST wrapper
+│   ├── migrations/             # D1 SQL migrations (0001–0007)
+│   ├── wrangler.toml           # bindings, vars, cron triggers
+│   └── vitest tests
+├── frontend/                   # React 19 + Vite SPA (Cloudflare Pages)
 │   ├── src/
 │   │   ├── pages/              # Route pages (Dashboard, Debts, Portfolio, …)
 │   │   ├── components/         # Shared UI components
@@ -229,32 +214,27 @@ sampada/
 │   │   ├── landing/hero3d/     # 3D hero (landing page only)
 │   │   └── App.jsx             # Router + page transitions
 │   ├── public/                 # Static assets, SW, legal pages, _headers
-│   ├── functions/              # Cloudflare Pages Functions (auth proxy)
+│   ├── functions/              # Cloudflare Pages Functions (/api/worker proxy)
 │   ├── test/                   # Playwright tests
 │   ├── package.json
 │   ├── vite.config.js
 │   ├── wrangler.toml
 │   └── lighthouserc.json
-├── lib/                        # Rails lib (tasks, utilities)
-├── spec/                       # RSpec test suite
-├── vendor/                     # Bundler cache (gitignored)
-├── Dockerfile
-├── docker-compose.yml
-├── docker-entrypoint.sh
-├── deploy.sh
-├── Gemfile
-├── Gemfile.lock
+├── docs/                       # All documentation
+│   ├── architecture/           # System design, ADRs, master specs
+│   ├── deployment/             # Deployment guides, runbooks
+│   ├── design/                 # Design system, UI specs, UAT tracker
+│   ├── legal/                  # Privacy, DPDP, terms, security
+│   ├── operations/             # Backup, performance, ops runbooks
+│   ├── ARCHITECTURE.md         # High-level architecture overview
+│   ├── CHANGELOG.md            # Version history
+│   ├── CONTEXT.md              # AI agent context
+│   └── roadmap-updated.md      # Product roadmap
 ├── LICENSE
-├── Rakefile
-├── config.ru
-├── .dockerignore
+├── .env.example
 ├── .gitignore
 ├── .gitleaks.toml
-├── .rubocop.yml
-├── .ruby-version
-├── .sops.yaml
 ├── opencode.json
-├── package.json                # Root scripts (lint, test for Ruby)
 └── VERSION
 ```
 

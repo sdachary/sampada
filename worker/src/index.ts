@@ -27,6 +27,13 @@ import recurringDetection from './api/recurring_detection';
 import apiCredentials from './api/api_credentials';
 import aiSettings from './api/ai_settings';
 import budgetCategories from './api/budget_categories';
+import goals from './api/goals';
+import exports from './api/exports';
+import notifications from './api/notifications';
+import households from './api/households';
+import trips from './api/trips';
+import conversations from './api/conversations';
+import dpdp from './api/dpdp';
 
 export type Bindings = {
   DB: D1Database;
@@ -83,6 +90,13 @@ app.route('/api/v1/recurring_detection', recurringDetection);
 app.route('/api/v1/api_credentials', apiCredentials);
 app.route('/api/v1/ai_settings', aiSettings);
 app.route('/api/v1/budget_categories', budgetCategories);
+app.route('/api/v1/goals', goals);
+app.route('/api/v1/exports', exports);
+app.route('/api/v1/notifications', notifications);
+app.route('/api/v1/households', households);
+app.route('/api/v1/trips', trips);
+app.route('/api/v1/conversations', conversations);
+app.route('/api/v1/dpdp', dpdp);
 
 // DPDP legal pages: self-rendering, CONFIG-driven HTML imported as text modules.
 app.get('/privacy', (c) => c.html(privacyHtml));

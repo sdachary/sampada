@@ -1,5 +1,9 @@
 # Rebalance v2 — Audit (T0)
 
+> **HISTORICAL (pre-cutover).** Stack/auth/deploy rows below describe the retired
+> Rails VM setup. The live API is a Cloudflare Worker; see
+> `docs/architecture/ARCHITECTURE.md`.
+
 Generated per `rebalance-v2/REBALANCE_V2_SPEC.md` §10 T0.
 
 ## 1. Stack Summary
