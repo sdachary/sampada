@@ -1,0 +1,49 @@
+/* Single stylesheet entry. Layer order lets Tailwind's responsive/utilities
+   override the legacy hand-rolled utilities in primitives.css (preflight off,
+   so the token/base styles are untouched). */
+@layer theme, base, components, utilities;
+
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+@import './tokens.css' layer(theme);
+@import './fonts.css' layer(base);
+@import './base.css' layer(base);
+@import './primitives.css' layer(components);
+@import '../index.css' layer(components);
+
+@source "../";
+
+/* Tailwind color names that don't exist in its default palette. Sources are
+   the --raw-* values in tokens.css, so light/dark stay single-sourced. */
+@theme inline {
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-mute: var(--ink-mute);
+  --color-ink-faint: var(--ink-faint);
+  --color-paper: var(--paper);
+  --color-bg: var(--raw-bg);
+  --color-bg-elevated: var(--raw-bg-elevated);
+  --color-bg-deep: var(--raw-bg-deep);
+  --color-surface: var(--raw-surface);
+  --color-surface-hover: var(--raw-surface-hover);
+  --color-border: var(--raw-border);
+  --color-border-soft: var(--raw-border-soft);
+  --color-accent: var(--raw-accent);
+  --color-accent-soft: var(--raw-accent-soft);
+  --color-accent-bg: var(--raw-accent-bg);
+  --color-success: var(--raw-success);
+  --color-success-bg: var(--raw-success-bg);
+  --color-danger: var(--raw-danger);
+  --color-danger-bg: var(--raw-danger-bg);
+  --color-warning: var(--raw-warning);
+  --color-warning-bg: var(--raw-warning-bg);
+  --color-overlay: var(--raw-overlay);
+}
+
+@layer utilities {
+  .duration-base { transition-duration: var(--duration-base); }
+  .duration-fast { transition-duration: var(--duration-fast); }
+  .ease-spring { transition-timing-function: var(--ease-spring); }
+  .border-t-3 { border-top-width: 3px; }
+  .safe-area-bottom { padding-bottom: env(safe-area-inset-bottom); }
+}

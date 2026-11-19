@@ -1,20 +1,11 @@
 const CACHE_NAME = 'sampada-v4';
 const SHELL_URLS = ['/', '/manifest.webmanifest'];
 
-// Precaches the app shell plus the hashed build assets the current index.html
-// references, so a first-visit install works offline. One bad asset must not
-// fail the whole install — each asset is cached on its own.
+// ponytail: precache only the shell. Hashed assets are cached on first use;
+// fetching every asset here duplicated the whole first page load.
 async function precache() {
   const cache = await caches.open(CACHE_NAME);
   await cache.addAll(SHELL_URLS);
-  try {
-    const response = await fetch('/', { cache: 'no-cache' });
-    const html = await response.text();
-    const assets = [...new Set(html.match(/\/assets\/[A-Za-z0-9._-]+/g) || [])];
-    await Promise.allSettled(assets.map((url) => cache.add(url)));
-  } catch {
-    // the shell is precached; assets fall back to cache-on-first-use
-  }
 }
 
 self.addEventListener('install', (event) => {

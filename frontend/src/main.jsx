@@ -9,15 +9,16 @@ import { registerServiceWorker } from './lib/push'
 import { initServiceWorkerUpdates } from './lib/swUpdate'
 import { MotionProvider } from './lib/motion'
 import App from './App.jsx'
-import './styles/tokens.css'
-import './styles/fonts.css'
-import './styles/base.css'
-import './styles/primitives.css'
-import './index.css'
+import './styles/app.css'
 
-registerServiceWorker()
-  .then((registration) => initServiceWorkerUpdates(registration))
-  .catch(() => {}) // a failed SW registration must never break the app
+// ponytail: after load, so SW install never competes with first paint.
+const startServiceWorker = () =>
+  registerServiceWorker()
+    .then((registration) => initServiceWorkerUpdates(registration))
+    .catch(() => {}) // a failed SW registration must never break the app
+
+if (document.readyState === 'complete') startServiceWorker()
+else window.addEventListener('load', startServiceWorker, { once: true })
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
