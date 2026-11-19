@@ -2,7 +2,7 @@
 
 ## Overview
 
-Sampada is a **Rails 8.1 (API-only) backend** + **React 19 SPA frontend**. Rails serves `/api/v1/*`, `/sidekiq` and `/up`; all UI is the Vite-built SPA in `frontend/` deployed to Cloudflare Pages. It follows a debt-first financial philosophy: **Negative → Zero → Positive**.
+Sampada is a **Rails 8.1 (API-only) backend** + **React 19 SPA frontend**. Rails serves `/api/v1/*`, `/sidekiq` and `/up`; all UI is the Vite-built SPA in `frontend/` deployed to Cloudflare Pages. It follows a debt-first financial philosophy: **Negative → Zero → Positive**. Since the A6 data-API port, the `/api/v1` surface is served by the Cloudflare Worker (`worker/`, Hono + D1) behind the same auth gates; Rails remains the source of truth until the A5.4 cutover.
 
 ## Tech Stack
 
