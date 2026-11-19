@@ -6,6 +6,8 @@ import { drainDue } from './jobs/queue';
 import privacyHtml from './legal/privacy.html';
 import termsHtml from './legal/terms.html';
 import { idempotencyReplay } from './api/idempotency';
+import { dashboard } from './api/dashboard';
+import budgets from './api/budgets';
 import onboarding from './api/onboarding';
 import journey from './api/journey';
 import push from './api/push';
@@ -57,6 +59,8 @@ app.route('/api/v1/auth', auth);
 app.use('/api/v1/*', idempotencyReplay);
 // Data routers — requireAuth + originGuard live inside each router (a global
 // /api/v1/* gate would also cover auth's unauthenticated begin/finish).
+app.route('/api/v1/dashboard', dashboard);
+app.route('/api/v1/budgets', budgets);
 app.route('/api/v1/onboarding', onboarding);
 app.route('/api/v1/journey', journey);
 app.route('/api/v1/push_subscriptions', push);
