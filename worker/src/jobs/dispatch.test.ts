@@ -16,7 +16,15 @@ describe('jobsForCron', () => {
     expect(jobs).toContain('check_deletions');
     expect(jobs).toContain('sync_cleaner');
     expect(jobs).toContain('cleanup_statement_imports');
+    expect(jobs).toContain('purge_expired_sessions');
+    expect(jobs).toContain('purge_dead_letters');
     expect(jobs).toContain('price_refresh');
+  });
+
+  it('does not run the hygiene purges at :30', () => {
+    const jobs = jobsForCron(HALF_HOUR_CRON, utc(5, 30, 2));
+    expect(jobs).not.toContain('purge_expired_sessions');
+    expect(jobs).not.toContain('purge_dead_letters');
   });
 
   it('exchange_rate_sync fires when UTC hour % 6 == 0', () => {

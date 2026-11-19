@@ -278,29 +278,110 @@ export async function pushNotificationDelivery(env: Bindings, payload: unknown):
 
 // ---- queued: process_deletion ----
 
-/** ProcessDeletionJob: after the 48h cancel window, anonymize the account.
- *  Idempotent — it acts only while the request is still pending. */
-export async function processDeletion(env: Bindings, payload: unknown): Promise<void> {
+/**
+ * DPDP erasure (retention gap 1). Anonymizing the `users` row alone left every
+ * financial record, passkey and session keyed to the stable users.id. This
+ * plan hard-deletes those rows, then leaves an anonymized tombstone plus the
+ * legal-hold tables that still reference it (wiki/ops/sampada-retention.md).
+ *
+ * `users`, `deletion_requests`, `consent_records` and `grievances` are kept on
+ * purpose. `households` is shared between members, so it is not erased.
+ * Child rows are deleted before their parents so D1's FK checks stay happy.
+ */
+export interface ErasureStep {
+  sql: string;
+  binds: Array<string | number | null>;
+}
+
+/** Child-table predicates: each ? is bound to the erasing user's id. */
+const ERASURE_CHILD_STEPS: ReadonlyArray<readonly [string, string]> = [
+  ['messages', 'conversation_id IN (SELECT id FROM conversations WHERE user_id = ?)'],
+  ['trip_expenses', 'trip_id IN (SELECT id FROM trips WHERE user_id = ?)'],
+  // trip_settlements has no user_id column — reach it through the owned trips
+  ['trip_settlements', 'trip_id IN (SELECT id FROM trips WHERE user_id = ?)'],
+  ['trip_members', 'trip_id IN (SELECT id FROM trips WHERE user_id = ?)'],
+  ['trip_categories', 'trip_id IN (SELECT id FROM trips WHERE user_id = ?)'],
+  ['investments', 'portfolio_id IN (SELECT id FROM portfolios WHERE user_id = ?)'],
+  ['dividend_sips', 'portfolio_id IN (SELECT id FROM portfolios WHERE user_id = ?)'],
+  [
+    'debt_payoff_debts',
+    'debt_payoff_id IN (SELECT id FROM debt_payoffs WHERE user_id = ?) OR debt_id IN (SELECT id FROM debts WHERE user_id = ?)',
+  ],
+];
+
+/** Every other table carrying a user_id FK, except the four kept above. */
+const ERASURE_USER_TABLES: readonly string[] = [
+  'api_credentials',
+  'budget_categories',
+  'budgets',
+  'conversations',
+  'debt_payoffs',
+  'debts',
+  'goals',
+  'household_memberships',
+  'insurance_policies',
+  'journeys',
+  'magic_links',
+  'net_worth_snapshots',
+  'notifications',
+  'portfolios',
+  'push_subscriptions',
+  'recurring_detections',
+  'sessions',
+  'settings',
+  'statement_imports',
+  'tenants',
+  // transactions FK-references recurring_expenses, so delete them first
+  'transactions',
+  'recurring_expenses',
+  'trips',
+  'webauthn_challenges',
+  'webauthn_credentials',
+];
+
+/** Pure, testable shape of the erasure. Ids are always bound, never inlined. */
+export function erasurePlan(userId: string, requestId: string, nowIso: string): ErasureStep[] {
+  const steps: ErasureStep[] = [];
+  for (const [table, predicate] of ERASURE_CHILD_STEPS) {
+    const binds = Array.from({ length: (predicate.match(/\?/g) ?? []).length }, () => userId);
+    steps.push({ sql: `DELETE FROM ${table} WHERE ${predicate}`, binds });
+  }
+  for (const table of ERASURE_USER_TABLES) {
+    steps.push({ sql: `DELETE FROM ${table} WHERE user_id = ?`, binds: [userId] });
+  }
+  steps.push({
+    sql: "UPDATE users SET email = 'deleted-' || id || '@sampada.app', first_name = 'Deleted', last_name = 'User', updated_at = ? WHERE id = ?",
+    binds: [nowIso, userId],
+  });
+  steps.push({
+    sql: "UPDATE deletion_requests SET status = 'deleted', deleted_at = ?, updated_at = ? WHERE id = ?",
+    binds: [nowIso, nowIso, requestId],
+  });
+  return steps;
+}
+
+/** ProcessDeletionJob: after the 48h cancel window, hard-delete the user's
+ *  data in one D1 batch (all-or-nothing, so a failed sweep stays pending and
+ *  retries). Idempotent — it acts only while the request is still pending. */
+export async function processDeletion(env: Bindings, payload: unknown, now: Date = new Date()): Promise<void> {
   const { request_id: requestId } = (payload ?? {}) as { request_id?: string };
   if (!requestId) return;
-  const request = await env.DB.prepare('SELECT id, user_id, status FROM deletion_requests WHERE id = ?')
+  const request = await env.DB.prepare('SELECT id, user_id, status, scheduled_for FROM deletion_requests WHERE id = ?')
     .bind(requestId)
-    .first<{ id: string; user_id: string; status: string }>();
+    .first<{ id: string; user_id: string; status: string; scheduled_for: string }>();
   if (!request || request.status !== 'pending') return;
+  // checkDeletions enforces this when enqueueing; re-check so a direct/replayed
+  // job can never erase a user still inside the cancel window.
+  if (new Date(request.scheduled_for).getTime() > now.getTime()) return;
 
-  const nowIso = new Date().toISOString();
-  await env.DB.prepare("UPDATE deletion_requests SET status = 'deleting', updated_at = ? WHERE id = ?")
-    .bind(nowIso, requestId)
-    .run();
-  await env.DB.prepare(
-    "UPDATE users SET email = 'deleted-' || id || '@sampada.app', first_name = 'Deleted', last_name = 'User', updated_at = ? WHERE id = ?",
-  )
-    .bind(nowIso, request.user_id)
-    .run();
-  await env.DB.prepare("UPDATE deletion_requests SET status = 'deleted', deleted_at = ?, updated_at = ? WHERE id = ?")
-    .bind(nowIso, nowIso, requestId)
-    .run();
-  console.log(JSON.stringify({ deletion: 'processed', request_id: requestId }));
+  const steps = erasurePlan(request.user_id, requestId, now.toISOString());
+  await env.DB.batch(
+    steps.map((step) => {
+      const stmt = env.DB.prepare(step.sql);
+      return step.binds.length ? stmt.bind(...step.binds) : stmt;
+    }),
+  );
+  console.log(JSON.stringify({ deletion: 'erased', request_id: requestId, statements: steps.length }));
 }
 
 // ---- queued: import_statement ----
