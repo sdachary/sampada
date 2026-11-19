@@ -7,6 +7,7 @@ import privacyHtml from './legal/privacy.html';
 import termsHtml from './legal/terms.html';
 import { idempotencyReplay } from './api/idempotency';
 import { dashboard } from './api/dashboard';
+import { probe } from './api/probe';
 import budgets from './api/budgets';
 import onboarding from './api/onboarding';
 import journey from './api/journey';
@@ -35,6 +36,8 @@ export type Bindings = {
   ALLOWED_ORIGINS: string;
   FILES?: R2Bucket;
   RESEND_API_KEY?: string;
+  TURNSTILE_SECRET_KEY?: string;
+  D1_PROBE_TOKEN?: string;
   VAPID_PUBLIC_KEY?: string;
   VAPID_PRIVATE_KEY?: string;
   VAPID_SUBJECT?: string;
@@ -59,6 +62,7 @@ app.route('/api/v1/auth', auth);
 app.use('/api/v1/*', idempotencyReplay);
 // Data routers — requireAuth + originGuard live inside each router (a global
 // /api/v1/* gate would also cover auth's unauthenticated begin/finish).
+app.route('/api/v1/probe', probe);
 app.route('/api/v1/dashboard', dashboard);
 app.route('/api/v1/budgets', budgets);
 app.route('/api/v1/onboarding', onboarding);

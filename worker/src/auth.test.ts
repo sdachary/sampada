@@ -85,3 +85,50 @@ describe('legal pages', () => {
     expect(await res.text()).toContain('Terms of Service');
   });
 });
+
+describe('A8 magic-link guards', () => {
+  it('fails closed in production when Turnstile is not configured', async () => {
+    const req = new Request('http://localhost/api/v1/auth/magic-link/request', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'a@b.com' }),
+    });
+    const res = await app.fetch(req, { ENVIRONMENT: 'production' } as never);
+    expect(res.status).toBe(403);
+    expect(await res.json()).toEqual({ error: 'bot check failed' });
+  });
+
+  it('rejects a verify call with no token before touching D1', async () => {
+    const res = await app.request('/api/v1/auth/magic-link/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    });
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: 'token required' });
+  });
+
+  it('origin guard covers the new request route', async () => {
+    const res = await app.request('/api/v1/auth/magic-link/request', {
+      method: 'POST',
+      headers: { Origin: 'https://evil.example.com', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'a@b.com' }),
+    });
+    expect(res.status).toBe(403);
+  });
+});
+
+describe('A8 D1 latency probe', () => {
+  it('rejects unauthenticated probes without touching D1', async () => {
+    const res = await app.request('/api/v1/probe/d1');
+    expect(res.status).toBe(401);
+    expect(await res.json()).toEqual({ error: 'unauthorized' });
+  });
+
+  it('rejects a wrong bearer token', async () => {
+    const res = await app.request('/api/v1/probe/d1', {
+      headers: { Authorization: 'Bearer wrong' },
+    }, { D1_PROBE_TOKEN: 'expected' } as never);
+    expect(res.status).toBe(401);
+  });
+});

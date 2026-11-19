@@ -22,6 +22,7 @@ import {
   type SafeUser,
 } from './session';
 import type { AppEnv } from './index';
+import { sendEmail } from './email';
 
 // ---------------------------------------------------------------------------
 // Middleware: origin guard + rate limit (house patterns from darpan)
@@ -67,6 +68,8 @@ const RATE_LIMITED_PATHS = [
   '/register/finish',
   '/login/begin',
   '/login/finish',
+  '/magic-link/request',
+  '/magic-link/verify',
 ];
 
 export const rateLimit = async (c: Context<AppEnv>, next: Next) => {
@@ -76,6 +79,43 @@ export const rateLimit = async (c: Context<AppEnv>, next: Next) => {
   }
   return await next();
 };
+
+// ---------------------------------------------------------------------------
+// A8 — magic-link recovery. Turnstile + per-IP rate limit guard the request
+// endpoint; only a SHA-256 hash of the one-time token is stored in D1.
+// ---------------------------------------------------------------------------
+
+const MAGIC_LINK_TTL_MS = 10 * 60 * 1000;
+const MAGIC_LINKS_PER_HOUR = 3;
+
+/** Fail closed in production when the Turnstile secret or token is missing. */
+async function turnstilePasses(c: Context<AppEnv>, response: unknown): Promise<boolean> {
+  const secret = c.env?.TURNSTILE_SECRET_KEY;
+  if (!secret) return c.env?.ENVIRONMENT !== 'production';
+  if (typeof response !== 'string' || !response) return false;
+  const form = new FormData();
+  form.append('secret', secret);
+  form.append('response', response);
+  const ip = c.req.raw.headers.get('cf-connecting-ip');
+  if (ip) form.append('remoteip', ip);
+  try {
+    const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      body: form,
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) return false;
+    const result = await res.json<{ success: boolean }>();
+    return result.success === true;
+  } catch {
+    return false;
+  }
+}
+
+function signInOrigin(c: Context<AppEnv>): string {
+  const origin = c.req.header('Origin') || (c.env?.ALLOWED_ORIGINS ?? '').split(',')[0]?.trim();
+  return (origin || `https://${c.env?.RP_ID}`).replace(/\/$/, '');
+}
 
 // ---------------------------------------------------------------------------
 // Sessions (D1) — only the SHA-256 hex of the token is stored
@@ -402,6 +442,95 @@ auth.post('/login/finish', async (c) => {
     .bind(userRow.id)
     .first<UserRow>();
   return c.json({ user: user ? mapUserRow(user) : null });
+});
+
+// --- A8 magic-link recovery -------------------------------------------------
+
+type MagicLinkRequestBody = { email?: string; turnstileToken?: string };
+
+auth.post('/magic-link/request', async (c) => {
+  const body = await c.req.json<MagicLinkRequestBody>().catch(() => ({}) as MagicLinkRequestBody);
+  const email = body.email?.trim().toLowerCase();
+  if (!email || !email.includes('@')) return c.json({ error: 'valid email required' }, 400);
+  if (!(await turnstilePasses(c, body.turnstileToken))) return c.json({ error: 'bot check failed' }, 403);
+
+  const user = await c.env.DB.prepare(LOOKUP_EMAIL).bind(email).first<{ id: string; email: string }>();
+  // Same response for known and unknown addresses — no account enumeration.
+  if (user) {
+    const hourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const recent = await c.env.DB.prepare(
+      'SELECT COUNT(*) AS n FROM magic_links WHERE user_id = ? AND created_at > ?',
+    )
+      .bind(user.id, hourAgo)
+      .first<{ n: number }>();
+    if ((recent?.n ?? 0) < MAGIC_LINKS_PER_HOUR) {
+      const token = randomToken();
+      const now = new Date();
+      await c.env.DB.prepare(
+        `INSERT INTO magic_links (id, user_id, token_hash, created_at, expires_at)
+         VALUES (?, ?, ?, ?, ?)`,
+      )
+        .bind(
+          crypto.randomUUID(),
+          user.id,
+          await sha256Hex(token),
+          now.toISOString(),
+          new Date(now.getTime() + MAGIC_LINK_TTL_MS).toISOString(),
+        )
+        .run();
+      const link = `${signInOrigin(c)}/magic-link/verify?token=${encodeURIComponent(token)}`;
+      const sent = await sendEmail(c.env, {
+        to: user.email,
+        subject: 'Sign in to Sampada',
+        text: `Use this link to sign in to Sampada. It expires in 10 minutes and can be used once.\n\n${link}\n\nIf you did not request this, ignore this email.`,
+      });
+      // Do not burn the token or claim success when the mail never left —
+      // the user would wait ten minutes for a link that does not exist.
+      if (!sent) {
+        await c.env.DB.prepare('DELETE FROM magic_links WHERE token_hash = ?').bind(await sha256Hex(token)).run();
+        return c.json({ error: 'could not send sign-in link' }, 502);
+      }
+    }
+  }
+  // Cheap hygiene: expired rows are never readable but should not accumulate.
+  await c.env.DB.prepare('DELETE FROM magic_links WHERE expires_at < ?').bind(new Date().toISOString()).run();
+  return c.json({ ok: true });
+});
+
+auth.post('/magic-link/verify', async (c) => {
+  const body = await c.req.json<{ token?: string }>().catch(() => ({}) as { token?: string });
+  if (typeof body.token !== 'string' || !body.token) return c.json({ error: 'token required' }, 400);
+
+  const row = await c.env.DB.prepare(
+    'SELECT id, user_id, expires_at, used_at FROM magic_links WHERE token_hash = ?',
+  )
+    .bind(await sha256Hex(body.token))
+    .first<{ id: string; user_id: string; expires_at: string; used_at: string | null }>();
+  if (!row || row.used_at || new Date(row.expires_at).getTime() <= Date.now()) {
+    return c.json({ error: 'link expired or already used' }, 400);
+  }
+
+  // Single-use claim: only one request can flip used_at from NULL.
+  const claimed = await c.env.DB.prepare(
+    'UPDATE magic_links SET used_at = ? WHERE id = ? AND used_at IS NULL',
+  )
+    .bind(new Date().toISOString(), row.id)
+    .run();
+  if (!claimed.success || claimed.meta?.changes !== 1) {
+    return c.json({ error: 'link expired or already used' }, 400);
+  }
+
+  const token = await issueSession(c, row.user_id);
+  c.header('Set-Cookie', sessionCookieHeader(token, c.req.header('Origin')));
+  const user = await c.env.DB.prepare(`SELECT ${USER_COLUMNS} FROM users WHERE id = ?`)
+    .bind(row.user_id)
+    .first<UserRow>();
+  const credential = await c.env.DB.prepare(
+    'SELECT id FROM webauthn_credentials WHERE user_id = ? LIMIT 1',
+  )
+    .bind(row.user_id)
+    .first<{ id: string }>();
+  return c.json({ user: user ? mapUserRow(user) : null, needsPasskey: !credential });
 });
 
 auth.get('/me', requireAuth, (c) => c.json({ user: c.get('user') }));
