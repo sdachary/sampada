@@ -19,10 +19,9 @@ const securityHeaders = {
 // Fallbacks are local/dev-only origins.
 // They are NEVER reached in production: they require ALLOW_INSECURE_ORIGIN === 'true'
 // (a flag that must not be set in the deployed Cloudflare Pages project). With the
-// flag absent, a missing ORADB_URL / API_URL fails closed with a 502 instead of
+// flag absent, a missing ORADB_URL fails closed with a 502 instead of
 // silently degrading the transport to plaintext HTTP over the public internet.
 const ORADB_FALLBACK = 'https://api.vayalabs.in'
-const API_FALLBACK = 'https://api.vayalabs.in'
 
 function originFor(env, primaryKey, fallback) {
   if (env[primaryKey]) return env[primaryKey]
@@ -264,58 +263,6 @@ export async function onRequest(context) {
     } catch {
       return new Response(
         JSON.stringify({ error: 'Worker unreachable', meta: { request_id: rid, timestamp: new Date().toISOString() } }),
-        {
-          status: 502,
-          headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': allowOrigin, ...securityHeaders },
-        },
-      )
-    }
-  }
-
-  // Rails API bridge — /api/v1/* → sampada Rails (oradb:3002)
-  // Cookie-only frontend: extract better-auth.session_token from the cookie and
-  // forward it as Bearer, since Rails verifies via Authorization header.
-  if (reqPath.startsWith('/api/v1/')) {
-    try {
-      const API_ORIGIN = originFor(env, 'API_URL', API_FALLBACK)
-      if (!API_ORIGIN) return misconfigured(rid, 'API')
-      const proxyUrl = `${API_ORIGIN}${reqPath}${url.search}`
-
-      const modifiedHeaders = new Headers(request.headers)
-      modifiedHeaders.delete('host')
-      // Better-Auth cookie is a signed token: <session-token>.<signature> (URL-encoded).
-      // Rails verifies via /api/auth/verify which matches the short session token only.
-      // Prod sets __Secure-better-auth.session_token; accept either prefix.
-      const cookieToken = request.headers.get('cookie')
-        ?.split(';')
-        .map((c) => c.trim())
-        .find((c) => c.startsWith('better-auth.session_token=') || c.startsWith('__Secure-better-auth.session_token='))
-        ?.split('=').slice(1).join('=')
-      if (cookieToken) {
-        const decoded = decodeURIComponent(cookieToken)
-        const sessionToken = decoded.split('.')[0]
-        if (sessionToken) modifiedHeaders.set('Authorization', `Bearer ${sessionToken}`)
-      }
-
-      const response = await fetch(proxyUrl, {
-        method: request.method,
-        headers: modifiedHeaders,
-        // Already buffered above — the request stream can only be read once.
-        body: rawBody,
-        redirect: 'follow',
-      })
-
-      const headers = new Headers(response.headers)
-      headers.set('Access-Control-Allow-Origin', allowOrigin)
-      headers.set('Vary', 'Origin')
-      headers.set('X-Request-Id', rid)
-      const setCookies = cookiesFrom(response)
-      setCookies.forEach((c) => headers.append('Set-Cookie', c))
-
-      return new Response(response.body, { status: response.status, headers })
-    } catch {
-      return new Response(
-        JSON.stringify({ error: 'API server unreachable', meta: { request_id: rid, timestamp: new Date().toISOString() } }),
         {
           status: 502,
           headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': allowOrigin, ...securityHeaders },
