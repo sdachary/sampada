@@ -1,13 +1,15 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { lazy, Suspense, useState, useEffect, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../lib/api'
 import { Stat, Progress, Button, Card, Skeleton, EmptyState, ToastHost, toast, PageHeader } from '../components/ui'
-import Chart from '../components/Chart'
 import QuickLogSheet from '../components/QuickLogSheet'
 import useOnline from '../lib/useOnline'
 import { Plus, AlertCircle, CreditCard, ArrowUp } from 'lucide-react'
 import { fmtINR } from '../lib/amounts'
 import { Reveal } from '../lib/motion-primitives'
+
+// recharts is ~360 KB raw; defer it so the dashboard shell paints first.
+const Chart = lazy(() => import('../components/Chart'))
 
 export default function Dashboard() {
   const { isOnline } = useOnline()
@@ -170,8 +172,10 @@ export default function Dashboard() {
           <Card className="card-shell card-core--pad-lg">
             <p className="label-caps mb-4">Net worth trend</p>
             <div role="img" aria-label="Area chart showing net worth trend over time. Coral area shows growth trajectory.">
-              <Chart data={snapshots} xKey="date" xFormatter={(d) => (d || '').slice(5)}
-                series={[{ key: 'net_worth', name: 'Net worth', color: 'var(--accent)', area: true }]} />
+              <Suspense fallback={<Skeleton className="skeleton-card h-44" />}>
+                <Chart data={snapshots} xKey="date" xFormatter={(d) => (d || '').slice(5)}
+                  series={[{ key: 'net_worth', name: 'Net worth', color: 'var(--accent)', area: true }]} />
+              </Suspense>
             </div>
           </Card>
         ) : (
@@ -187,12 +191,14 @@ export default function Dashboard() {
           <Card className="card-shell card-core--pad-lg">
             <p className="label-caps mb-4">60-month projection</p>
             <div role="img" aria-label="60-month projection chart showing debt decreasing, investments growing, and net worth increasing over time">
-              <Chart data={projection.projection} xKey="month" xFormatter={(m) => `${m || ''}m`}
-                series={[
-                  { key: 'debt', name: 'Debt', color: 'var(--accent)' },
-                  { key: 'investments', name: 'Investments', color: 'var(--success)' },
-                  { key: 'net_worth', name: 'Net Worth', color: 'var(--ink)' },
-                ]} height={180} />
+              <Suspense fallback={<Skeleton className="skeleton-card h-44" />}>
+                <Chart data={projection.projection} xKey="month" xFormatter={(m) => `${m || ''}m`}
+                  series={[
+                    { key: 'debt', name: 'Debt', color: 'var(--accent)' },
+                    { key: 'investments', name: 'Investments', color: 'var(--success)' },
+                    { key: 'net_worth', name: 'Net Worth', color: 'var(--ink)' },
+                  ]} height={180} />
+              </Suspense>
             </div>
             {/* Data table fallback for screen readers */}
             <details className="mt-3">

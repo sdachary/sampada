@@ -53,7 +53,7 @@ export default function Recurring() {
   const detect = async () => {
     setDetecting(true)
     try {
-      const d = await api.request('/api/v1/recurring_detection/detect', { method: 'POST' })
+      const d = await api.request('/api/v1/recurring_detection', { method: 'POST' })
       setSuggestions(d.suggestions || [])
       setSuggestionsOpen(true)
     } catch (err) {
@@ -73,7 +73,7 @@ export default function Recurring() {
   const rejectSuggestion = async (index) => {
     setBusy(true)
     try {
-      await api.request(`/api/v1/recurring_detection/suggestions/${index}`, {
+      await api.request(`/api/v1/recurring_detection/${index}`, {
         method: 'PUT', body: JSON.stringify({ status: 'rejected' }),
       })
       await refreshSuggestions()
@@ -89,7 +89,7 @@ export default function Recurring() {
     try {
       const pendingIndexes = suggestions.map((s, i) => (s.status === 'pending' ? i : -1)).filter(i => i >= 0)
       for (const index of pendingIndexes) {
-        await api.request(`/api/v1/recurring_detection/suggestions/${index}`, {
+        await api.request(`/api/v1/recurring_detection/${index}`, {
           method: 'PUT', body: JSON.stringify({ status: 'rejected' }),
         })
       }
@@ -248,7 +248,7 @@ export default function Recurring() {
           }}
           onClose={() => setEditing(null)}
           onSubmit={async (values) => {
-            await api.request(`/api/v1/recurring_detection/suggestions/${editing.index}`, {
+            await api.request(`/api/v1/recurring_detection/${editing.index}`, {
               method: 'PUT',
               body: JSON.stringify({ status: 'edited', ...values }),
             })
