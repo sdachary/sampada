@@ -51,7 +51,7 @@ npm run size     # size-limit check
 ## CI Gates (run on PR)
 
 ```bash
-npm run lhci      # Lighthouse CI (perf ≥0.7, a11y ≥0.9, LCP ≤2.5s)
+npm run lhci      # Lighthouse CI (perf ≥0.85, a11y ≥0.9, LCP/FCP ≤1.5s, TBT ≤250ms)
 npm run size      # bundle size check (main ≤500 KB, 3D ≤1 MB)
 npx playwright test test/accessibility.test.js
 npx playwright test test/visual-smoke.test.js

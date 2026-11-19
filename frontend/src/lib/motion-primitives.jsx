@@ -42,48 +42,32 @@ export function Reveal({ children, y = 12, delay = 0, ...props }) {
   // Reduced motion: mounted immediately so content shows without animation
   const [mounted, setMounted] = useState(reduce)
   
-  // If already in viewport on mount, show immediately
+  // One observer, one effect, one fallback timer per Reveal. The old version
+  // mounted useInView + whileInView observers and three effects on every card
+  // (20+ per data page), which dominated scroll cost on mobile.
   useEffect(() => {
-    if (inView) setMounted(true)
-  }, [inView])
-  
-  // Also check on mount if element is already visible
-  useEffect(() => {
+    if (mounted || inView) {
+      setMounted(true)
+      return
+    }
     const el = ref.current
     if (el && isElementInViewport(el)) {
       setMounted(true)
+      return
     }
-  }, [])
-  
-  // Fallback: show after 500ms if inView hasn't triggered (handles edge cases)
-  useEffect(() => {
+    // Fallback for tall cards that never count as fully in view.
     const timer = setTimeout(() => setMounted(true), 500)
     return () => clearTimeout(timer)
-  }, [])
+  }, [inView, mounted])
   
   // Reduced motion: render children immediately WITH ref attached
   if (reduce) return <div ref={ref} {...props}>{children}</div>
   
-  if (mounted || inView) {
-    return (
-      <m.div
-        ref={ref}
-        initial={mounted ? false : { opacity: 0, y }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: DUR.slow, ease: EASE, delay }}
-        {...props}
-      >
-        {children}
-      </m.div>
-    )
-  }
-  
   return (
     <m.div
       ref={ref}
-      initial={{ opacity: 0, y }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-10% 0px' }}
+      initial={mounted ? false : { opacity: 0, y }}
+      animate={mounted || inView ? { opacity: 1, y: 0 } : undefined}
       transition={{ duration: DUR.slow, ease: EASE, delay }}
       {...props}
     >

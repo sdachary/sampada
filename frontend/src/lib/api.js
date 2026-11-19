@@ -34,7 +34,7 @@ async function requestRaw(path, options = {}) {
 
 // Worker auth client — same-origin via the /api/worker proxy branch.
 // 15s timeout, {error} parsing, err.status preserved for callers.
-const WORKER_AUTH_URL = '/api/worker/api/v1/auth'
+const WORKER_AUTH_URL = API ? `${API}/api/v1/auth` : '/api/worker/api/v1/auth'
 
 async function workerRequest(path, options = {}) {
   const controller = new AbortController()

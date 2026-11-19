@@ -1,5 +1,3 @@
-import { useState } from 'react'
-import { api } from '../lib/api'
 import { useResource } from '../lib/useResource'
 import PortfolioFormModal from '../components/PortfolioFormModal'
 import { Card, Button, Skeleton, EmptyState, PageHeader, Badge, fmtINR, Progress, Stat } from '../components/ui'
@@ -7,25 +5,13 @@ import { Reveal } from '../lib/motion-primitives'
 
 export default function Portfolios() {
   const { items: portfolios, loading, modal, setModal, closeModal, saved, remove } = useResource('/api/v1/portfolios')
-  const [prices, setPrices] = useState({})
-  const [refreshing, setRefreshing] = useState(false)
 
   const totalValue = portfolios.reduce((s, p) => s + (+p.total_value || 0), 0)
   const totalCost = portfolios.reduce((s, p) => s + (p.investments || []).reduce((ss, i) => ss + (+i.cost_basis || 0), 0), 0)
   const totalGain = totalValue - totalCost
 
-  async function refreshPrices(portfolio) {
-    setRefreshing(true)
-    try {
-      const data = await api.request(`/api/v1/portfolios/${portfolio.id}/prices`)
-      if (data?.prices) {
-        const map = {}
-        data.prices.forEach(p => { map[p.symbol] = p })
-        setPrices(prev => ({ ...prev, ...map }))
-      }
-    } catch { /* ignore */ }
-    setRefreshing(false)
-  }
+  // Prices are refreshed hourly by the Worker's price_refresh cron and returned
+  // on each investment by the portfolios endpoint; there is no on-demand route.
 
   if (loading) return (
     <Reveal delay={0}>
@@ -113,20 +99,14 @@ export default function Portfolios() {
                       <div>
                         <div className="flex justify-between items-center mb-1">
                           <p className="text-xs text-muted">{invs.length} investment{invs.length !== 1 ? 's' : ''}</p>
-                          <Button variant="ghost" size="sm" onClick={() => refreshPrices(p)} disabled={refreshing}>
-                            {refreshing ? '…' : '↻ Prices'}
-                          </Button>
+                          <span className="text-[10px] text-faint">Prices refresh hourly</span>
                         </div>
                         <div className="space-y-1">
                           {invs.map(i => {
-                            const live = prices[i.symbol]
-                            const curPrice = live?.price || +i.current_price || 0
-                            const buyPrice = +i.buy_price || 0
+                            const curPrice = +i.current_price || 0
                             const shares = +i.shares || 0
-                            const curVal = curPrice * shares
-                            const costBasis = buyPrice * shares
-                            const gain = curVal - costBasis
-                            const gainPct = costBasis > 0 ? (gain / costBasis * 100).toFixed(1) : '—'
+                            const gain = +i.gain_loss || 0
+                            const gainPct = +i.cost_basis > 0 ? (+i.gain_loss_pct).toFixed(1) : '—'
                             const gainColor = gain >= 0 ? 'text-success' : 'text-accent'
                             return (
                               <div key={i.id} className="flex justify-between items-center px-2 py-1.5 rounded bg-border-soft text-xs">
