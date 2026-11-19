@@ -7,7 +7,7 @@
 import { Hono } from 'hono';
 import type { AppEnv } from '../index';
 import { originGuard, requireAuth } from '../auth';
-import { CURRENCY_CODES, castDecimal, error, jsonBody, num, nowIso, round2, success, symbolFor } from './util';
+import { CURRENCY_CODES, castDecimal, error, jsonBody, num, nowIso, parseCsvLine, round2, success, symbolFor } from './util';
 
 const router = new Hono<AppEnv>();
 router.use('*', originGuard, requireAuth);
@@ -244,31 +244,6 @@ router.delete('/:id', async (c) => {
 });
 
 // ---- bulk_create (CSV import) ----
-
-// CSV.parse line semantics for the formats the import sees: comma-separated,
-// double-quoted cells ("" escape, embedded commas). Unquoted cells keep their
-// whitespace — Rails never trims. Newlines inside quotes are not supported.
-function parseCsvLine(line: string): string[] {
-  const cells: string[] = [];
-  let cell = '';
-  let quoted = false;
-  let i = 0;
-  while (i < line.length) {
-    const ch = line[i];
-    if (quoted) {
-      if (ch === '"') {
-        if (line[i + 1] === '"') { cell += '"'; i += 2; continue; }
-        quoted = false; i++; continue;
-      }
-      cell += ch; i++; continue;
-    }
-    if (ch === '"') { quoted = true; i++; continue; }
-    if (ch === ',') { cells.push(cell); cell = ''; i++; continue; }
-    cell += ch; i++;
-  }
-  cells.push(cell);
-  return cells;
-}
 
 // POST /transactions/bulk_create — CSV import. Rails accepts
 // params[:transactions_csv] || params[:csv] (JSON, not multipart); the SPA

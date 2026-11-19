@@ -52,6 +52,32 @@ export function nowIso(): string {
   return new Date().toISOString();
 }
 
+/** CSV.parse cell semantics shared by transactions/bulk_create and the
+ *  portfolio import: comma-separated, double-quoted cells ("" escape,
+ *  embedded commas). Unquoted whitespace is kept; multi-line cells are not
+ *  supported by either importer. */
+export function parseCsvLine(line: string): string[] {
+  const cells: string[] = [];
+  let cell = '';
+  let quoted = false;
+  let i = 0;
+  while (i < line.length) {
+    const ch = line[i];
+    if (quoted) {
+      if (ch === '"') {
+        if (line[i + 1] === '"') { cell += '"'; i += 2; continue; }
+        quoted = false; i++; continue;
+      }
+      cell += ch; i++; continue;
+    }
+    if (ch === '"') { quoted = true; i++; continue; }
+    if (ch === ',') { cells.push(cell); cell = ''; i++; continue; }
+    cell += ch; i++;
+  }
+  cells.push(cell);
+  return cells;
+}
+
 /** Currency.symbol_for — unknown/absent codes fall back to the code/₹. */
 const CURRENCY_SYMBOLS: Record<string, string> = {
   INR: '₹', USD: '$', EUR: '€', GBP: '£',
