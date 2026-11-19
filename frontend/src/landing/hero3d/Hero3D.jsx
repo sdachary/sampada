@@ -1,6 +1,5 @@
 import { useRef, useEffect, useState, useImperativeHandle, forwardRef, useMemo } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
 
 // Coin face texture — "सं" baked into the top face so it stays crisp at any
@@ -226,14 +225,6 @@ function Hero3DCanvas({ scrollProgress, prefersReducedMotion, onReady }) {
       style={{ width: '100%', height: '100%', display: 'block' }}
     >
       <Scene scrollProgress={scrollProgress} prefersReducedMotion={prefersReducedMotion} />
-      <OrbitControls
-        enablePan={false}
-        enableZoom={false}
-        enableRotate={true}
-        autoRotate={false}
-        minPolarAngle={Math.PI / 3}
-        maxPolarAngle={Math.PI / 2.2}
-      />
     </Canvas>
   )
 }

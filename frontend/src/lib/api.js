@@ -4,8 +4,8 @@ const API = import.meta.env.VITE_API_URL || ''
 // Same-origin path — served by the CF Pages Functions proxy in functions/[[path]].js
 const BETTER_AUTH_URL = import.meta.env.VITE_BETTER_AUTH_URL || '/api/auth'
 
-// A5.2 parallel-stack gate: worker auth is opt-in at build time only.
-// Production builds do NOT set VITE_WORKER_AUTH; gate-off UI is byte-identical.
+// Worker auth is enabled in production (VITE_WORKER_AUTH=true since the A5.4 cutover).
+// The flag stays so local/dev can still exercise the Better-Auth-only fallback.
 export const WORKER_AUTH_ENABLED = import.meta.env.VITE_WORKER_AUTH === 'true'
 
 async function request(path, options = {}) {
@@ -168,8 +168,4 @@ export const auth = {
     method: 'POST',
     body: JSON.stringify({ token, newPassword }),
   }),
-
-  // OAuth - redirect to Better-Auth
-  google: () => `${BETTER_AUTH_URL}/sign-in/social/google`,
-  github: () => `${BETTER_AUTH_URL}/sign-in/social/github`,
 }

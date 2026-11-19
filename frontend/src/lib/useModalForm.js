@@ -24,14 +24,12 @@ export function useModalForm(initial, { basePath, id, toBody = (b) => b, onSave,
     setError(null)
     try {
       const body = toBody({ ...form })
-      if (submit) {
-        await submit(body)
-      } else if (id) {
-        await api.request(`${basePath}/${id}`, { method: 'PATCH', body: JSON.stringify(body) })
-      } else {
-        await api.request(basePath, { method: 'POST', body: JSON.stringify(body) })
-      }
-      onSave()
+      const record = submit
+        ? await submit(body)
+        : await api.request(id ? `${basePath}/${id}` : basePath, {
+            method: id ? 'PATCH' : 'POST', body: JSON.stringify(body),
+          })
+      onSave(record)
     } catch (err) {
       setError(err.message)
     } finally {

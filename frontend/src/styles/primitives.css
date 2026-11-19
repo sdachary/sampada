@@ -290,6 +290,7 @@
 .relative { position: relative; }
 .absolute { position: absolute; }
 .fixed { position: fixed; }
+.quick-log-fab { bottom: calc(5rem + env(safe-area-inset-bottom)); }
 .sticky { position: sticky; }
 .inset-0 { inset: 0; }
 

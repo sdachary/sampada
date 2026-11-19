@@ -57,3 +57,34 @@ curl -s -o /dev/null -w "%{http_code} %{time_total}s\n" \
 ```
 
 Compare against the table above after any perf-related change.
+
+## Post-cutover baseline (A7.5, 2026-11-19)
+
+Measured after the A5.4/A5.5 cutover — the live app is now the `sampada-api-production` Worker + D1 behind the CF Pages SPA; the oradb Rails/:3002 stack no longer exists.
+
+### Lighthouse CI (local `vite preview` build, 3 runs per URL)
+
+| URL | Perf | a11y | FCP | LCP | CLS | TBT |
+|-----|------|------|-----|-----|-----|-----|
+| `/` | 98 | 94 | 762 ms | 762 ms | 0.000 | 146 ms |
+| `/dashboard` | 100 | 90 | 757 ms | 757 ms | 0.000 | 45 ms |
+| `/dashboard/debts` | 100 | 90 | 757 ms | 757 ms | 0.000 | 37 ms |
+
+9/9 assertions passed. `lighthouserc.json` budgets were tightened from perf 0.7/FCP 2500/LCP 3500/CLS 0.1/TBT 300 to **0.85 / 1500 / 1500 / 0.05 / 250** — roughly 2× headroom over the measured values so CI hardware variance doesn't flake. a11y stays at 0.90 (dashboard measured exactly 0.90); best-practices 0.8, SEO 0.5 and TTI 4000 ms unchanged.
+
+> **Caveat:** LHCI visits unauthenticated pages, so these are shell/paint numbers — they validate the bundle and render path, not a populated D1 dashboard.
+
+### Live API latency (`curl -w time_total`, 3 runs)
+
+| Endpoint | Runs | Compare to old Rails baseline |
+|----------|------|-------------------------------|
+| Worker `/up` | 0.395 / 0.426 / 0.516 s | n/a (no Rails equivalent) |
+| Worker `/api/v1/dashboard` (unauth → 401) | 0.332 / 0.335 / 0.351 s | old warm dashboard 0.216–0.320 s (authenticated, empty account) |
+| Pages proxy `/api/worker/up` | 0.941 / 1.017 / 0.530 s | adds the Pages→Worker hop |
+
+> **Caveat:** the worker probes are unauthenticated (no D1 read), so they are not a like-for-like comparison with the old authenticated warm timings. An authenticated D1-backed dashboard measurement is still outstanding — re-run with a short-lived session when a populated account is available.
+
+### Playwright suite
+
+`mount.test.js` is the hard gate in CI; `accessibility.test.js` + `visual-smoke.test.js` remain warn-only. `dashboard-audit.test.js` (overlap check) and `passkey-ceremony.test.js` (needs `VITE_WORKER_AUTH=true`) run manually, not in CI.
+

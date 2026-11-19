@@ -257,10 +257,7 @@ export default function Dashboard() {
         tabIndex={0}
         aria-label="Quick log transaction"
         title="Quick log (Alt+Q)"
-        className={`fixed right-4 z-popover w-14 h-14 rounded-full border-0 bg-accent text-ink flex items-center justify-center shadow-lg btn btn--primary btn--icon transition-transform duration-base ease-spring hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.97] ${isOnline ? '' : 'opacity-50'}`}
-        style={{
-          bottom: `calc(5rem + env(safe-area-inset-bottom))`,
-        }}
+        className={`fixed quick-log-fab right-4 z-popover w-14 h-14 rounded-full border-0 bg-accent text-ink flex items-center justify-center shadow-lg btn btn--primary btn--icon transition-transform duration-base ease-spring hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.97] ${isOnline ? '' : 'opacity-50'}`}
       >
         <Plus size={26} strokeWidth={2.5} />
       </button>
