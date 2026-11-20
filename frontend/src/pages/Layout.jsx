@@ -247,19 +247,6 @@ export default function Layout() {
           ))}
         </nav>
 
-        {/* Theme toggle */}
-        <div className="p-4 border-t border-border-soft flex items-center justify-between">
-          <button
-            onClick={toggleTheme}
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-ink-mute hover:text-ink hover:bg-surface-hover transition-colors duration-fast"
-            aria-label={`${theme === 'dark' ? 'Switch to light' : 'Switch to dark'} mode`}
-          >
-            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-            <span>{theme === 'dark' ? 'Light' : 'Dark'} mode</span>
-          </button>
-          <kbd className="text-[11px] text-ink-faint font-mono px-1.5 py-0.5 rounded bg-surface border border-border-soft">⌘K</kbd>
-        </div>
-
         {/* User menu */}
         <div className="p-4 border-t border-border-soft relative">
           <button
@@ -542,7 +529,7 @@ export default function Layout() {
       )}
 
       {/* ===== MAIN CONTENT ===== */}
-      <main className="main-area lg:ml-[288px] pt-16 lg:pt-6 px-4 lg:px-8 pb-40 lg:pb-12 min-h-dvh">
+      <main className="main-area lg:ml-[288px] pt-16 lg:pt-14 px-4 lg:px-8 pb-40 lg:pb-12 min-h-dvh">
         {/* Offline banner */}
         {!isOnline && (
           <div className="mb-4 flex items-center gap-2 px-4 py-3 rounded-xl bg-ink text-paper text-sm shadow-lg animate-slide-down" role="status" aria-live="polite">

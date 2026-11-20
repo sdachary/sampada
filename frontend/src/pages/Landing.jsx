@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import ThemeToggle from '../components/ThemeToggle'
 import { Reveal } from '../lib/motion-primitives'
 import { Check, X, TrendingDown, PiggyBank, RefreshCw, MessageSquare, AlertTriangle, Globe, Users, Cpu, Lock, Shield, Zap, Star, ArrowRight } from 'lucide-react'
 import { Button, Card } from '../components/ui'
@@ -9,7 +8,6 @@ const FEATURES = [
   { icon: TrendingDown, accent: 'var(--accent)', title: 'Debt payoff tracker', body: 'Avalanche or snowball order, a full EMI calendar, and a month-by-month projection to your debt-free date.' },
   { icon: PiggyBank, accent: 'var(--success)', title: 'Dividend SIP planner', body: 'Set an income target and timeline. Sampada\'s AI picks 2–3 dividend stocks to match.' },
   { icon: RefreshCw, accent: 'var(--warning)', title: 'Portfolio rebalancing v2', body: 'Buy-only contribution engine with guard rails, reason chips, CSV import, holdings drawer, and V1 compare.' },
-  { icon: MessageSquare, accent: 'var(--accent)', title: 'Natural-language entries', body: '"I spent ₹500 on groceries" becomes a categorized transaction, no forms.' },
   { icon: AlertTriangle, accent: 'var(--danger)', title: 'Anomaly detection', body: 'A 3-sigma algorithm flags spending that breaks your normal pattern, automatically.' },
   { icon: Globe, accent: 'var(--success)', title: 'Multi-currency, global markets', body: '32 currencies with live rates. NYSE, NASDAQ, LSE, TSE, ASX — plus native NSE/BSE support.' },
   { icon: Users, accent: 'var(--warning)', title: 'Household sharing', body: 'Add family members with role-based access and one shared household dashboard.' },
@@ -81,12 +79,11 @@ export default function Landing() {
     <div className="max-w-[1024px] mx-auto px-4 lg:px-6">
       {/* Nav - floating island */}
       <Reveal delay={0} y={8}>
-        <nav className="flex justify-between items-center py-6 lg:py-8">
+        <nav className="flex justify-between items-center py-6 lg:py-8 pr-12">
           <Link to="/" className="flex items-center gap-2 py-2 -my-2 font-display font-bold text-xl lg:text-2xl tracking-tight text-ink no-underline">
             <img src="/brand-mark.png" alt="" width={24} height={24} className="rounded-md" />Sampada
           </Link>
           <div className="flex items-center gap-4">
-            <ThemeToggle />
             <Link to="/login" className="text-sm text-muted hover:text-ink transition-colors no-underline hidden sm:inline">Sign in</Link>
             <PrimaryCTA href="/register" size="base">Get started</PrimaryCTA>
           </div>
@@ -165,10 +162,10 @@ export default function Landing() {
             title="Every part of the journey." 
             subtitle="The full arc, in one place."
           />
-          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-2 max-w-5xl mx-auto">
+          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 max-w-5xl mx-auto items-start">
             {/* Large featured card - spans 2 columns on desktop */}
-            <Reveal delay={0.1} y={16}>
-              <Card className="card-shell card-shell--interactive card-core--pad-xl h-full flex flex-col lg:col-span-2 lg:row-span-1 group relative overflow-hidden">
+            <Reveal delay={0.1} y={16} className="lg:col-span-2">
+              <Card className="card-shell card-shell--interactive card-core--pad-lg flex flex-col aspect-[2/1] group relative overflow-hidden">
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity duration-500" style={{ background: 'var(--accent)' }} />
                 <div className="relative z-10 flex flex-col h-full">
                   <div className="mb-4 p-3 rounded-2xl bg-accent-bg" style={{ width: 'fit-content' }}>
