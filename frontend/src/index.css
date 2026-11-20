@@ -13,9 +13,6 @@ input, button, textarea { font-family: var(--body); }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
 .pulse { animation: pulse 2.4s ease-in-out infinite; }
 
-.page-num { font-family: var(--sans); font-size: 10.5px; font-weight: 600; color: var(--ink-faint); letter-spacing: 0.15em; }
-.page-num em { font-family: var(--serif); font-style: italic; color: var(--coral); }
-
 .card {
   background: var(--paper-card);
   border: 1px solid var(--line);
@@ -49,7 +46,8 @@ input, button, textarea { font-family: var(--body); }
   width: 220px; flex-shrink: 0; background: var(--paper-warm); border-right: 1px solid var(--line);
   display: flex; flex-direction: column; position: sticky; top: 0; height: 100dvh;
 }
-.main-area { flex: 1; padding: 28px 32px; max-width: 960px; min-width: 0; }
+/* Padding comes from the Tailwind classes on <main> in Layout.jsx. */
+.main-area { flex: 1; max-width: 960px; min-width: 0; }
 
 .bottom-nav { display: none; }
 
@@ -66,14 +64,14 @@ input, button, textarea { font-family: var(--body); }
     display: flex; flex-direction: column; align-items: center; gap: 2px;
     font-size: 10px; text-decoration: none;
   }
-  .app-layout { padding-bottom: 60px; }
-  .main-area { padding: 20px 16px; max-width: 100%; }
+  .app-layout { padding-bottom: 88px; }
+  .main-area { max-width: 100%; }
   input, select, textarea { font-size: 16px !important; }
 }
 
 /* reusable style classes extracted from inline patterns */
-.label-caps { font-size: 10.5px; font-weight: 600; color: var(--ink-faint); letter-spacing: 0.08em; text-transform: uppercase; }
-.label-caps-sm { font-size: 10px; font-weight: 600; color: var(--ink-faint); letter-spacing: 0.05em; text-transform: uppercase; }
+.label-caps { font-size: 11.5px; font-weight: 600; color: var(--ink-faint); letter-spacing: 0.07em; text-transform: uppercase; }
+.label-caps-sm { font-size: 11px; font-weight: 600; color: var(--ink-faint); letter-spacing: 0.04em; text-transform: uppercase; }
 .value-hero { font-family: var(--sans); font-size: 36px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; }
 .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px,1fr)); gap: 12px; }
 .text-muted { font-size: 13.5px; color: var(--ink-mute); line-height: 1.55; }

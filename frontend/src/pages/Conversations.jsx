@@ -66,7 +66,6 @@ export default function Conversations() {
       <Reveal delay={0}>
         <PageHeader
           title={selected.title}
-          num="014 / 016"
           action={
             <Button variant="ghost" size="sm" onClick={() => { setSelected(null); setMessages([]) }}>
               ← Back
@@ -125,7 +124,6 @@ export default function Conversations() {
       <Reveal delay={0}>
         <PageHeader
           title="Conversations"
-          num="014 / 016"
         >
           <p className="text-sm text-muted">Chat with household members.</p>
         </PageHeader>

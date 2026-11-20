@@ -124,7 +124,6 @@ export default function DebtDetail() {
       <Reveal delay={0}>
         <PageHeader
           title="Debt Detail"
-          num="005 / 016"
           action={
             <div className="flex gap-2">
               {saving && <span className="text-xs text-muted self-center">Saving…</span>}

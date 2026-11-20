@@ -33,14 +33,6 @@ function CompareCell({ value }) {
   return <span className="text-sm text-muted">{value}</span>
 }
 
-function Eyebrow({ children }) {
-  return (
-    <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-medium uppercase tracking-[0.2em] text-muted bg-border-soft mb-4">
-      {children}
-    </span>
-  )
-}
-
 function FeatureCard({ f, index }) {
   const Icon = f.icon
   // Stagger: base 100ms + index * 80ms for fluid cascade
@@ -75,10 +67,9 @@ function PrimaryCTA({ children, href, variant = 'primary', size = 'lg' }) {
   )
 }
 
-function SectionHeader({ eyebrow, title, subtitle }) {
+function SectionHeader({ title, subtitle }) {
   return (
     <div className="text-center max-w-2xl mx-auto mb-12">
-      <Eyebrow>{eyebrow}</Eyebrow>
       <h2 className="font-display text-2xl lg:text-4xl font-bold tracking-tight mb-4">{title}</h2>
       {subtitle && <p className="text-base lg:text-lg text-muted leading-relaxed">{subtitle}</p>}
     </div>
@@ -104,10 +95,9 @@ export default function Landing() {
 
       {/* Hero - Editorial Split Layout */}
       <Reveal delay={100} y={20}>
-        <section aria-labelledby="hero-heading" className="py-20 lg:py-32 relative">
+        <section aria-labelledby="hero-heading" className="py-12 lg:py-20 relative">
           <div className="grid gap-12 lg:gap-16 lg:grid-cols-2 items-center">
             <div className="text-center lg:text-left">
-              <Eyebrow>Personal Finance OS</Eyebrow>
               <h1 id="hero-heading" className="font-display text-4xl lg:text-6xl lg:leading-[1.05] font-bold tracking-tight mb-6">
                 Zero is better than <em className="font-serif italic text-accent">negative</em>.
               </h1>
@@ -133,9 +123,8 @@ export default function Landing() {
 
       {/* 2. Debt → Zero → Wealth arc - Z-Axis Cascade */}
       <Reveal delay={200} y={20}>
-        <section aria-labelledby="arc-heading" className="py-20 lg:py-28">
+        <section aria-labelledby="arc-heading" className="py-14 lg:py-20">
           <SectionHeader 
-            eyebrow="The Journey" 
             title="From Debt to Wealth" 
             subtitle="Three stages. One clear path. Sampada guides you through each phase."
           />
@@ -171,10 +160,9 @@ export default function Landing() {
 
       {/* 3. Feature grid - Asymmetrical Bento */}
       <Reveal delay={300} y={20}>
-        <section aria-labelledby="features-heading" className="py-20 lg:py-28">
+        <section aria-labelledby="features-heading" className="py-14 lg:py-20">
           <SectionHeader 
-            eyebrow="Capabilities" 
-            title="Not a budgeting app. Not an investment dashboard." 
+            title="Every part of the journey." 
             subtitle="The full arc, in one place."
           />
           <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-2 max-w-5xl mx-auto">
@@ -209,9 +197,8 @@ export default function Landing() {
 
       {/* 4. Why Sampada (comparison table) */}
       <Reveal delay={400} y={20}>
-        <section aria-labelledby="compare-heading" className="py-20 lg:py-28 bg-bg-elevated/50 rounded-3xl -mx-4 lg:mx-0 px-4 lg:px-0">
+        <section aria-labelledby="compare-heading" className="py-14 lg:py-20 bg-bg-elevated/50 rounded-3xl -mx-4 lg:mx-0 px-4 lg:px-0">
           <SectionHeader 
-            eyebrow="Why Sampada" 
             title="Mint shut down. YNAB costs ~$15/month." 
             subtitle="Sampada is neither. Self-hosted, free forever, no paywalls."
           />
@@ -244,10 +231,9 @@ export default function Landing() {
 
       {/* 5. Hosted SaaS - Editorial CTA */}
       <Reveal delay={500} y={20}>
-        <section aria-labelledby="cta-heading" className="py-20 lg:py-32 text-center relative">
+        <section aria-labelledby="cta-heading" className="py-14 lg:py-20 text-center relative">
           <div className="absolute inset-0 bg-gradient-to-r from-accent-bg/50 to-transparent opacity-30 rounded-3xl" />
           <div className="relative z-10 max-w-2xl mx-auto">
-            <Eyebrow>Hosted Option</Eyebrow>
             <h2 id="cta-heading" className="font-display text-3xl lg:text-5xl font-semibold tracking-tight mb-4">Hosted. Free. Forever.</h2>
             <p className="text-lg text-muted max-w-xl mx-auto mb-8 leading-relaxed">
               No installation needed. Sign up at <a href="https://sampada.vayalabs.in" target="_blank" rel="noreferrer" className="text-accent no-underline font-medium hover:underline">sampada.vayalabs.in</a> and start in seconds.
@@ -264,7 +250,7 @@ export default function Landing() {
 
       {/* 6. Trust badges - Premium presentation */}
       <Reveal delay={600} y={16}>
-        <section className="py-16 lg:py-20 text-center border-t border-border-soft">
+        <section className="py-12 lg:py-16 text-center border-t border-border-soft">
           <div className="flex gap-4 lg:gap-8 justify-center flex-wrap max-w-4xl mx-auto px-4">
             {[
               { icon: Lock, label: 'Apache 2.0', desc: 'Open source license' },

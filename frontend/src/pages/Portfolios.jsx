@@ -26,7 +26,6 @@ export default function Portfolios() {
       <Reveal delay={0}>
         <PageHeader
           title="Portfolios"
-          num="009 / 016"
           action={<Button onClick={() => setModal('new')}>+ Add</Button>}
         >
           <p className="text-sm text-muted">All your investments, one view.</p>
@@ -90,7 +89,7 @@ export default function Portfolios() {
                     {sectorNames.length > 0 && (
                       <div className="flex gap-2 flex-wrap mb-2">
                         {sectorNames.map(s => (
-                          <Badge key={s} variant="neutral" className="text-[10px]">{s} {sectors[s]}%</Badge>
+                          <Badge key={s} variant="neutral" className="text-[11px]">{s} {sectors[s]}%</Badge>
                         ))}
                       </div>
                     )}
@@ -99,7 +98,7 @@ export default function Portfolios() {
                       <div>
                         <div className="flex justify-between items-center mb-1">
                           <p className="text-xs text-muted">{invs.length} investment{invs.length !== 1 ? 's' : ''}</p>
-                          <span className="text-[10px] text-faint">Prices refresh hourly</span>
+                          <span className="text-[11px] text-faint">Prices refresh hourly</span>
                         </div>
                         <div className="space-y-1">
                           {invs.map(i => {
@@ -112,12 +111,12 @@ export default function Portfolios() {
                               <div key={i.id} className="flex justify-between items-center px-2 py-1.5 rounded bg-border-soft text-xs">
                                 <div className="min-w-0">
                                   <span className="font-medium truncate block">{i.symbol}</span>
-                                  {i.name && <span className="text-muted text-[10px] ml-1 truncate block">{i.name}</span>}
+                                  {i.name && <span className="text-muted text-[11px] ml-1 truncate block">{i.name}</span>}
                                 </div>
                                 <div className="flex items-center gap-3 ml-2">
                                   <span className="fin">₹{curPrice.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                   <span className={`fin font-medium ${gainColor}`}>{gain >= 0 ? '▲' : '▼'} {gainPct}%</span>
-                                  <span className="fin text-muted text-[10px]">{shares} sh</span>
+                                  <span className="fin text-muted text-[11px]">{shares} sh</span>
                                 </div>
                               </div>
                             )

@@ -45,7 +45,7 @@ function CalendarHeatmap() {
         {loading ? <Skeleton className="skeleton-card h-48" /> : (
           <>
             <div className="grid grid-cols-7 gap-1 text-center">
-              {labels.map(l => <div key={l} className="text-[10px] text-muted py-0.5">{l}</div>)}
+              {labels.map(l => <div key={l} className="text-[11px] text-muted py-0.5">{l}</div>)}
               {Array.from({ length: firstDow }, (_, i) => <div key={`e${i}`} />)}
               {Array.from({ length: daysInMonth }, (_, i) => {
                 const day = i + 1
@@ -54,17 +54,17 @@ function CalendarHeatmap() {
                 return (
                   <div key={day}
                     title={daily[key] ? `₹${daily[key].toLocaleString('en-IN')}` : ''}
-                    className={`aspect-square rounded-lg flex items-center justify-center text-[10px] text-muted ${c.bg} ${c.opacity}`}
+                    className={`aspect-square rounded-lg flex items-center justify-center text-[11px] text-muted ${c.bg} ${c.opacity}`}
                   >{day}</div>
                 )
               })}
             </div>
             <div className="flex items-center gap-2 justify-end mt-3">
-              <span className="text-[10px] text-muted">Less</span>
+              <span className="text-[11px] text-muted">Less</span>
               {[15, 30, 50, 70, 90].map(o => (
                 <span key={o} className={`w-3 h-3 rounded-sm bg-accent opacity-${o}`} />
               ))}
-              <span className="text-[10px] text-muted">More</span>
+              <span className="text-[11px] text-muted">More</span>
             </div>
           </>
         )}
@@ -110,7 +110,6 @@ export default function Reports() {
       <Reveal delay={0}>
         <PageHeader
           title="Reports"
-          num="015 / 016"
         >
           <p className="text-sm text-muted">Annual summaries, cash flow forecasts, and anomaly detection.</p>
         </PageHeader>

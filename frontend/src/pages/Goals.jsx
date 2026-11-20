@@ -65,7 +65,6 @@ export default function Goals() {
       <Reveal delay={0}>
         <PageHeader
           title="Goals"
-          num="013 / 016"
           action={<Button onClick={openNew}>+ Add</Button>}
         >
           <p className="text-sm text-muted">Plan and track your savings goals.</p>
@@ -132,9 +131,9 @@ export default function Goals() {
 
                   {alloc && (
                     <div className="flex gap-1 flex-wrap mb-2">
-                      <Badge variant="neutral" className="text-[10px]">Equity {alloc.equity}%</Badge>
-                      <Badge variant="neutral" className="text-[10px]">Debt {alloc.debt}%</Badge>
-                      <Badge variant="neutral" className="text-[10px]">Gold {alloc.gold}%</Badge>
+                      <Badge variant="neutral" className="text-[11px]">Equity {alloc.equity}%</Badge>
+                      <Badge variant="neutral" className="text-[11px]">Debt {alloc.debt}%</Badge>
+                      <Badge variant="neutral" className="text-[11px]">Gold {alloc.gold}%</Badge>
                     </div>
                   )}
 

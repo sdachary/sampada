@@ -212,7 +212,6 @@ export default function Settings() {
       <Reveal delay={0}>
         <PageHeader
           title="Settings"
-          num="017 / 016"
         >
           <p className="text-sm text-muted">Account preferences and profile.</p>
         </PageHeader>

@@ -69,7 +69,6 @@ export default function PayoffSimulator() {
       <Reveal delay={0}>
         <PageHeader
           title="Payoff Simulator"
-          num="005 / 016"
         >
           <p className="text-sm text-muted">See how extra payments affect your debt-free date.</p>
         </PageHeader>
@@ -175,12 +174,12 @@ export default function PayoffSimulator() {
                     <div className="flex-1 flex flex-col items-center gap-1">
                       <span className="text-xs text-muted">{base.months}mo</span>
                       <Progress value={100} className="w-20 max-w-[80px] h-16" />
-                      <span className="text-[10px] text-muted">Current</span>
+                      <span className="text-[11px] text-muted">Current</span>
                     </div>
                     <div className="flex-1 flex flex-col items-center gap-1">
                       <span className="text-xs text-muted">{res.months}mo</span>
                       <Progress value={(res.months / base.months) * 100} className="w-20 max-w-[80px] h-16" />
-                      <span className="text-[10px] text-muted">Extra</span>
+                      <span className="text-[11px] text-muted">Extra</span>
                     </div>
                   </div>
                 </Card>

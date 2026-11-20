@@ -202,7 +202,6 @@ export default function PortfolioRebalance() {
       <Reveal delay={0}>
         <PageHeader
           title="Rebalance"
-          num="018 / 016"
           action={
             <div className="flex gap-2">
               <Button variant="ghost" size="sm" onClick={() => setHoldingsDrawerOpen(true)}>
@@ -397,7 +396,7 @@ export default function PortfolioRebalance() {
                     actualCost: fmtINR(r.actualCost),
                     action: <span className={`px-2 py-0.5 rounded-full text-xs ${r.action === 'BUY' ? 'bg-success-bg text-success' : 'bg-border-soft text-muted'}`}>{r.action}</span>,
                     reasons: r.reasons?.slice(0, 3).map((reason, i) => (
-                      <span key={i} className="px-2 py-0.5 rounded-full text-[10px] bg-border-soft text-muted mr-1 mb-1 inline-block">{reason}</span>
+                      <span key={i} className="px-2 py-0.5 rounded-full text-[11px] bg-border-soft text-muted mr-1 mb-1 inline-block">{reason}</span>
                     )),
                   },
                 }))

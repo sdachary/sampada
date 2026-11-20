@@ -25,7 +25,6 @@ export default function PayoffPlans() {
       <Reveal delay={0}>
         <PageHeader
           title="Payoff Plans"
-          num="005 / 016"
           action={<Button onClick={() => setModal('new')}>+ New Plan</Button>}
         >
           <p className="text-sm text-muted mt-1">Create and manage your debt payoff strategies</p>
@@ -51,7 +50,7 @@ export default function PayoffPlans() {
                     <div className="min-w-0">
                       <p className="text-base font-medium text-ink truncate">{p.name}</p>
                       <p className="text-sm text-muted flex items-center gap-1">
-                        <Badge variant={p.strategy === 'avalanche' ? 'accent' : 'success'} className="text-[10px]">{p.strategy}</Badge>
+                        <Badge variant={p.strategy === 'avalanche' ? 'accent' : 'success'} className="text-[11px]">{p.strategy}</Badge>
                         <span>·</span>
                         <span>{p.debts?.length || 0} debt{p.debts?.length !== 1 ? 's' : ''}</span>
                         <span>·</span>
@@ -89,7 +88,7 @@ export default function PayoffPlans() {
                       <p className="label-caps mb-1">Included debts</p>
                       <div className="flex flex-wrap gap-2">
                         {p.debts.map(d => (
-                          <Badge key={d.id} variant="neutral" className="text-[10px]">{d.name} · {formatAmount(d.amount)}</Badge>
+                          <Badge key={d.id} variant="neutral" className="text-[11px]">{d.name} · {formatAmount(d.amount)}</Badge>
                         ))}
                       </div>
                     </div>

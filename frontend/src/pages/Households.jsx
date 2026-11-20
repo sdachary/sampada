@@ -29,7 +29,6 @@ export default function Households() {
       <Reveal delay={0}>
         <PageHeader
           title={detail.name}
-          num="013 / 016"
           action={<Button variant="ghost" size="sm" onClick={() => setDetail(null)}>← Back</Button>}
         >
           <p className="text-sm text-muted">Shared finances with family.</p>
@@ -59,7 +58,7 @@ export default function Households() {
                       <p className="text-base font-medium text-ink truncate">{m.name}</p>
                       <p className="text-sm text-muted">{m.email} · {m.role}</p>
                     </div>
-                    <Badge variant="neutral" className="text-[10px] capitalize">{m.role}</Badge>
+                    <Badge variant="neutral" className="text-[11px] capitalize">{m.role}</Badge>
                   </div>
                   <div className="flex gap-3 mt-2 text-xs text-muted flex-wrap">
                     <span>Debt: {fmtINR(+m.total_debt || 0)}</span>
@@ -80,7 +79,6 @@ export default function Households() {
       <Reveal delay={0}>
         <PageHeader
           title="Households"
-          num="013 / 016"
         >
           <p className="text-sm text-muted">Shared finances with family.</p>
         </PageHeader>

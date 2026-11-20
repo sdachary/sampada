@@ -211,7 +211,7 @@ export default function Layout() {
       )}
 
       {/* ===== DESKTOP SIDEBAR — FLUID ISLAND ===== */}
-      <aside className="hidden lg:flex lg:flex-col fixed lg:sticky top-6 left-6 right-auto z-sticky max-h-[calc(100vh-3rem)] w-64 bg-surface/80 backdrop-blur-2xl border border-border/50 rounded-3xl shadow-xl overflow-hidden">
+      <aside className="hidden lg:flex lg:flex-col fixed lg:sticky top-6 left-6 right-auto z-sticky max-h-[calc(100vh-3rem)] w-64 bg-surface/80 backdrop-blur-2xl border border-border/50 rounded-3xl shadow-xl overflow-y-auto">
         {/* Brand */}
         <div className="p-4 border-b border-border-soft">
           <Link to="/dashboard" className="flex items-center gap-2 font-display font-bold text-lg tracking-tight text-ink no-underline">
@@ -226,7 +226,7 @@ export default function Layout() {
             <div key={g.name} className="nav-group">
               {g.children ? (
                 <>
-                  <div className="px-3 py-2 text-[10px] font-semibold uppercase tracking-widest text-ink-faint">
+                  <div className="px-3 py-2 text-[11px] font-semibold uppercase tracking-widest text-ink-faint">
                     {g.name}
                   </div>
                   {g.children.map((c, itemIndex) => (
@@ -251,13 +251,13 @@ export default function Layout() {
         <div className="p-4 border-t border-border-soft flex items-center justify-between">
           <button
             onClick={toggleTheme}
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-ink-mute hover:text-ink hover:bg-surface-hover transition-colors duration-fast w-full"
+            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-ink-mute hover:text-ink hover:bg-surface-hover transition-colors duration-fast"
             aria-label={`${theme === 'dark' ? 'Switch to light' : 'Switch to dark'} mode`}
           >
             {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
             <span>{theme === 'dark' ? 'Light' : 'Dark'} mode</span>
           </button>
-          <kbd className="text-[10px] text-ink-faint font-mono px-1.5 py-0.5 rounded bg-surface border border-border-soft">⌘K</kbd>
+          <kbd className="text-[11px] text-ink-faint font-mono px-1.5 py-0.5 rounded bg-surface border border-border-soft">⌘K</kbd>
         </div>
 
         {/* User menu */}
@@ -463,7 +463,7 @@ export default function Layout() {
                 <button
                   key={item.name}
                   onClick={item.action}
-                  className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl text-[10px] font-medium transition-all duration-fast min-w-[64px] ${moreOpen ? 'text-accent' : 'text-ink-mute'}`}
+                  className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl text-[11px] font-medium transition-all duration-fast min-w-[64px] ${moreOpen ? 'text-accent' : 'text-ink-mute'}`}
                   style={{ minHeight: '44px' }}
                 >
                   <NavIcon name={item.icon} size={20} />
@@ -475,7 +475,7 @@ export default function Layout() {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl text-[10px] font-medium transition-all duration-fast min-w-[64px] relative ${active ? 'text-accent' : 'text-ink-mute'}`}
+                className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl text-[11px] font-medium transition-all duration-fast min-w-[64px] relative ${active ? 'text-accent' : 'text-ink-mute'}`}
                 style={{ minHeight: '44px' }}
               >
                 {active && (
@@ -542,7 +542,7 @@ export default function Layout() {
       )}
 
       {/* ===== MAIN CONTENT ===== */}
-      <main className="main-area lg:ml-[288px] pt-6 lg:pt-0 px-4 lg:px-8 pb-24 lg:pb-12 min-h-dvh">
+      <main className="main-area lg:ml-[288px] pt-16 lg:pt-6 px-4 lg:px-8 pb-24 lg:pb-12 min-h-dvh">
         {/* Offline banner */}
         {!isOnline && (
           <div className="mb-4 flex items-center gap-2 px-4 py-3 rounded-xl bg-ink text-paper text-sm shadow-lg animate-slide-down" role="status" aria-live="polite">

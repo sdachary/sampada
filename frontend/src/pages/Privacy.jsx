@@ -109,7 +109,6 @@ export default function Privacy() {
       <Reveal delay={0}>
         <PageHeader
           title="Privacy"
-          num="018 / 016"
         >
           <p className="text-sm text-muted">Your data, your control (DPDP compliance).</p>
         </PageHeader>

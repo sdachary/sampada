@@ -164,7 +164,7 @@ export default function Transactions() {
                       <p className="text-xs text-muted flex items-center gap-1 flex-wrap">
                         {t.category_name && <span className="text-muted">{t.category_name} · </span>}
                         {t.transaction_date} {t.merchant && <span>· {t.merchant}</span>}
-                        {t.recurring && <Badge variant="neutral" className="text-[9px] ml-1">recurring</Badge>}
+                        {t.recurring && <Badge variant="neutral" className="text-[11px] ml-1">recurring</Badge>}
                       </p>
                     </div>
                     <p className={`fin font-display text-lg font-semibold whitespace-nowrap ml-3 ${t.transaction_type === 'expense' ? 'text-danger' : 'text-success'}`}>

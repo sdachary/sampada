@@ -40,7 +40,6 @@ export default function Exports() {
       <Reveal delay={0}>
         <PageHeader
           title="Exports"
-          num="016 / 016"
         >
           <p className="text-sm text-muted">Download your data as CSV or JSON.</p>
         </PageHeader>
