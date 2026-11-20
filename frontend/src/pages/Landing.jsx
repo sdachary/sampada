@@ -3,7 +3,7 @@ import ThemeToggle from '../components/ThemeToggle'
 import { Reveal } from '../lib/motion-primitives'
 import { Check, X, TrendingDown, PiggyBank, RefreshCw, MessageSquare, AlertTriangle, Globe, Users, Cpu, Lock, Shield, Zap, Star, ArrowRight } from 'lucide-react'
 import { Button, Card } from '../components/ui'
-import HeroPoster from '../landing/hero3d/HeroPoster'
+import Coin3D from '../landing/hero3d/Coin3D'
 
 const FEATURES = [
   { icon: TrendingDown, accent: 'var(--accent)', title: 'Debt payoff tracker', body: 'Avalanche or snowball order, a full EMI calendar, and a month-by-month projection to your debt-free date.' },
@@ -114,7 +114,7 @@ export default function Landing() {
             </div>
             <div className="w-full max-w-[560px] mx-auto">
               <div className="w-full max-w-[560px] mx-auto min-w-[300px]" style={{ aspectRatio: '1 / 1' }}>
-                <HeroPoster />
+                <Coin3D />
               </div>
             </div>
           </div>
@@ -135,9 +135,9 @@ export default function Landing() {
               { label: 'Wealth', desc: 'Grow your net worth. Invest, save, and build your future.', color: 'var(--success)', pct: '34%', icon: RefreshCw },
             ].map((s, i) => (
               <Reveal key={s.label} delay={0.15 + i * 0.08} y={16}>
-                <Card className="card-shell card-shell--interactive card-core--pad-xl h-full relative overflow-hidden group">
+                <Card className="card-shell card-shell--interactive card-core--pad-lg aspect-square flex items-center relative overflow-hidden group">
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity duration-500" style={{ background: s.color }} />
-                  <div className="relative z-10 text-center">
+                  <div className="relative z-10 text-center w-full">
                     <div className="mb-4 p-3 rounded-2xl bg-accent-bg group-hover:scale-105 transition-transform duration-300" style={{ width: 'fit-content', margin: '0 auto' }}>
                       <s.icon size={28} color={s.color} strokeWidth={1.5} />
                     </div>
@@ -251,7 +251,7 @@ export default function Landing() {
       {/* 6. Trust badges - Premium presentation */}
       <Reveal delay={600} y={16}>
         <section className="py-12 lg:py-16 text-center border-t border-border-soft">
-          <div className="flex gap-4 lg:gap-8 justify-center flex-wrap max-w-4xl mx-auto px-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 max-w-4xl mx-auto px-4">
             {[
               { icon: Lock, label: 'Apache 2.0', desc: 'Open source license' },
               { icon: Shield, label: 'DPDP compliant', desc: 'Data protection ready' },
@@ -259,7 +259,7 @@ export default function Landing() {
               { icon: Star, label: 'No paywalls', desc: 'Every feature free' },
             ].map(({ icon: Icon, label, desc }, i) => (
               <Reveal key={label} delay={0.1 + i * 0.06} y={12}>
-                <div className="flex flex-col items-center gap-2 p-6 lg:p-8 rounded-2xl bg-bg-elevated/50 border border-border-soft hover:border-accent/50 transition-all duration-300 min-w-[180px]">
+                <div className="flex flex-col items-center justify-center text-center gap-2 aspect-square p-4 rounded-2xl bg-bg-elevated/50 border border-border-soft hover:border-accent/50 transition-all duration-300">
                   <div className="p-3 rounded-xl bg-accent-bg" style={{ width: 'fit-content' }}>
                     <Icon size={24} color="var(--accent)" strokeWidth={1.5} />
                   </div>
