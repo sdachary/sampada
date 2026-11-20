@@ -207,7 +207,7 @@ export default function Reports() {
               const borderClass = a.severity >= 7 ? 'border-l-accent' : a.severity >= 4 ? 'border-l-warning' : 'border-l-faint'
               return (
                 <Reveal key={i} delay={i * 30}>
-                  <Card className={`card-shell card-core--pad-base border-l-3 ${borderClass}`}>
+                  <Card className={`card-shell card-core--pad-base border-l ${borderClass}`}>
                     <p className="text-base font-medium text-ink">{a.title}</p>
                     <p className="text-sm text-muted mt-1">{a.description}</p>
                     <p className="text-xs text-faint mt-2">{a.date} · severity {a.severity}/10</p>

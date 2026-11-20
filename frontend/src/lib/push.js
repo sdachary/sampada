@@ -23,6 +23,7 @@ export async function registerServiceWorker() {
 }
 
 export async function subscribeToPush(registration) {
+  if (!registration?.pushManager || !('Notification' in window)) return null;
   const permission = await Notification.requestPermission();
   if (permission !== 'granted') return null;
 
@@ -48,6 +49,7 @@ export async function subscribeToPush(registration) {
 }
 
 export async function unsubscribeFromPush(registration) {
+  if (!registration?.pushManager) return;
   const subscription = await registration.pushManager.getSubscription();
   if (!subscription) return;
 
@@ -68,6 +70,7 @@ export async function isPushSupported() {
 }
 
 export async function isPushSubscribed(registration) {
+  if (!registration?.pushManager) return false;
   const sub = await registration.pushManager.getSubscription();
   return !!sub;
 }

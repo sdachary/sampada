@@ -447,7 +447,7 @@ export default function PortfolioRebalance() {
 
       <Reveal delay={350}>
         {result?.warnings?.length > 0 && (
-          <Card className="card-shell card-core--pad-base border-l-3 border-l-warning">
+          <Card className="card-shell card-core--pad-base border-l border-l-warning">
             <p className="text-xs font-semibold text-warning mb-1">Warnings</p>
             <ul className="text-sm text-muted m-0 pl-5">
               {result.warnings.map((w, i) => <li key={i}>{w}</li>)}
