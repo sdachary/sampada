@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { Reveal } from '../lib/motion-primitives'
 import { Check, X, TrendingDown, PiggyBank, RefreshCw, MessageSquare, AlertTriangle, Globe, Users, Cpu, Lock, Shield, Zap, Star, ArrowRight } from 'lucide-react'
 import { Button, Card } from '../components/ui'
-import Coin3D from '../landing/hero3d/Coin3D'
+import CoinCanvas from '../landing/hero3d/CoinCanvas'
 
 const FEATURES = [
   { icon: TrendingDown, accent: 'var(--accent)', title: 'Debt payoff tracker', body: 'Avalanche or snowball order, a full EMI calendar, and a month-by-month projection to your debt-free date.' },
@@ -111,7 +111,7 @@ export default function Landing() {
             </div>
             <div className="w-full max-w-[560px] mx-auto">
               <div className="w-full max-w-[560px] mx-auto min-w-[300px]" style={{ aspectRatio: '1 / 1' }}>
-                <Coin3D />
+                <CoinCanvas />
               </div>
             </div>
           </div>

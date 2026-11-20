@@ -23,6 +23,7 @@ import {
 } from './session';
 import type { AppEnv } from './index';
 import { sendEmail } from './email';
+import { generateOtpCode, otpExpired, otpHash, OTP_MAX_ATTEMPTS, OTP_TTL_MS } from './otp';
 
 // ---------------------------------------------------------------------------
 // Middleware: origin guard + rate limit (house patterns from darpan)
@@ -70,6 +71,8 @@ const RATE_LIMITED_PATHS = [
   '/login/finish',
   '/magic-link/request',
   '/magic-link/verify',
+  '/otp/request',
+  '/otp/verify',
 ];
 
 export const rateLimit = async (c: Context<AppEnv>, next: Next) => {
@@ -531,6 +534,123 @@ auth.post('/magic-link/verify', async (c) => {
     .bind(row.user_id)
     .first<{ id: string }>();
   return c.json({ user: user ? mapUserRow(user) : null, needsPasskey: !credential });
+});
+
+// --- A8+ email OTP: passwordless sign-up and sign-in ------------------------
+type OtpRequestBody = {
+  email?: string;
+  code?: string;
+  turnstileToken?: string;
+  firstName?: string;
+  lastName?: string;
+  adultAttested?: boolean;
+};
+
+const OTP_PER_EMAIL_PER_HOUR = 3;
+const OTP_RESEND_COOLDOWN_MS = 60_000;
+
+auth.post('/otp/request', async (c) => {
+  const body = await c.req.json<OtpRequestBody>().catch(() => ({} as OtpRequestBody));
+  const email = body.email?.trim().toLowerCase();
+  if (!email || !email.includes('@')) return c.json({ error: 'valid email required' }, 400);
+  if (!(await turnstilePasses(c, body.turnstileToken))) return c.json({ error: 'bot check failed' }, 403);
+
+  const user = await c.env.DB.prepare(LOOKUP_EMAIL).bind(email).first<{ id: string }>();
+  if (!user && !body.adultAttested) return c.json({ error: '18+ attestation required' }, 400);
+
+  const now = new Date();
+  const last = await c.env.DB.prepare(
+    'SELECT created_at FROM otp_codes WHERE email = ? ORDER BY created_at DESC LIMIT 1',
+  ).bind(email).first<{ created_at: string }>();
+  if (last && now.getTime() - new Date(last.created_at).getTime() < OTP_RESEND_COOLDOWN_MS) {
+    return c.json({ error: 'wait a minute before requesting another code' }, 429);
+  }
+  const hourAgo = new Date(now.getTime() - 60 * 60 * 1000).toISOString();
+  const recent = await c.env.DB.prepare(
+    'SELECT COUNT(*) AS n FROM otp_codes WHERE email = ? AND created_at > ?',
+  ).bind(email, hourAgo).first<{ n: number }>();
+  if ((recent?.n ?? 0) >= OTP_PER_EMAIL_PER_HOUR) {
+    return c.json({ error: 'too many codes requested for this email' }, 429);
+  }
+
+  const code = generateOtpCode();
+  await c.env.DB.prepare(
+    `INSERT INTO otp_codes (id, email, code_hash, first_name, last_name, adult_attested_at, created_at, expires_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+  ).bind(
+    crypto.randomUUID(),
+    email,
+    await otpHash(email, code),
+    user ? null : body.firstName?.trim() || null,
+    user ? null : body.lastName?.trim() || null,
+    user || !body.adultAttested ? null : now.toISOString(),
+    now.toISOString(),
+    new Date(now.getTime() + OTP_TTL_MS).toISOString(),
+  ).run();
+
+  const sent = await sendEmail(c.env, {
+    to: email,
+    subject: 'Your Sampada sign-in code',
+    text: `Your Sampada code is ${code}. It expires in 10 minutes and can be used once.\n\nIf you did not request this, ignore this email.`,
+  });
+  if (!sent) {
+    await c.env.DB.prepare('DELETE FROM otp_codes WHERE email = ? AND created_at = ?')
+      .bind(email, now.toISOString()).run();
+    return c.json({ error: 'could not send code' }, 502);
+  }
+  await c.env.DB.prepare('DELETE FROM otp_codes WHERE expires_at < ?').bind(now.toISOString()).run();
+  return c.json({ ok: true, expiresIn: OTP_TTL_MS / 1000 });
+});
+
+auth.post('/otp/verify', async (c) => {
+  const body = await c.req.json<OtpRequestBody>().catch(() => ({} as OtpRequestBody));
+  const email = body.email?.trim().toLowerCase();
+  const code = body.code?.trim();
+  if (!email || !email.includes('@')) return c.json({ error: 'valid email required' }, 400);
+  if (!code || !/^\d{6}$/.test(code)) return c.json({ error: 'six-digit code required' }, 400);
+
+  const row = await c.env.DB.prepare(
+    'SELECT * FROM otp_codes WHERE email = ? AND used_at IS NULL ORDER BY created_at DESC LIMIT 1',
+  ).bind(email).first<{
+    id: string; code_hash: string; first_name: string | null; last_name: string | null;
+    adult_attested_at: string | null; attempts: number; expires_at: string;
+  }>();
+  if (!row || otpExpired(row.expires_at) || row.attempts >= OTP_MAX_ATTEMPTS) {
+    return c.json({ error: 'code expired or too many attempts' }, 400);
+  }
+
+  if ((await otpHash(email, code)) !== row.code_hash) {
+    await c.env.DB.prepare('UPDATE otp_codes SET attempts = attempts + 1 WHERE id = ?').bind(row.id).run();
+    return c.json({ error: 'invalid code' }, 400);
+  }
+
+  const claimed = await c.env.DB.prepare(
+    'UPDATE otp_codes SET used_at = ? WHERE id = ? AND used_at IS NULL',
+  ).bind(new Date().toISOString(), row.id).run();
+  if (!claimed.success || claimed.meta?.changes !== 1) {
+    return c.json({ error: 'code already used' }, 400);
+  }
+
+  const nowIsoValue = nowIso();
+  let user = await c.env.DB.prepare(LOOKUP_EMAIL).bind(email).first<{ id: string }>();
+  if (!user) {
+    if (!row.adult_attested_at) return c.json({ error: '18+ attestation required' }, 400);
+    const userId = crypto.randomUUID();
+    await c.env.DB.prepare(
+      `INSERT INTO users (id, email, first_name, last_name, adult_attested_at, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    ).bind(userId, email, row.first_name, row.last_name, row.adult_attested_at, nowIsoValue, nowIsoValue).run();
+    user = { id: userId };
+  }
+
+  const token = await issueSession(c, user.id);
+  c.header('Set-Cookie', sessionCookieHeader(token, c.req.header('Origin')));
+  const fullUser = await c.env.DB.prepare(`SELECT ${USER_COLUMNS} FROM users WHERE id = ?`)
+    .bind(user.id).first<UserRow>();
+  const credential = await c.env.DB.prepare(
+    'SELECT id FROM webauthn_credentials WHERE user_id = ? LIMIT 1',
+  ).bind(user.id).first<{ id: string }>();
+  return c.json({ user: fullUser ? mapUserRow(fullUser) : null, needsPasskey: !credential });
 });
 
 auth.get('/me', requireAuth, (c) => c.json({ user: c.get('user') }));

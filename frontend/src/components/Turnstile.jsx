@@ -47,8 +47,6 @@ export default function Turnstile({ onToken }) {
     }
   }, [siteKey])
 
-  if (!siteKey) {
-    return <p className="text-sm text-danger">Sign-in links are unavailable: Turnstile is not configured.</p>
-  }
+  if (!siteKey) return null
   return <div ref={host} className="my-2" />
 }

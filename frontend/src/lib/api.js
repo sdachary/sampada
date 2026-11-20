@@ -89,6 +89,16 @@ export const workerAuth = {
     body: JSON.stringify({ token }),
   }),
 
+  otpRequest: (data) => workerRequest('/otp/request', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+
+  otpVerify: (email, code) => workerRequest('/otp/verify', {
+    method: 'POST',
+    body: JSON.stringify({ email, code }),
+  }),
+
   logout: () => workerRequest('/logout', { method: 'POST', body: '{}' }),
 }
 
