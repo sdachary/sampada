@@ -3,7 +3,7 @@
 
 export type EmailMessage = { to: string; subject: string; text: string };
 
-export const EMAIL_FROM = 'Sampada <noreply@sampada.app>';
+export const EMAIL_FROM = 'Sampada <hello@vayalabs.in>';
 
 export async function sendEmail(env: { RESEND_API_KEY?: string }, msg: EmailMessage): Promise<boolean> {
   if (!env.RESEND_API_KEY) {
