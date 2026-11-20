@@ -93,8 +93,8 @@ export default function Landing() {
         </nav>
       </Reveal>
 
-      {/* Hero - Editorial Split Layout */}
-      <Reveal delay={100} y={20}>
+      {/* Hero - editorial split. No entrance animation: this is the LCP block. */}
+      <div>
         <section aria-labelledby="hero-heading" className="py-12 lg:py-20 relative">
           <div className="grid gap-12 lg:gap-16 lg:grid-cols-2 items-center">
             <div className="text-center lg:text-left">
@@ -119,7 +119,7 @@ export default function Landing() {
             </div>
           </div>
         </section>
-      </Reveal>
+      </div>
 
       {/* 2. Debt → Zero → Wealth arc - Z-Axis Cascade */}
       <Reveal delay={200} y={20}>
