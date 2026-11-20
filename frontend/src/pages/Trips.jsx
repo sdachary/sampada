@@ -204,7 +204,6 @@ export default function Trips() {
       <Reveal delay={0}>
         <PageHeader
           title="Trip Mode"
-          num="005 / 016"
           action={<Button onClick={() => setShowCreate(!showCreate)}>+ New trip</Button>}
         />
       </Reveal>

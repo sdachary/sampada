@@ -23,7 +23,6 @@ export default function Investments() {
       <Reveal delay={0}>
         <PageHeader
           title="Investments"
-          num="010 / 016"
           action={<Button onClick={() => setModal('new')}>+ Add</Button>}
         >
           <p className="text-sm text-muted">Individual holdings across portfolios.</p>
@@ -85,9 +84,9 @@ export default function Investments() {
                       </div>
                     </div>
                     <div className="flex gap-2 flex-wrap items-center">
-                      {i.sector && <Badge variant="neutral" className="text-[10px]">{i.sector}</Badge>}
-                      {i.investment_type && <Badge variant="neutral" className="text-[10px]">{i.investment_type}</Badge>}
-                      {i.dividend_yield != null && +i.dividend_yield > 0 && <Badge variant="success" className="text-[10px]">{i.dividend_yield}% div</Badge>}
+                      {i.sector && <Badge variant="neutral" className="text-[11px]">{i.sector}</Badge>}
+                      {i.investment_type && <Badge variant="neutral" className="text-[11px]">{i.investment_type}</Badge>}
+                      {i.dividend_yield != null && +i.dividend_yield > 0 && <Badge variant="success" className="text-[11px]">{i.dividend_yield}% div</Badge>}
                       <div className="ml-auto flex gap-2">
                         <Button variant="ghost" size="sm" onClick={() => setModal(i)}>Edit</Button>
                         <Button variant="ghost" size="sm" onClick={() => remove(i)} className="text-faint">Delete</Button>

@@ -27,7 +27,6 @@ export default function Sips() {
       <Reveal delay={0}>
         <PageHeader
           title="SIPs"
-          num="011 / 016"
         >
           <p className="text-sm text-muted">Systematic Investment Plans.</p>
         </PageHeader>
@@ -63,8 +62,8 @@ export default function Sips() {
                     <p className="fin font-display text-lg font-semibold ml-3">{fmtINR(+s.monthly_investment || 0)}/mo</p>
                   </div>
                   <div className="flex gap-2 flex-wrap mb-1">
-                    {s.target_income && <Badge variant="accent" className="text-[10px]">target {fmtINR(+s.target_income)}/mo</Badge>}
-                    {s.projected_annual_income && <Badge variant="success" className="text-[10px]">{fmtINR(+s.projected_annual_income)}/yr projected</Badge>}
+                    {s.target_income && <Badge variant="accent" className="text-[11px]">target {fmtINR(+s.target_income)}/mo</Badge>}
+                    {s.projected_annual_income && <Badge variant="success" className="text-[11px]">{fmtINR(+s.projected_annual_income)}/yr projected</Badge>}
                   </div>
                   <div className="flex justify-between text-sm text-muted">
                     <span>Status: <span className={s.status === 'active' ? 'text-success' : ''}>{s.status}</span></span>

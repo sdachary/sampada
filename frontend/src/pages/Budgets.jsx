@@ -72,7 +72,7 @@ export default function Budgets() {
                     <span>{fmtINR(+b.spent || 0)}</span>
                     <span className={`font-medium ${over ? statusColors.over : b.on_track ? statusColors.track : statusColors.near}`}>{pct.toFixed(0)}%</span>
                   </div>
-                  <div className="text-[10px] text-faint text-center py-1 border-t border-border-soft">
+                  <div className="text-[11px] text-faint text-center py-1 border-t border-border-soft">
                     {over ? 'Over budget' : b.on_track ? 'On track' : 'Nearing limit'}
                   </div>
                 </Card>
@@ -120,7 +120,6 @@ export default function Budgets() {
       <Reveal delay={0}>
         <PageHeader
           title="Budgets"
-          num="007 / 016"
           action={
             <div className="flex gap-2 items-center">
               <Select value={view} onChange={e => setView(e.target.value)} className="min-w-[120px]">

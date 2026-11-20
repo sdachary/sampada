@@ -31,7 +31,6 @@ export default function Journey() {
       <Reveal delay={0}>
         <PageHeader
           title="Your Journey"
-          num="012 / 016"
         >
           <p className="text-sm text-muted">Your path to financial freedom.</p>
         </PageHeader>
@@ -62,7 +61,6 @@ export default function Journey() {
       <Reveal delay={0}>
         <PageHeader
           title="Your Journey"
-          num="012 / 016"
         >
           <p className="text-sm text-muted">Your path to financial freedom.</p>
         </PageHeader>

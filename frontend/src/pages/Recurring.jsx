@@ -188,7 +188,6 @@ export default function Recurring() {
       <Reveal delay={0}>
         <PageHeader
           title="Recurring Expenses"
-          num="008 / 016"
           action={<Button size="sm" onClick={() => setModal('new')}>+ Add</Button>}
         >
           <p className="text-sm text-muted">Subscriptions, EMIs, and regular bills.</p>

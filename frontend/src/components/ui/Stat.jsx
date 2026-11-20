@@ -28,7 +28,7 @@ export default function Stat({ label, value, countUp, delta, footnote, style, cl
       )}
       {footnote && (
         <div className="relative">
-          <p className="text-[10px] text-faint mt-1 cursor-help">{showFootnote ? footnote : 'ⓘ Hover/focus for details'}</p>
+          <p className="text-[11px] text-faint mt-1 cursor-help">{showFootnote ? footnote : 'ⓘ Hover/focus for details'}</p>
           {showFootnote && (
             <div className="absolute bottom-full left-0 mb-2 px-3 py-2 bg-ink text-bg rounded-sm text-xs leading-relaxed whitespace-nowrap z-tooltip shadow-xl max-w-[280px]">
               {footnote}
