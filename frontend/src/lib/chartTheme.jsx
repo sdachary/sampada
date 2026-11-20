@@ -50,7 +50,7 @@ export const PIE_COLORS = [
 
 // Axis & grid defaults — grid at --border-soft, ticks at --ink-faint
 export const AXIS_DEFAULTS = {
-  tick: { fill: CHART_PALETTE.inkMuted, fontSize: 10 },
+  tick: { fill: CHART_PALETTE.inkMuted, fontSize: 11 },
   axisLine: { stroke: CHART_PALETTE.borderSoft },
   tickLine: { stroke: CHART_PALETTE.borderSoft },
 }
