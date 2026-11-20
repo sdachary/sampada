@@ -211,7 +211,7 @@ export default function Layout() {
       )}
 
       {/* ===== DESKTOP SIDEBAR — FLUID ISLAND ===== */}
-      <aside className="hidden lg:flex lg:flex-col fixed lg:sticky top-6 left-6 right-auto z-sticky max-h-[calc(100vh-3rem)] w-64 bg-surface/80 backdrop-blur-2xl border border-border/50 rounded-3xl shadow-xl overflow-y-auto">
+      <aside className="animate-fade-in hidden lg:flex lg:flex-col fixed lg:sticky top-6 left-6 right-auto z-sticky max-h-[calc(100vh-3rem)] w-64 bg-surface/80 backdrop-blur-2xl border border-border/50 rounded-3xl shadow-xl overflow-y-auto">
         {/* Brand */}
         <div className="p-4 border-b border-border-soft">
           <Link to="/dashboard" className="flex items-center gap-2 font-display font-bold text-lg tracking-tight text-ink no-underline">
@@ -448,8 +448,8 @@ export default function Layout() {
       )}
 
       {/* ===== MOBILE BOTTOM NAV — FLOATING PILL ===== */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-sticky mx-4 mb-4 px-2 pb-2 safe-area-bottom" aria-label="Bottom navigation">
-        <div className="card-shell card-shell--glass flex items-center justify-around px-2 py-1.5">
+      <nav className="lg:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-sticky w-[calc(100%-2rem)] max-w-md safe-area-bottom" aria-label="Bottom navigation">
+        <div className="card-shell card-shell--glass bg-surface/95 rounded-full flex items-center justify-around px-2 py-1.5 shadow-xl">
           {[
             { name: 'Home', path: '/dashboard', icon: 'dashboard' },
             { name: 'Money', path: '/dashboard/transactions', icon: 'transactions' },
@@ -463,8 +463,8 @@ export default function Layout() {
                 <button
                   key={item.name}
                   onClick={item.action}
-                  className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl text-[11px] font-medium transition-all duration-fast min-w-[64px] ${moreOpen ? 'text-accent' : 'text-ink-mute'}`}
-                  style={{ minHeight: '44px' }}
+                  className={`animate-slide-up flex flex-col items-center gap-1 px-3 py-2 rounded-xl text-[11px] font-medium transition-all duration-fast min-w-[64px] ${moreOpen ? 'text-accent' : 'text-ink-mute'}`}
+                  style={{ minHeight: '44px', animationDelay: `${index * 60}ms` }}
                 >
                   <NavIcon name={item.icon} size={20} />
                   <span>{item.name}</span>
@@ -475,8 +475,8 @@ export default function Layout() {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl text-[11px] font-medium transition-all duration-fast min-w-[64px] relative ${active ? 'text-accent' : 'text-ink-mute'}`}
-                style={{ minHeight: '44px' }}
+                className={`animate-slide-up flex flex-col items-center gap-1 px-3 py-2 rounded-xl text-[11px] font-medium transition-all duration-fast min-w-[64px] relative ${active ? 'text-accent' : 'text-ink-mute'}`}
+                style={{ minHeight: '44px', animationDelay: `${index * 60}ms` }}
               >
                 {active && (
                   <span className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-1 bg-accent rounded-full" aria-hidden="true" />
@@ -542,7 +542,7 @@ export default function Layout() {
       )}
 
       {/* ===== MAIN CONTENT ===== */}
-      <main className="main-area lg:ml-[288px] pt-16 lg:pt-6 px-4 lg:px-8 pb-24 lg:pb-12 min-h-dvh">
+      <main className="main-area lg:ml-[288px] pt-16 lg:pt-6 px-4 lg:px-8 pb-40 lg:pb-12 min-h-dvh">
         {/* Offline banner */}
         {!isOnline && (
           <div className="mb-4 flex items-center gap-2 px-4 py-3 rounded-xl bg-ink text-paper text-sm shadow-lg animate-slide-down" role="status" aria-live="polite">
