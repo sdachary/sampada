@@ -12,6 +12,11 @@ export default class ErrorBoundary extends Component {
 
   componentDidCatch(error, errorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo)
+    //ponytail: one retry for transient lazy-chunk/network failures; a real
+    // render bug still reaches the error screen. Route changes remount us.
+    if (this.retried) return
+    this.retried = true
+    setTimeout(() => this.setState({ hasError: false, error: null }), 1200)
   }
 
   render() {

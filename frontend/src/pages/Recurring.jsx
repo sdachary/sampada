@@ -31,7 +31,7 @@ export default function Recurring() {
     api.request('/api/v1/recurring_expenses').then(d => setExpenses(Array.isArray(d) ? d : [])).catch(() => {}).finally(() => setLoading(false))
     fetchFlags().then(f => setFlagOn(enabled('recurring_detection', f))).catch(() => {})
     api.request('/api/v1/transactions?per=1').then(d => setHasTransactions((d.pagination?.total || 0) > 0)).catch(() => {})
-    api.request('/api/v1/recurring_detection').then(d => setSuggestions(d.suggestions || [])).catch(() => {})
+    api.request('/api/v1/recurring_detection').then(d => setSuggestions(Array.isArray(d?.suggestions) ? d.suggestions : [])).catch(() => {})
   }, [])
 
   const refreshExpenses = () => {
@@ -45,7 +45,7 @@ export default function Recurring() {
 
   const refreshSuggestions = async () => {
     const d = await api.request('/api/v1/recurring_detection').catch(() => null)
-    const next = d?.suggestions || []
+    const next = Array.isArray(d?.suggestions) ? d.suggestions : []
     setSuggestions(next)
     return next
   }
@@ -54,7 +54,7 @@ export default function Recurring() {
     setDetecting(true)
     try {
       const d = await api.request('/api/v1/recurring_detection', { method: 'POST' })
-      setSuggestions(d.suggestions || [])
+      setSuggestions(Array.isArray(d?.suggestions) ? d.suggestions : [])
       setSuggestionsOpen(true)
     } catch (err) {
       if (err.status === 409) {
