@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import ThemeToggle from '../components/ThemeToggle'
 import { Card, PageHeader, Badge } from '../components/ui'
 import { Reveal } from '../lib/motion-primitives'
 
@@ -8,16 +7,13 @@ export default function AuthLayout({ variant = 'form', icon, title, subtitle, er
   return (
     <Reveal delay={0} y={16}>
       <div className="min-h-dvh flex flex-col items-center justify-center px-4 bg-bg">
-        <div className="fixed top-4 right-4 z-sticky">
-          <ThemeToggle />
-        </div>
-        <div className="w-full max-w-[360px] text-center" style={{ textAlign: success ? 'center' : 'left' }}>
+        <div className="w-full max-w-[400px] text-center" style={{ textAlign: success ? 'center' : 'left' }}>
           {!success && (
-            <div className="mb-8">
+            <div className="mb-10">
               <Link to="/" className="inline-block py-3 -my-3 font-display font-bold text-xl tracking-tight text-ink no-underline">Sampada</Link>
             </div>
           )}
-          <Card variant="shell" padding="xl">
+          <Card variant="shell" padding="xl" className="rounded-3xl" style={{ boxShadow: '0 20px 45px -20px rgb(80 50 30 / 0.28)' }}>
             {success ? (
               <>
                 <p className="text-5xl mb-3" aria-hidden="true">{icon}</p>
@@ -37,7 +33,7 @@ export default function AuthLayout({ variant = 'form', icon, title, subtitle, er
           </Card>
           {after}
           {foot && (
-            <p className="text-center text-sm text-muted mt-5">{foot}</p>
+            <p className="text-center text-sm text-muted mt-6">{foot}</p>
           )}
         </div>
       </div>

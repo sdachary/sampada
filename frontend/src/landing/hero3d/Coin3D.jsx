@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 
 // CSS-3D coin: idle spin, pointer drag rolls it in place, inertia decays.
 // No WebGL dependency, and transform-only animation.
-const SLICES = Array.from({ length: 16 }, (_, i) => i * 22.5)
+const SLICES = Array.from({ length: 64 }, (_, i) => i * 5.625)
 
 export default function Coin3D() {
   const coinRef = useRef(null)
@@ -100,7 +100,7 @@ export default function Coin3D() {
               <span
                 key={deg}
                 style={{
-                  transform: `rotate(${deg}deg) translateY(-118px)`,
+                  transform: `rotate(${deg}deg) translateY(-78px)`,
                   filter: `brightness(${0.72 + 0.28 * Math.cos((deg * Math.PI) / 180)})`,
                 }}
               />

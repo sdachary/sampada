@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { lazy, Suspense } from 'react'
 import { useAuth } from './lib/useAuth'
 import { ToastHost } from './components/ui'
+import ThemeToggle from './components/ThemeToggle'
 import ServiceWorkerUpdate from './components/ServiceWorkerUpdate'
 import ErrorBoundary from './components/ErrorBoundary'
 import Landing from './pages/Landing'
@@ -47,6 +48,7 @@ export default function App() {
   return (
     <ErrorBoundary>
       <>
+        <div className="fixed top-4 right-4 z-sticky"><ThemeToggle size={44} /></div>
         <ToastHost />
         <ServiceWorkerUpdate />
         <Suspense fallback={
