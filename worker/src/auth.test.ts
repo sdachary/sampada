@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { app } from './index';
 import { clearSessionCookieHeader, randomToken, readSessionToken, sessionCookieFlags, sha256Hex } from './session';
+import { generateOtpCode, otpExpired, otpHash } from './otp';
 
 describe('session primitives', () => {
   it('hashes deterministically and never equals the raw token', async () => {
@@ -23,6 +24,27 @@ describe('session primitives', () => {
     expect(readSessionToken('foo=bar')).toBeNull();
     expect(readSessionToken(null)).toBeNull();
     expect(clearSessionCookieHeader()).toContain('Max-Age=0');
+  });
+});
+
+describe('email OTP primitives', () => {
+  it('generates six-digit codes, zero-padded', () => {
+    expect(generateOtpCode(new Uint32Array([42]))).toBe('000042');
+    expect(generateOtpCode(new Uint32Array([999999]))).toBe('999999');
+    expect(generateOtpCode()).toMatch(/^\d{6}$/);
+  });
+
+  it('hashes codes with the email as salt', async () => {
+    expect(await otpHash('A@B.com', '123456')).toBe(await otpHash('a@b.com', '123456'));
+    expect(await otpHash('a@b.com', '123456')).not.toBe(await otpHash('c@d.com', '123456'));
+    expect(await otpHash('a@b.com', '123456')).not.toBe('123456');
+  });
+
+  it('expires OTPs at the deadline', () => {
+    const future = new Date(Date.now() + 60_000).toISOString();
+    const past = new Date(Date.now() - 60_000).toISOString();
+    expect(otpExpired(future)).toBe(false);
+    expect(otpExpired(past)).toBe(true);
   });
 });
 
