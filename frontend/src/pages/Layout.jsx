@@ -196,7 +196,7 @@ export default function Layout() {
     if (sidebarOpen) closeSidebar()
   }, [location.pathname])
 
-  // Sidebar width: 256px (w-64) + 24px margin = 280px, main margin = 288px (ml-72)
+  // The sticky sidebar is a flex item, so <main> must not add its own left margin.
   const SIDEBAR_WIDTH = 288
 
   return (
@@ -265,8 +265,6 @@ export default function Layout() {
           {menuOpen && (
             <div className="absolute bottom-full left-4 right-4 mb-3 z-popover card-shell card-shell--elevated p-2 animate-slide-up" role="menu">
               {[
-                { name: 'Settings', path: '/dashboard/settings', icon: 'settings' },
-                { name: 'Privacy', path: '/dashboard/privacy', icon: 'privacy' },
                 { name: 'Logout', action: handleLogout, icon: 'logout' },
               ].map((item, index) => (
                 item.action ? (
@@ -529,7 +527,7 @@ export default function Layout() {
       )}
 
       {/* ===== MAIN CONTENT ===== */}
-      <main className="main-area lg:ml-[288px] pt-16 lg:pt-14 px-4 lg:px-8 pb-40 lg:pb-12 min-h-dvh">
+      <main className="main-area pt-16 lg:ml-8 lg:pt-14 px-4 lg:px-8 pb-40 lg:pb-12 min-h-dvh">
         {/* Offline banner */}
         {!isOnline && (
           <div className="mb-4 flex items-center gap-2 px-4 py-3 rounded-xl bg-ink text-paper text-sm shadow-lg animate-slide-down" role="status" aria-live="polite">

@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { lazy, Suspense } from 'react'
 import { useAuth } from './lib/useAuth'
 import { ToastHost } from './components/ui'
@@ -45,8 +45,9 @@ function ProtectedRoute({ children }) {
 }
 
 export default function App() {
+  const { pathname } = useLocation()
   return (
-    <ErrorBoundary>
+    <ErrorBoundary key={pathname}>
       <>
         <div className="fixed top-4 right-4 z-sticky"><ThemeToggle size={44} /></div>
         <ToastHost />

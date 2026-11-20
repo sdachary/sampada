@@ -4,6 +4,25 @@ import { workerAuth } from '../lib/api'
 import { Button, Input } from './ui'
 import Turnstile from './Turnstile'
 
+function CountdownRing({ seconds, total = 60 }) {
+  const radius = 9
+  const circumference = 2 * Math.PI * radius
+  return (
+    <span className="inline-flex items-center gap-2" role="timer" aria-label={`Resend available in ${seconds} seconds`}>
+      <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true">
+        <circle cx="11" cy="11" r={radius} fill="none" stroke="var(--line)" strokeWidth="2.5" />
+        <circle
+          cx="11" cy="11" r={radius} fill="none" stroke="var(--accent)" strokeWidth="2.5"
+          strokeLinecap="round" strokeDasharray={circumference}
+          strokeDashoffset={circumference * (1 - seconds / total)}
+          transform="rotate(-90 11 11)"
+        />
+      </svg>
+      <span className="fin tabular-nums">{seconds}s</span>
+    </span>
+  )
+}
+
 export default function OtpForm({ email, firstName = '', lastName = '', attested = false, mode = 'signin', onVerified }) {
   const [step, setStep] = useState('request')
   const [code, setCode] = useState('')
@@ -99,7 +118,7 @@ export default function OtpForm({ email, firstName = '', lastName = '', attested
           disabled={busy || cooldown > 0}
           className="text-sm text-accent font-medium disabled:text-muted disabled:cursor-not-allowed py-2"
         >
-          {cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend code'}
+          {cooldown > 0 ? <CountdownRing seconds={cooldown} /> : 'Resend code'}
         </button>
       </div>
       {error && <p className="text-sm text-danger" role="alert">{error}</p>}
