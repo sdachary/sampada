@@ -82,7 +82,7 @@ export default function Landing() {
       {/* Nav - floating island */}
       <Reveal delay={0} y={8}>
         <nav className="flex justify-between items-center py-6 lg:py-8">
-          <Link to="/" className="flex items-center gap-2 font-display font-bold text-xl lg:text-2xl tracking-tight text-ink no-underline">
+          <Link to="/" className="flex items-center gap-2 py-2 -my-2 font-display font-bold text-xl lg:text-2xl tracking-tight text-ink no-underline">
             <img src="/brand-mark.png" alt="" width={24} height={24} className="rounded-md" />Sampada
           </Link>
           <div className="flex items-center gap-4">
@@ -236,7 +236,7 @@ export default function Landing() {
           <div className="relative z-10 max-w-2xl mx-auto">
             <h2 id="cta-heading" className="font-display text-3xl lg:text-5xl font-semibold tracking-tight mb-4">Hosted. Free. Forever.</h2>
             <p className="text-lg text-muted max-w-xl mx-auto mb-8 leading-relaxed">
-              No installation needed. Sign up at <a href="https://sampada.vayalabs.in" target="_blank" rel="noreferrer" className="text-accent no-underline font-medium hover:underline">sampada.vayalabs.in</a> and start in seconds.
+              No installation needed. Sign up at <a href="https://sampada.vayalabs.in" target="_blank" rel="noreferrer" className="inline-block py-3 -my-3 text-accent no-underline font-medium hover:underline">sampada.vayalabs.in</a> and start in seconds.
             </p>
             <div className="flex gap-4 justify-center flex-wrap">
               <PrimaryCTA href="/register">Create free account</PrimaryCTA>
@@ -273,7 +273,7 @@ export default function Landing() {
       </Reveal>
 
       <footer className="py-8 border-t border-border-soft text-sm text-faint text-center">
-        Sampada — financial clarity · <a href="/privacy.html" className="text-faint no-underline hover:text-muted">Privacy</a> · <a href="/terms.html" className="text-faint no-underline hover:text-muted">Terms</a>
+        Sampada — financial clarity · <a href="/privacy.html" className="inline-block py-3.5 px-1 -my-3.5 text-faint no-underline hover:text-muted">Privacy</a> · <a href="/terms.html" className="inline-block py-3.5 px-1 -my-3.5 text-faint no-underline hover:text-muted">Terms</a>
       </footer>
     </div>
   )
