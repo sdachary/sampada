@@ -114,7 +114,7 @@ export default function Transactions() {
 
       {importResult && (
         <Reveal delay={150}>
-          <Card className={`card-shell card-core--pad-base border-l-3 ${importResult.error ? 'border-l-danger' : 'border-l-success'}`}>
+          <Card className={`card-shell card-core--pad-base border-l ${importResult.error ? 'border-l-danger' : 'border-l-success'}`}>
             {importResult.error
               ? <span className="text-danger">Import failed: {importResult.error}</span>
               : <span className="text-muted">
@@ -157,7 +157,7 @@ export default function Transactions() {
             {/* Transaction list */}
             <div className="space-y-2">
               {txns.map(t => (
-                <Card key={t.id} className={`card-shell card-core--pad-base border-l-3 ${t.transaction_type === 'expense' ? 'border-l-danger' : 'border-l-success'}`}>
+                <Card key={t.id} className={`card-shell card-core--pad-base border-l ${t.transaction_type === 'expense' ? 'border-l-danger' : 'border-l-success'}`}>
                   <div className="flex justify-between items-start">
                     <div className="flex-1 min-w-0">
                       <p className="text-base font-medium text-ink truncate">{t.description}</p>

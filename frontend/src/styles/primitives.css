@@ -175,8 +175,6 @@
 
 .border-t-soft { border-top: 1px solid var(--color-border-soft); }
 .border-b-soft { border-bottom: 1px solid var(--color-border-soft); }
-.border-l-3 { border-left-width: 3px; }
-.border-r-3 { border-right-width: 3px; }
 
 .border-l-accent { border-left-color: var(--color-accent); }
 .border-l-success { border-left-color: var(--color-success); }
@@ -478,12 +476,12 @@ textarea:focus-visible,
 /* Spring physics — press feedback */
 .btn:not(:disabled):active {
   transform: scale(0.97);
-  transition: transform 60ms cubic-bezier(0.2, 1.6, 0.3, 1);
+  transition: transform 60ms var(--ease-out);
 }
 
 .btn:not(:disabled):hover {
   transform: translateY(-1px);
-  transition: transform var(--duration-base) var(--ease-spring);
+  transition: transform var(--duration-base) var(--ease-expo-out);
 }
 
 /* Sizes */
@@ -893,7 +891,7 @@ textarea:focus-visible,
 ============================================================ */
 
 .progress { height: 6px; border-radius: 3px; background: var(--color-border-soft); overflow: hidden; }
-.progress__fill { height: 100%; border-radius: 3px; background: var(--color-accent); transform-origin: left; transition: transform 0.6s var(--ease-spring); transform: scaleX(0); }
+.progress__fill { height: 100%; border-radius: 3px; background: var(--color-accent); transform-origin: left; transition: transform 0.6s var(--ease-expo-out); transform: scaleX(0); }
 .progress__fill--success { background: var(--color-success); }
 .progress__fill--warning { background: var(--color-warning); }
 .progress__fill--danger { background: var(--color-danger); }
@@ -975,7 +973,7 @@ textarea:focus-visible,
    TOAST
 ============================================================ */
 
-.toast { background: var(--color-fg); color: var(--color-bg); padding: var(--space-3) var(--space-4); border-radius: var(--radius-lg); font-size: var(--text-sm); box-shadow: var(--shadow-modal); animation: toast-in 0.3s var(--ease-spring); }
+.toast { background: var(--color-fg); color: var(--color-bg); padding: var(--space-3) var(--space-4); border-radius: var(--radius-lg); font-size: var(--text-sm); box-shadow: var(--shadow-modal); animation: toast-in 0.3s var(--ease-expo-out); }
 @keyframes toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
 /* ============================================================
@@ -983,7 +981,7 @@ textarea:focus-visible,
 ============================================================ */
 
 .dialog-overlay { position: fixed; inset: 0; z-index: var(--z-modal); display: flex; align-items: center; justify-content: center; padding: var(--space-4); background: var(--color-overlay); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); animation: fade-in var(--duration-base) var(--ease-out); }
-.dialog { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-xl); box-shadow: var(--shadow-modal); width: 100%; max-width: 32rem; max-height: 90dvh; overflow-y: auto; animation: slide-up var(--duration-base) var(--ease-spring); }
+.dialog { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-xl); box-shadow: var(--shadow-modal); width: 100%; max-width: 32rem; max-height: 90dvh; overflow-y: auto; animation: slide-up var(--duration-base) var(--ease-expo-out); }
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slide-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 @media (max-width: 40rem) { .dialog-overlay { align-items: flex-end; padding: 0; } .dialog { border-radius: var(--radius-xl) var(--radius-xl) 0 0; max-width: none; max-height: 85dvh; } }
@@ -1086,12 +1084,12 @@ textarea:focus-visible,
   to { opacity: 1; transform: scale(1); }
 }
 
-.animate-slide-up { animation: slide-up var(--duration-slow) var(--ease-spring); }
-.animate-slide-down { animation: slide-down var(--duration-slow) var(--ease-spring); }
-.animate-slide-in-right { animation: slide-in-right var(--duration-slow) var(--ease-spring); }
-.animate-slide-in-left { animation: slide-in-left var(--duration-slow) var(--ease-spring); }
+.animate-slide-up { animation: slide-up var(--duration-slow) var(--ease-expo-out); }
+.animate-slide-down { animation: slide-down var(--duration-slow) var(--ease-expo-out); }
+.animate-slide-in-right { animation: slide-in-right var(--duration-slow) var(--ease-expo-out); }
+.animate-slide-in-left { animation: slide-in-left var(--duration-slow) var(--ease-expo-out); }
 .animate-fade-in { animation: fade-in var(--duration-base) var(--ease-out); }
-.animate-scale-in { animation: scale-in var(--duration-base) var(--ease-spring); }
+.animate-scale-in { animation: scale-in var(--duration-base) var(--ease-expo-out); }
 
 /* Stagger delays for children */
 .stagger-1 > * { animation-delay: 0ms; }

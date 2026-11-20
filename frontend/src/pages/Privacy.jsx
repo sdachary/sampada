@@ -116,7 +116,7 @@ export default function Privacy() {
 
       {msg && (
         <Reveal delay={50}>
-          <Card className={`card-shell card-core--pad-base ${isErr ? 'border-l-3 border-l-accent' : 'border-l-3 border-l-success'}`}>
+          <Card className={`card-shell card-core--pad-base ${isErr ? 'border-l border-l-accent' : 'border-l border-l-success'}`}>
             {msg}
           </Card>
         </Reveal>
@@ -163,7 +163,7 @@ export default function Privacy() {
 
       <Reveal delay={200}>
         {pending.length > 0 && (
-          <Card className="card-shell card-core--pad-base border-l-3 border-l-warning">
+          <Card className="card-shell card-core--pad-base border-l border-l-warning">
             <p className="text-sm font-semibold text-ink mb-2">Pending Erasure Requests</p>
             <div className="space-y-2">
               {pending.map(e => (

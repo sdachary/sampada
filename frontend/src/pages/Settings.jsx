@@ -411,7 +411,7 @@ export default function Settings() {
 
       {pushSupported && (
         <Reveal delay={300}>
-          <Card className="card-shell card-shell--interactive card-core--pad-lg border-l-3 border-l-success">
+          <Card className="card-shell card-shell--interactive card-core--pad-lg border-l border-l-success">
             <p className="text-sm font-semibold text-ink mb-1">Push Notifications</p>
             <p className="text-sm text-muted mb-2">Get notified about debt reminders and SIP alerts.</p>
             <Button
@@ -427,7 +427,7 @@ export default function Settings() {
       )}
 
       <Reveal delay={350}>
-        <Card className="card-shell card-shell--interactive card-core--pad-lg border-l-3 border-l-faint">
+        <Card className="card-shell card-shell--interactive card-core--pad-lg border-l border-l-faint">
           <p className="text-sm font-semibold text-ink mb-1">Logout</p>
           <p className="text-sm text-muted mb-2">Sign out of your account.</p>
           <Button variant="ghost" size="sm" onClick={() => { logout(); navigate('/') }} className="text-accent border-accent">

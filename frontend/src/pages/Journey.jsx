@@ -131,7 +131,7 @@ export default function Journey() {
             <p className="text-lg font-semibold text-ink mb-2">Milestones</p>
             {milestones.map((m, i) => (
               <Reveal key={i} delay={i * 30}>
-                <Card className="card-shell card-core--pad-base border-l-3 border-l-success">
+                <Card className="card-shell card-core--pad-base border-l border-l-success">
                   <p className="text-base font-medium text-ink">{m.title || m.name}</p>
                   {m.date && <p className="text-sm text-muted">{m.date}</p>}
                 </Card>

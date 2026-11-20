@@ -87,12 +87,12 @@ export default function Conversations() {
             {messages.map((m, index) => (
               <Reveal key={m.id || index} delay={index * 20}>
                 {m.metadata?.pending ? (
-                  <Card className="card-shell card-core--pad-base border-l-3 border-l-success">
+                  <Card className="card-shell card-core--pad-base border-l border-l-success">
                     <p className="text-xs text-ink-soft mb-1 capitalize">assistant</p>
                     <p className="text-sm leading-relaxed text-ink-soft">…</p>
                   </Card>
                 ) : (
-                  <Card className={`card-shell card-core--pad-base border-l-3 ${m.role === 'user' ? 'border-l-accent' : 'border-l-success'}`}>
+                  <Card className={`card-shell card-core--pad-base border-l ${m.role === 'user' ? 'border-l-accent' : 'border-l-success'}`}>
                     <p className="text-xs text-ink-soft mb-1 capitalize">{m.role}</p>
                     <p className="text-sm leading-relaxed whitespace-pre-wrap">{m.content}</p>
                     <p className="text-xs text-faint mt-2">{m.created_at ? new Date(m.created_at).toLocaleString() : ''}</p>
