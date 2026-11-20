@@ -114,8 +114,8 @@ export default function Dashboard() {
         <Card className="card-shell card-shell--interactive card-core--pad-base">
           <div className="flex items-center justify-between">
             <p className="text-2xs font-semibold uppercase tracking-wider text-muted">Display</p>
-            <label className="flex items-center gap-2 text-xs text-muted cursor-pointer">
-              <input type="checkbox" checked={hideAmt} onChange={() => setHideAmt(h => !h)} className="accent-accent" />
+            <label className="flex items-center gap-2 min-h-11 text-xs text-muted cursor-pointer">
+              <input type="checkbox" checked={hideAmt} onChange={() => setHideAmt(h => !h)} className="accent-accent w-4 h-4" />
               Hide amounts
             </label>
           </div>

@@ -14,7 +14,7 @@ export default function AuthLayout({ variant = 'form', icon, title, subtitle, er
         <div className="w-full max-w-[360px] text-center" style={{ textAlign: success ? 'center' : 'left' }}>
           {!success && (
             <div className="mb-8">
-              <Link to="/" className="font-display font-bold text-xl tracking-tight text-ink no-underline">Sampada</Link>
+              <Link to="/" className="inline-block py-3 -my-3 font-display font-bold text-xl tracking-tight text-ink no-underline">Sampada</Link>
             </div>
           )}
           <Card variant="shell" padding="xl">

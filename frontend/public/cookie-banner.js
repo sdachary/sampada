@@ -18,19 +18,19 @@
   var HTML =
     '<div id="acharylab-cookie-banner" role="region" aria-label="Cookie notice" ' +
     'style="position:fixed;left:16px;right:16px;bottom:16px;z-index:9999;max-width:520px;' +
-    'background:#111;color:#fafafa;border:1px solid #262626;border-left:3px solid #FF3D00;' +
+    'background:#111;color:#fafafa;border:1px solid #262626;border-left:1px solid #FF3D00;' +
     'border-radius:10px;padding:16px 18px;font:13.5px/1.6 system-ui,-apple-system,Segoe UI,sans-serif;' +
     'box-shadow:0 12px 40px rgba(0,0,0,0.5)">' +
     '<div style="margin-bottom:10px">' + CONFIG.TEXT + '</div>' +
     '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
     '<button id="acharylab-cookie-accept" style="background:#FF3D00;color:#fff;border:0;border-radius:6px;' +
-    'padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer">' + CONFIG.ACCEPT + '</button>' +
+    'padding:12px 18px;min-height:44px;font-size:13px;font-weight:600;cursor:pointer">' + CONFIG.ACCEPT + '</button>' +
     (CONFIG.REQUIRED ? '' :
       '<button id="acharylab-cookie-reject" style="background:transparent;color:#c9c4b8;border:1px solid #333;' +
-      'border-radius:6px;padding:7px 14px;font-size:13px;cursor:pointer">' + CONFIG.REJECT + '</button>') +
+      'border-radius:6px;padding:12px 18px;min-height:44px;font-size:13px;cursor:pointer">' + CONFIG.REJECT + '</button>') +
     (CONFIG.POLICIES ?
-      '<a href="/privacy.html" style="color:#c9c4b8;align-self:center;margin-left:auto;text-decoration:underline">Privacy</a>' +
-      '<a href="/terms.html" style="color:#c9c4b8;align-self:center;text-decoration:underline">Terms</a>' : '') +
+      '<a href="/privacy.html" style="color:#c9c4b8;align-self:center;margin-left:auto;text-decoration:underline;display:inline-flex;align-items:center;min-height:44px;padding:0 6px">Privacy</a>' +
+      '<a href="/terms.html" style="color:#c9c4b8;align-self:center;text-decoration:underline;display:inline-flex;align-items:center;min-height:44px;padding:0 6px">Terms</a>' : '') +
     '</div></div>';
 
   window.initCookieBanner = function (opts) {

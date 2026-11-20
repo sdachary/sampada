@@ -78,7 +78,7 @@ export default function Login() {
       title="Welcome back"
       subtitle="Sign in with a passkey or a one-time link"
       error={error}
-      foot={<><span>No account? </span><Link to="/register" className="text-accent font-medium">Register</Link></>}
+      foot={<><span>No account? </span><Link to="/register" className="inline-block py-3.5 -my-3.5 text-accent font-medium">Register</Link></>}
     >
       <div className="space-y-3">
         <Input

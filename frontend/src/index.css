@@ -176,8 +176,6 @@ input, button, textarea { font-family: var(--body); }
 .inline-block { display: inline-block; }
 .sr-only { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 .text-11-faint { font-size: 11px; color: var(--ink-faint); }
-.skeleton-wide { width: 200px; height: 14px; margin-bottom: 20px; }
-.skeleton-title { width: 120px; height: 22px; margin-bottom: 6px; }
 .mt-4 { margin-top: 4px; }
 
 /* cards + misc */
