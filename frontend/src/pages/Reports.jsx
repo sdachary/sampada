@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
 import { Card, Skeleton, PageHeader, Tabs, Badge, fmtINR, Stat, Progress } from '../components/ui'
 import { Reveal } from '../lib/motion-primitives'
+import CashFlowSankey from '../components/CashFlowSankey'
 
 function CalendarHeatmap() {
   const [txns, setTxns] = useState([])
@@ -117,6 +118,13 @@ export default function Reports() {
 
       <Reveal delay={50}>
         <Tabs tabs={tabs} value={activeTab} onChange={setActiveTab} />
+      </Reveal>
+
+      <Reveal delay={75}>
+        <Card className="card-shell card-core--pad-lg">
+          <p className="text-sm font-semibold text-ink mb-3">This month's cash flow</p>
+          <CashFlowSankey />
+        </Card>
       </Reveal>
 
       <Reveal delay={100}>

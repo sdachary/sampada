@@ -4,6 +4,7 @@ import { api } from '../lib/api'
 import { useNavigate } from 'react-router-dom'
 import { registerServiceWorker, subscribeToPush, unsubscribeFromPush, isPushSupported, isPushSubscribed } from '../lib/push'
 import { Card, Button, Input, Select, InputField, Badge, PageHeader, ToastHost, toast } from '../components/ui'
+import CategoryRules from '../components/CategoryRules'
 import { credentialToJSON, jsonToCredentialOptions, isPasskeySupported } from '../lib/passkeys'
 import { Reveal } from '../lib/motion-primitives'
 
@@ -142,7 +143,7 @@ export default function Settings() {
   const fetchCredentials = async () => {
     try {
       const data = await api.request('/api/v1/api_credentials')
-      setCredentials(data.credentials)
+      setCredentials(Array.isArray(data?.credentials) ? data.credentials : [])
     } catch { /* ignore */ }
   }
 
@@ -215,6 +216,10 @@ export default function Settings() {
         >
           <p className="text-sm text-muted">Account preferences and profile.</p>
         </PageHeader>
+      </Reveal>
+
+      <Reveal delay={75}>
+        <CategoryRules />
       </Reveal>
 
       <Reveal delay={50}>

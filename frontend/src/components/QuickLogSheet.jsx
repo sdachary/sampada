@@ -28,6 +28,7 @@ function parseNaturalInput(text) {
 // TransactionFormModal — NL input first, form fields as fallback.
 export default function QuickLogSheet({ open, onClose, onSaved, online }) {
   const [categories, setCategories] = useState([])
+  const [rules, setRules] = useState([])
   const [nlInput, setNlInput] = useState('')
   const [description, setDescription] = useState('')
   const [amount, setAmount] = useState('')
@@ -51,6 +52,7 @@ export default function QuickLogSheet({ open, onClose, onSaved, online }) {
       setError(null)
       setNlInput('')
       api.request('/api/v1/budget_categories').then(d => setCategories(Array.isArray(d) ? d : [])).catch(() => {})
+      api.request('/api/v1/categorization_rules').then(d => setRules(Array.isArray(d) ? d : [])).catch(() => {})
       setTimeout(() => inputRef.current?.focus(), 100)
     }
   }, [open])
@@ -71,6 +73,8 @@ export default function QuickLogSheet({ open, onClose, onSaved, online }) {
       if (parsed.amount !== null && !isNaN(parsed.amount)) setAmount(String(parsed.amount))
       if (parsed.description) setDescription(parsed.description)
       setTransactionType(parsed.type)
+      const hit = rules.find(r => parsed.description?.toLowerCase().includes(r.match_text))
+      if (hit) setCategoryId(hit.category_id)
     }
   }
 
