@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts'
 import { CHART_COLORS, PIE_COLORS, AXIS_DEFAULTS, GRID_DEFAULTS, fmtINR, ChartTooltip } from '../lib/chartTheme'
-import { Card, Button, Badge, Skeleton, EmptyState, PageHeader, Input, Select, Progress, InputField } from '../components/ui'
+import { Card, Button, Badge, Skeleton, EmptyState, PageHeader, Select, Progress, InputField } from '../components/ui'
 import { Reveal } from '../lib/motion-primitives'
 import GoalMonteCarlo from '../components/GoalMonteCarlo'
 
@@ -88,7 +88,7 @@ export default function Goals() {
       {goals.length > 0 && !form && (
         <Reveal delay={100}>
           <div className="space-y-3">
-            {goals.map((g, index) => {
+            {goals.map((g) => {
               const preset = { conservative: { equity: 30, debt: 50, gold: 20 }, moderate: { equity: 50, debt: 30, gold: 20 }, aggressive: { equity: 70, debt: 20, gold: 10 } }
               const alloc = preset[g.allocation]
               const progressPct = g.final_corpus && g.target_amount ? Math.min(100, (g.final_corpus / g.target_amount) * 100) : 0

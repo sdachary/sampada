@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { api } from '../lib/api'
-import { Card, Progress, Button, Skeleton, EmptyState, PageHeader, Badge, Input, InputField } from '../components/ui'
+import { Card, Progress, Button, Skeleton, EmptyState, PageHeader, Badge, InputField } from '../components/ui'
 import { fmtINR } from '../lib/amounts'
-import { AlertCircle, ArrowLeft, ExternalLink } from 'lucide-react'
+import { AlertCircle } from 'lucide-react'
 import { Reveal } from '../lib/motion-primitives'
 
 const CATEGORIES = ['credit_card', 'loan', 'personal', 'mortgage', 'education', 'other']

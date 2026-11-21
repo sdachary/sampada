@@ -1,7 +1,7 @@
 import { useResource } from '../lib/useResource'
 import InvestmentFormModal from '../components/InvestmentFormModal'
 import { fmtINR } from '../lib/amounts'
-import { Card, Button, Badge, Skeleton, EmptyState, PageHeader, Stat } from '../components/ui'
+import { Card, Button, Badge, Skeleton, EmptyState, PageHeader } from '../components/ui'
 import { Reveal } from '../lib/motion-primitives'
 
 export default function Investments() {

@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
 import { api } from '../lib/api'
 import { fmtINR } from '../lib/amounts'
-import { Button, Card, Progress, Skeleton, EmptyState, PageHeader, Badge } from '../components/ui'
+import { Card, Progress, Skeleton, EmptyState, PageHeader } from '../components/ui'
 import { Reveal } from '../lib/motion-primitives'
 
 export default function Journey() {

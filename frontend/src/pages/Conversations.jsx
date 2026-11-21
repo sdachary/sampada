@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
-import { Card, Button, Input, Skeleton, EmptyState, PageHeader, Badge } from '../components/ui'
+import { Card, Button, Input, Skeleton, EmptyState, PageHeader } from '../components/ui'
 import { Reveal } from '../lib/motion-primitives'
 
 export default function Conversations() {

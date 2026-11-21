@@ -4,8 +4,6 @@ import { useState, useCallback, useEffect } from 'react';
 import { useAuth } from '../../lib/useAuth';
 import { api } from '../../lib/api';
 import { rebalanceV2, rebalanceV1 } from '../rebalance';
-import type { RebalanceResult, RebalanceConfig, HoldingPosition } from '../rebalance';
-import { portfolioToHoldings, apiConfigToEngineConfig, buildEngineInput } from './mapping';
 
 interface UseRebalanceOptions {
   portfolioId: string;
@@ -13,7 +11,7 @@ interface UseRebalanceOptions {
 }
 
 export function useRebalance({ portfolioId, autoLoad = true }: UseRebalanceOptions) {
-  const { user } = useAuth();
+  const { /* user */ } = useAuth();
 
   const [holdings, setHoldings] = useState<any[]>([]);
   const [config, setConfig] = useState<any>(null);

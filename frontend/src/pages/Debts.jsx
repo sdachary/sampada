@@ -81,7 +81,7 @@ export default function Debts() {
           </EmptyState>
         ) : (
           <div className="space-y-2">
-            {debts.map((d, i) => (
+            {debts.map((d) => (
               <DebtCard
                 key={d.id}
                 debt={d}

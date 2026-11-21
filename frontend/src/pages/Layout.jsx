@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { Outlet, useNavigate, useLocation, Link } from 'react-router-dom'
 import { PageTransition } from '../lib/motion-primitives'
 import { useAuth } from '../lib/useAuth'
@@ -10,7 +10,7 @@ import {
   CircleDollarSign, Target, Calculator, Briefcase, TrendingUp,
   Clock, Map, Plane, Users, MessageSquare, BarChart3,
   Download, Settings, Shield, LogOut, X, Sun, Moon, WifiOff,
-  Menu, ChevronUp,
+  ChevronUp,
 } from 'lucide-react'
 
 const iconMap = {
@@ -195,9 +195,6 @@ export default function Layout() {
   useEffect(() => {
     if (sidebarOpen) closeSidebar()
   }, [location.pathname])
-
-  // The sticky sidebar is a flex item, so <main> must not add its own left margin.
-  const SIDEBAR_WIDTH = 288
 
   return (
     <div className="app-layout relative min-h-dvh bg-bg">
