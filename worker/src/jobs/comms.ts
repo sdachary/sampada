@@ -139,6 +139,23 @@ export async function expenseReminderCheck(env: Bindings, now: Date = new Date()
       runAt: dueMorning(expense.next_due_date),
     });
   }
+
+  // Debts store a due_date string. Only ISO dates can be armed reliably;
+  // legacy day-of-month values are deliberately skipped.
+  const debts = await env.DB.prepare(
+    `SELECT id, due_date FROM debts
+     WHERE status = 'active' AND due_date IS NOT NULL AND due_date BETWEEN ? AND ?`,
+  ).bind(today, until).all<{ id: string; due_date: string }>();
+  for (const debt of debts.results) {
+    const pending = await env.DB.prepare(
+      `SELECT id FROM job_queue WHERE type = 'expense_reminder'
+       AND processed_at IS NULL AND payload LIKE ?`,
+    ).bind(`%"debt_id":"${debt.id}"%`).first();
+    if (pending) continue;
+    await enqueue(env, 'expense_reminder', { type: 'debt', debt_id: debt.id }, {
+      runAt: dueMorning(debt.due_date),
+    });
+  }
 }
 
 // ---- queued: expense_reminder ----
