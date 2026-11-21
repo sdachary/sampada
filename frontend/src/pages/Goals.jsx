@@ -4,6 +4,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { CHART_COLORS, PIE_COLORS, AXIS_DEFAULTS, GRID_DEFAULTS, fmtINR, ChartTooltip } from '../lib/chartTheme'
 import { Card, Button, Badge, Skeleton, EmptyState, PageHeader, Input, Select, Progress, InputField } from '../components/ui'
 import { Reveal } from '../lib/motion-primitives'
+import GoalMonteCarlo from '../components/GoalMonteCarlo'
 
 const ALLOCATIONS = ['conservative', 'moderate', 'aggressive']
 const TOP_UP_OPTIONS = ['none', 'monthly', 'quarterly', 'yearly']
@@ -154,6 +155,8 @@ export default function Goals() {
                       </div>
                     </div>
                   )}
+
+                  <GoalMonteCarlo goalId={g.id} />
 
                   {g.risk_comparison && Object.keys(g.risk_comparison).length > 1 && (
                     <div className="mt-4">

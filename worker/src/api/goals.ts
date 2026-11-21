@@ -90,6 +90,69 @@ function projectionOf(g: GoalRow, currentYear: number) {
   return { projection: points, final_corpus: round2(corpus) };
 }
 
+/** Monte Carlo: p10/p50/p90 corpus bands and probability of hitting the target. */
+router.get('/:id/monte_carlo', async (c) => {
+  const user = c.get('user');
+  const goal = await c.env.DB.prepare('SELECT * FROM goals WHERE id = ? AND user_id = ?')
+    .bind(c.req.param('id'), user.id).first<GoalRow>();
+  if (!goal) return error(c, 'Goal not found', 404);
+
+  const currentYear = new Date().getUTCFullYear();
+  const months = (goal.target_year - currentYear) * 12;
+  const target = num(goal.target_amount);
+  const runs = Math.min(1000, Math.max(100, Math.floor(num(c.req.query('runs')) || 500)));
+  const preset = presetOf(goal.allocation);
+  const mean = blendedCagr(preset, num(goal.equity_growth), num(goal.debt_growth), num(goal.gold_growth));
+  const sigma = Math.max(2, preset.equity * 0.18); // equity-heavy plans vary more
+  const monthly = num(goal.monthly_sip) + topUpMonthly(goal);
+
+  const rand = () => {
+    const b = crypto.getRandomValues(new Uint32Array(2));
+    return [(b[0] + 1) / 4294967297, (b[1] + 1) / 4294967297];
+  };
+  const normal = () => {
+    const [u1, u2] = rand();
+    return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+  };
+  const percentile = (xs: number[], p: number) => {
+    const sorted = [...xs].sort((a, b) => a - b);
+    return round2(sorted[Math.min(sorted.length - 1, Math.floor((sorted.length - 1) * p))] || 0);
+  };
+
+  const years: number[] = [];
+  const samples: number[][] = [];
+  let hits = 0;
+  if (months > 0) {
+    for (let y = 1; y <= Math.ceil(months / 12); y++) years.push(currentYear + y);
+    years.forEach(() => samples.push([]));
+    for (let run = 0; run < runs; run++) {
+      const annual = mean + sigma * normal();
+      const rate = Math.pow(1 + annual / 100, 1 / 12) - 1;
+      let corpus = 0;
+      let finalCorpus = 0;
+      for (let m = 1; m <= months; m++) {
+        corpus += monthly;
+        corpus *= 1 + rate;
+        finalCorpus = corpus;
+        if (m % 12 === 0) samples[Math.floor(m / 12) - 1].push(corpus);
+      }
+      if (finalCorpus >= target) hits++;
+    }
+  }
+
+  return success(c, {
+    runs,
+    years: years.map((year, i) => ({
+      year,
+      p10: percentile(samples[i], 0.1),
+      p50: percentile(samples[i], 0.5),
+      p90: percentile(samples[i], 0.9),
+      target: round2(target),
+    })),
+    probability: months > 0 ? Math.round((hits / runs) * 100) : 0,
+  });
+});
+
 /** GoalForecastService#risk_comparison (insertion order: conservative → aggressive). */
 function riskComparisonOf(g: GoalRow, currentYear: number): Record<string, unknown> {
   const monthly = num(g.monthly_sip);

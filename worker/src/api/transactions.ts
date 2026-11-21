@@ -252,6 +252,7 @@ router.post('/bulk_create', async (c) => {
   const user = c.get('user');
   const body = await jsonBody<Record<string, unknown>>(c);
   const csvText = body.transactions_csv ?? body.csv;
+  const dryRun = body.dry_run === true;
   // ParameterMissing → 400; Rails renders its default error page, so the SPA
   // falls back to statusText either way.
   if (csvText === undefined || csvText === null || csvText === '') {
@@ -270,6 +271,7 @@ router.post('/bulk_create', async (c) => {
     col(name) === -1 ? null : cells[col(name)] ?? null;
 
   let imported = 0;
+  const preview: Array<Record<string, unknown>> = [];
   const errors: Array<{ row: number; error: string }> = [];
   let dataIdx = 0; // CSV.parse(headers: true) numbers DATA rows from 0; empty lines are skipped.
 
@@ -320,25 +322,29 @@ router.post('/bulk_create', async (c) => {
       const recCell = cell(cells, 'recurring');
       const recurring = ['true', 'yes', '1'].includes((recCell ?? '').toLowerCase());
 
-      const now = nowIso();
-      const id = crypto.randomUUID();
-      await c.env.DB.prepare(
-        `INSERT INTO transactions (id, description, amount, transaction_type, transaction_date,
-          currency_code, budget_category_id, merchant, notes, recurring, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      ).bind(
-        id, desc, amount, type, date, cc, catId,
-        merchantCell && merchantCell.trim() !== '' ? merchantCell : null,
-        notesCell && notesCell.trim() !== '' ? notesCell : null,
-        recurring ? 1 : 0, now, now,
-      ).run();
+      if (dryRun) {
+        preview.push({ row: row + 2, date, description: desc, amount, type, category: catCell || '', currency: cc, recurring });
+      } else {
+        const now = nowIso();
+        const id = crypto.randomUUID();
+        await c.env.DB.prepare(
+          `INSERT INTO transactions (id, description, amount, transaction_type, transaction_date,
+            currency_code, budget_category_id, merchant, notes, recurring, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ).bind(
+          id, desc, amount, type, date, cc, catId,
+          merchantCell && merchantCell.trim() !== '' ? merchantCell : null,
+          notesCell && notesCell.trim() !== '' ? notesCell : null,
+          recurring ? 1 : 0, now, now,
+        ).run();
+      }
       imported++;
     } catch (e) {
       errors.push({ row: row + 2, error: (e as Error).message });
     }
   }
 
-  return success(c, { imported, errors });
+  return success(c, dryRun ? { dry_run: true, imported, errors, preview } : { imported, errors });
 });
 
 // GET /transactions/monthly_totals — last N months, NEWEST first (Rails builds

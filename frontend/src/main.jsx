@@ -9,6 +9,7 @@ import { registerServiceWorker } from './lib/push'
 import { initServiceWorkerUpdates } from './lib/swUpdate'
 import { MotionProvider } from './lib/motion'
 import App from './App.jsx'
+import { reportError } from './lib/telemetry'
 import './styles/app.css'
 
 // ponytail: after load, so SW install never competes with first paint.
@@ -19,6 +20,9 @@ const startServiceWorker = () =>
 
 if (document.readyState === 'complete') startServiceWorker()
 else window.addEventListener('load', startServiceWorker, { once: true })
+
+window.addEventListener('error', (e) => reportError(e.error || e.message))
+window.addEventListener('unhandledrejection', (e) => reportError(e.reason))
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

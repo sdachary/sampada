@@ -1,4 +1,5 @@
 import { Component } from 'react'
+import { reportError } from '../lib/telemetry'
 
 export default class ErrorBoundary extends Component {
   constructor(props) {
@@ -12,6 +13,7 @@ export default class ErrorBoundary extends Component {
 
   componentDidCatch(error, errorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo)
+    reportError(error, { path: window.location.pathname })
     //ponytail: one retry for transient lazy-chunk/network failures; a real
     // render bug still reaches the error screen. Route changes remount us.
     if (this.retried) return

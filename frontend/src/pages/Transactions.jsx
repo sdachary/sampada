@@ -15,6 +15,18 @@ export default function Transactions() {
   const [modal, setModal] = useState(null)
   const [importing, setImporting] = useState(false)
   const [importResult, setImportResult] = useState(null)
+  const [importPreview, setImportPreview] = useState(null)
+  const [pendingCsv, setPendingCsv] = useState('')
+
+  const postCsv = async (text, dryRun) => {
+    const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/v1/transactions/bulk_create`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ transactions_csv: text, dry_run: dryRun }),
+    })
+    if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || res.statusText)
+    return res.json()
+  }
 
   const handleImport = async (e) => {
     const file = e.target.files?.[0]
@@ -22,16 +34,26 @@ export default function Transactions() {
     if (!file) return
     setImporting(true)
     setImportResult(null)
+    setImportPreview(null)
     try {
       const text = await file.text()
-      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/v1/transactions/bulk_create`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ transactions_csv: text }),
-      })
-      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || res.statusText)
-      const data = await res.json()
+      const data = await postCsv(text, true)
+      setPendingCsv(text)
+      setImportPreview(data)
+    } catch (err) {
+      setImportResult({ error: err.message })
+    } finally {
+      setImporting(false)
+    }
+  }
+
+  const confirmImport = async () => {
+    setImporting(true)
+    try {
+      const data = await postCsv(pendingCsv, false)
       setImportResult(data)
+      setImportPreview(null)
+      setPendingCsv('')
       load(filter || '')
     } catch (err) {
       setImportResult({ error: err.message })
@@ -111,6 +133,46 @@ export default function Transactions() {
           {txns.length > 0 && <span className="text-2xs text-faint">{txns.length} txns</span>}
         </div>
       </Reveal>
+
+      {importPreview && (
+        <Reveal delay={150}>
+          <Card className="card-shell card-core--pad-base">
+            <div className="flex justify-between items-center mb-2 flex-wrap gap-2">
+              <p className="text-sm font-semibold text-ink">
+                Preview: {importPreview.imported} row{importPreview.imported === 1 ? '' : 's'} ready
+                {importPreview.errors?.length > 0 && ` · ${importPreview.errors.length} issue${importPreview.errors.length === 1 ? '' : 's'}`}
+              </p>
+              <div className="flex gap-2">
+                <Button size="sm" onClick={confirmImport} loading={importing} disabled={!importPreview.imported}>
+                  Import {importPreview.imported} row{importPreview.imported === 1 ? '' : 's'}
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => { setImportPreview(null); setPendingCsv('') }}>Cancel</Button>
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm border-collapse min-w-[420px]">
+                <thead><tr className="text-left text-faint text-2xs uppercase">
+                  <th className="py-1 pr-3">Date</th><th className="py-1 pr-3">Description</th>
+                  <th className="py-1 pr-3">Amount</th><th className="py-1">Type</th>
+                </tr></thead>
+                <tbody>
+                  {(importPreview.preview || []).slice(0, 8).map((row) => (
+                    <tr key={row.row} className="border-t border-border-soft">
+                      <td className="py-1 pr-3 fin">{row.date}</td>
+                      <td className="py-1 pr-3 truncate max-w-56">{row.description}</td>
+                      <td className="py-1 pr-3 fin">{fmtINR(+row.amount)}</td>
+                      <td className="py-1">{row.type}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {importPreview.errors?.length > 0 && (
+              <p className="text-xs text-danger mt-2">{importPreview.errors.slice(0, 3).map(e => `Row ${e.row}: ${e.error}`).join(' · ')}</p>
+            )}
+          </Card>
+        </Reveal>
+      )}
 
       {importResult && (
         <Reveal delay={150}>
