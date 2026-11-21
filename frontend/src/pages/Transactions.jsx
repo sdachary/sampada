@@ -107,7 +107,7 @@ export default function Transactions() {
       <Reveal delay={50}>
         {/* Month totals */}
         <div className="grid gap-2 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          {monthTotals.map((m, i) => (
+          {monthTotals.map((m) => (
             <Card key={m.month} className="card-shell card-core--pad-base flex-1 min-w-[160px]">
               <p className="text-2xs font-semibold uppercase tracking-wider text-muted mb-1">{m.label}</p>
               <p className="fin text-lg text-success">+{fmtINR(+m.income)}</p>

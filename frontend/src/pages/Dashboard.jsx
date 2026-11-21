@@ -4,7 +4,7 @@ import { api } from '../lib/api'
 import { Stat, Progress, Button, Card, Skeleton, EmptyState, ToastHost, toast, PageHeader } from '../components/ui'
 import QuickLogSheet from '../components/QuickLogSheet'
 import useOnline from '../lib/useOnline'
-import { Plus, AlertCircle, CreditCard, ArrowUp } from 'lucide-react'
+import { Plus, AlertCircle, CreditCard } from 'lucide-react'
 import { fmtINR } from '../lib/amounts'
 import { Reveal } from '../lib/motion-primitives'
 
@@ -90,7 +90,6 @@ export default function Dashboard() {
   const nw = data?.net_worth ?? 0
   const debt = data?.total_debt ?? 0
   const inv = data?.total_investments ?? 0
-  const pct = debt + inv > 0 ? Math.round((inv / (debt + inv)) * 100) : 50
   const snapshots = data?.recent_snapshots ?? []
 
   // Debt freedom progress (0-100%)

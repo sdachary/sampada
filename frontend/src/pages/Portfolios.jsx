@@ -1,6 +1,6 @@
 import { useResource } from '../lib/useResource'
 import PortfolioFormModal from '../components/PortfolioFormModal'
-import { Card, Button, Skeleton, EmptyState, PageHeader, Badge, fmtINR, Progress, Stat } from '../components/ui'
+import { Card, Button, Skeleton, EmptyState, PageHeader, Badge, fmtINR } from '../components/ui'
 import { Reveal } from '../lib/motion-primitives'
 
 export default function Portfolios() {

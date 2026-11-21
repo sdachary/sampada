@@ -7,7 +7,7 @@ import {
 // Dash patterns make series distinguishable without relying on color.
 const DASH = ['none', '6 4', '2 3', '8 3 2 3', '10 4']
 
-export default function Chart({ data, xKey, series, height = 180, animate = false, ...props }) {
+export default function Chart({ data, xKey, series, height = 180, animate = false }) {
   if (!data?.length) return null
 
   const coloredSeries = series.map((s, i) => ({

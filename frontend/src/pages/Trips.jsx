@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { api } from '../lib/api'
-import { Card, Button, Input, InputField, Select, Skeleton, EmptyState, PageHeader, Badge, fmtINR, Progress } from '../components/ui'
+import { Card, Button, Input, Select, Skeleton, EmptyState, PageHeader, Badge, fmtINR } from '../components/ui'
 import { Reveal } from '../lib/motion-primitives'
 
 function AddExpenseForm({ tripId, members, categories, onDone }) {
@@ -60,8 +60,8 @@ function TripDetail({ tripId, onBack }) {
   )
 
   const toRupees = (cents) => (cents / 100)
-  const owes = Object.entries(trip.balances || {}).filter(([_, v]) => v < 0)
-  const owed = Object.entries(trip.balances || {}).filter(([_, v]) => v > 0)
+  const owes = Object.entries(trip.balances || {}).filter(([, v]) => v < 0)
+  const owed = Object.entries(trip.balances || {}).filter(([, v]) => v > 0)
 
   return (
     <div className="space-y-4">

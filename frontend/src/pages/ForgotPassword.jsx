@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { workerAuth } from '../lib/api'
 import AuthLayout from './AuthLayout'
-import { Input, Button, Card } from '../components/ui'
+import { Input, Button } from '../components/ui'
 import Turnstile from '../components/Turnstile'
 
 export default function ForgotPassword() {

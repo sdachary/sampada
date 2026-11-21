@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
-import { Card, Button, Skeleton, PageHeader, fmtINR, toast } from '../components/ui'
+import { Card, Button, Skeleton, PageHeader, toast } from '../components/ui'
 import { Reveal } from '../lib/motion-primitives'
 
 export default function Exports() {

@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
-import { Button, Card, Progress, Badge, EmptyState, PageHeader, Stat, Select } from '../components/ui'
+import { Button, Card, Progress, EmptyState, PageHeader, Select } from '../components/ui'
 import { fmtINR } from '../lib/amounts'
 import BudgetFormModal from '../components/BudgetFormModal'
 import { Reveal } from '../lib/motion-primitives'
-
-const ENVELOPE_COLORS = ['var(--danger)', 'var(--warning)', 'var(--accent)', 'var(--success)', 'var(--success)', 'var(--accent)', 'var(--accent)', 'var(--accent)', 'var(--danger)', 'var(--danger)']
 
 export default function Budgets() {
   const [budgets, setBudgets] = useState([])

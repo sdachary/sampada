@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
-import { Card, Button, Input, Select, Textarea, EmptyState, PageHeader, Badge, ToastHost, toast } from '../components/ui'
+import { Card, Button, Input, Select, Textarea, PageHeader, ToastHost } from '../components/ui'
 import { Reveal } from '../lib/motion-primitives'
 
 const DPO_EMAIL = 'grievance@acharylab.app'
