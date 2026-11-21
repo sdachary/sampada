@@ -320,6 +320,36 @@ function anomalySeverity(amount: number, categoryTotal: number): number {
   return 3;
 }
 
+// GET /reports/cash_flow — category-level income/expense totals for one month.
+router.get('/cash_flow', async (c) => {
+  const user = c.get('user');
+  const month = /^\d{4}-\d{2}$/.test(c.req.query('month') || '') ? c.req.query('month')! : todayIso().slice(0, 7);
+  const from = `${month}-01`;
+  const to = new Date(Date.UTC(Number(month.slice(0, 4)), Number(month.slice(5, 7)), 0)).toISOString().slice(0, 10);
+  const base = user.currency || 'INR';
+  const rows = await c.env.DB.prepare(
+    `SELECT t.transaction_type, COALESCE(bc.name, 'Uncategorised') AS category,
+            t.currency_code, SUM(t.amount) AS total
+     FROM transactions t
+     LEFT JOIN budget_categories bc ON bc.id = t.budget_category_id
+     WHERE t.user_id = ? AND t.transaction_date BETWEEN ? AND ?
+     GROUP BY t.transaction_type, category, t.currency_code`,
+  ).bind(user.id, from, to).all<{ transaction_type: string; category: string; currency_code: string | null; total: number | null }>();
+
+  let income = 0;
+  const expenseMap = new Map<string, number>();
+  for (const row of rows.results) {
+    const value = await convertAmount(c.env, num(row.total), row.currency_code || base, base);
+    if (row.transaction_type === 'income') income += value;
+    else expenseMap.set(row.category, (expenseMap.get(row.category) || 0) + value);
+  }
+  const expenses = [...expenseMap.entries()]
+    .map(([category, amount]) => ({ category, amount: round2(amount) }))
+    .sort((a, b) => b.amount - a.amount);
+  const spent = expenses.reduce((s, e) => s + e.amount, 0);
+  return success(c, { month, income: round2(income), expenses, net: round2(income - spent) });
+});
+
 router.get('/anomalies', async (c) => {
   const user = c.get('user');
   const base = user.currency ?? 'INR';
