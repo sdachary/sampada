@@ -5,6 +5,8 @@ import useOnline from '../lib/useOnline'
 import { fmtINR } from '../lib/amounts'
 import { Button, Card, EmptyState, Badge, Select, Skeleton } from '../components/ui'
 import { Reveal } from '../lib/motion-primitives'
+import { fetchFlags, enabled } from '../lib/flags'
+import StatementImport from '../components/StatementImport'
 
 export default function Transactions() {
   const { isOnline } = useOnline()
@@ -17,6 +19,8 @@ export default function Transactions() {
   const [importResult, setImportResult] = useState(null)
   const [importPreview, setImportPreview] = useState(null)
   const [pendingCsv, setPendingCsv] = useState('')
+  const [pdfFlag, setPdfFlag] = useState(false)
+  const [importMode, setImportMode] = useState(null)
 
   const postCsv = async (text, dryRun) => {
     const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/v1/transactions/bulk_create`, {
@@ -62,6 +66,10 @@ export default function Transactions() {
     }
   }
 
+  useEffect(() => {
+    fetchFlags().then(f => setPdfFlag(enabled('pdf_import', f))).catch(() => {})
+  }, [])
+
   const load = (type) => {
     setLoading(true)
     setFilter(type)
@@ -71,6 +79,15 @@ export default function Transactions() {
       api.request(`/api/v1/transactions${params}`),
     ]).then(([t, d]) => { setTotals(t || []); setTxns(Array.isArray(d?.transactions) ? d.transactions : []) })
       .catch(() => {}).finally(() => setLoading(false))
+  }
+  // Refresh without the full-page skeleton so an open import card survives.
+  const refresh = () => {
+    const params = filter ? `?transaction_type=${filter}` : ''
+    Promise.all([
+      api.request('/api/v1/transactions/monthly_totals'),
+      api.request(`/api/v1/transactions${params}`),
+    ]).then(([t, d]) => { setTotals(t || []); setTxns(Array.isArray(d?.transactions) ? d.transactions : []) })
+      .catch(() => {})
   }
   useEffect(() => load(''), [])
 
@@ -98,7 +115,6 @@ export default function Transactions() {
     <div className="space-y-6">
       <Reveal delay={0}>
         <div className="space-y-1">
-          <p className="text-2xs font-semibold uppercase tracking-wider text-muted">006 / 016</p>
           <h1 className="font-display text-2xl font-bold tracking-tight text-ink">Transactions</h1>
           <p className="text-sm text-muted">Track every rupee in and out.</p>
         </div>
@@ -130,9 +146,23 @@ export default function Transactions() {
             {importing ? 'Importing…' : 'Import CSV'}
           </Button>
           <input type="file" accept=".csv,text/csv" hidden onChange={handleImport} disabled={importing} />
+          {pdfFlag && (
+            <Button variant="secondary" onClick={() => setImportMode(importMode === 'pdf' ? null : 'pdf')}>
+              {importMode === 'pdf' ? 'Close import' : 'Import PDF'}
+            </Button>
+          )}
           {txns.length > 0 && <span className="text-2xs text-faint">{txns.length} txns</span>}
         </div>
       </Reveal>
+
+      {importMode === 'pdf' && pdfFlag && (
+        <Reveal delay={125}>
+          <StatementImport
+            onDone={refresh}
+            onCancel={() => setImportMode(null)}
+          />
+        </Reveal>
+      )}
 
       {importPreview && (
         <Reveal delay={150}>
@@ -189,15 +219,22 @@ export default function Transactions() {
 
       <Reveal delay={200}>
         {txns.length === 0 ? (
-          <EmptyState
-            icon={<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-border" aria-hidden="true"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>}
-            title="No transactions yet"
-            action="+ Add Transaction"
-            actionDisabled={!isOnline}
-            onAction={() => openModal(null)}
-          >
-            Start tracking your spending to see patterns emerge.
-          </EmptyState>
+          <>
+            <EmptyState
+              icon={<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-border" aria-hidden="true"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>}
+              title="No transactions yet"
+              action="+ Add Transaction"
+              actionDisabled={!isOnline}
+              onAction={() => openModal(null)}
+            >
+              Start tracking your spending to see patterns emerge.
+            </EmptyState>
+            {pdfFlag && (
+              <p className="text-center text-sm text-muted mt-2">
+                Have a bank statement? <button type="button" className="text-accent font-medium py-2" onClick={() => setImportMode('pdf')}>Import PDF</button>
+              </p>
+            )}
+          </>
         ) : (
           <>
             {/* Summary cards */}
