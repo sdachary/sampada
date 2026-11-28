@@ -51,7 +51,7 @@ export default function Investments() {
       <Reveal delay={100}>
         {investments.length === 0 ? (
           <EmptyState
-            icon={<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-border" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}
+            illustration="investments"
             title="No investments recorded"
             action="+ Add Investment"
             onAction={() => setModal('new')}
@@ -72,7 +72,7 @@ export default function Investments() {
                           {i.symbol} <span className="text-sm font-normal text-ink-soft">{i.name}</span>
                         </p>
                         <p className="text-sm text-muted flex items-center gap-1">
-                          {i.shares} shares @ {fmtINR(+i.buy_price)}
+                          {i.shares} shares @ <span className="fin">{fmtINR(+i.buy_price)}</span>
                           {i.exchange && <span>· {i.exchange}</span>}
                         </p>
                       </div>

@@ -83,7 +83,7 @@ const moreItems = [
   { name: 'Settings', path: '/dashboard/settings', icon: 'settings' },
 ]
 
-function NavLink({ item, current, depth = 0, onNav, index = 0, isMobile = false }) {
+function NavLink({ item, current, depth = 0, onNav, index = 0, isMobile = false, className = '' }) {
   const active = item.path === current
   const baseDelay = isMobile ? 50 : 100
   const staggerDelay = baseDelay + (index * 50)
@@ -92,7 +92,7 @@ function NavLink({ item, current, depth = 0, onNav, index = 0, isMobile = false 
     <Link
       to={item.path}
       onClick={onNav}
-      className={`nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-fast ${active ? 'text-accent font-semibold' : 'text-ink'}`}
+      className={`nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-fast ${active ? 'text-accent font-semibold' : 'text-ink'} ${className}`}
       style={{
         marginLeft: depth ? '16px' : 0,
         transitionDelay: `${staggerDelay}ms`,
@@ -110,7 +110,7 @@ function NavLink({ item, current, depth = 0, onNav, index = 0, isMobile = false 
   )
 }
 
-function MobileNavLink({ item, current, onNav, index = 0 }) {
+function MobileNavLink({ item, current, onNav, index = 0, className = '' }) {
   const active = item.path === current
   const staggerDelay = 100 + (index * 50)
 
@@ -119,7 +119,7 @@ function MobileNavLink({ item, current, onNav, index = 0 }) {
       key={item.path}
       to={item.path}
       onClick={onNav}
-      className={`nav-link-mobile flex items-center gap-4 px-4 py-3 rounded-xl text-base font-medium transition-colors duration-fast ${active ? 'text-accent font-semibold bg-accent-bg' : 'text-ink'}`}
+      className={`nav-link-mobile flex items-center gap-4 px-4 py-3 rounded-xl text-base font-medium transition-colors duration-fast ${active ? 'text-accent font-semibold bg-accent-bg' : 'text-ink'} ${className}`}
       style={{ transitionDelay: `${staggerDelay}ms` }}
     >
       <NavIcon name={item.icon} size={22} />
@@ -208,7 +208,7 @@ export default function Layout() {
       )}
 
       {/* ===== DESKTOP SIDEBAR — FLUID ISLAND ===== */}
-      <aside className="animate-fade-in hidden lg:flex lg:flex-col fixed lg:sticky top-6 left-6 right-auto z-sticky max-h-[calc(100vh-3rem)] w-64 bg-surface/80 backdrop-blur-2xl border border-border/50 rounded-3xl shadow-xl overflow-y-auto">
+      <aside className="animate-fade-in hidden lg:flex lg:flex-col fixed lg:sticky top-6 left-1/2 -translate-x-1/2 right-auto z-sticky max-h-[calc(100vh-3rem)] w-auto min-w-[200px] max-w-[280px] bg-surface/90 backdrop-blur-2xl border border-border/50 rounded-4xl shadow-2xl overflow-y-auto">
         {/* Brand */}
         <div className="p-4 border-b border-border-soft">
           <Link to="/dashboard" className="flex items-center gap-2 font-display font-bold text-lg tracking-tight text-ink no-underline">
@@ -218,12 +218,12 @@ export default function Layout() {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto p-2 space-y-1" role="navigation" aria-label="Main navigation">
+        <nav className={`flex-1 overflow-y-auto p-3 space-y-2 ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`} role="navigation" aria-label="Main navigation">
           {groups.map((g, groupIndex) => (
             <div key={g.name} className="nav-group">
               {g.children ? (
                 <>
-                  <div className="px-3 py-2 text-[11px] font-semibold uppercase tracking-widest text-ink-faint">
+                  <div className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-ink-faint nav-reveal">
                     {g.name}
                   </div>
                   {g.children.map((c, itemIndex) => (
@@ -234,11 +234,12 @@ export default function Layout() {
                       depth={1}
                       onNav={closeSidebar}
                       index={groupIndex * 10 + itemIndex}
+                      className="nav-reveal"
                     />
                   ))}
                 </>
               ) : (
-                <NavLink item={g} current={location.pathname} onNav={closeSidebar} index={groupIndex} />
+                <NavLink item={g} current={location.pathname} onNav={closeSidebar} index={groupIndex} className="nav-reveal" />
               )}
             </div>
           ))}

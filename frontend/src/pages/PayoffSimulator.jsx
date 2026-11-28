@@ -77,7 +77,7 @@ export default function PayoffSimulator() {
       {debts.length === 0 ? (
         <Reveal delay={50}>
           <EmptyState
-            icon={<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-border" aria-hidden="true"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>}
+            illustration="debts"
             title="No debts to simulate"
             action="View debts"
             onAction={() => window.location.href = '/dashboard/debts'}
@@ -118,7 +118,7 @@ export default function PayoffSimulator() {
             {selected && (
               <Card className="card-shell card-core--pad-base">
                 <p className="text-sm font-semibold text-ink mb-1">{selected.name}</p>
-                <p className="text-sm text-muted">{fmtINR(+selected.amount || 0)} · {selected.interest_rate}% APR · EMI: {fmtINR(+selected.emi_amount || 0)}/mo</p>
+                <p className="text-sm text-muted"><span className="fin">{fmtINR(+selected.amount || 0)}</span> · {selected.interest_rate}% APR · EMI: <span className="fin">{fmtINR(+selected.emi_amount || 0)}</span>/mo</p>
               </Card>
             )}
           </Reveal>
@@ -146,12 +146,12 @@ export default function PayoffSimulator() {
                     <div className="card-shell card-core--pad-base">
                       <span className="label-caps">Current plan</span>
                       <p className="fin font-display text-2xl font-bold text-accent mt-1">{base.months} mo</p>
-                      <p className="fin text-sm text-muted">{fmtINR(+base.total_interest)} interest</p>
+                      <p className="fin text-sm text-muted"><span className="fin">{fmtINR(+base.total_interest)}</span> interest</p>
                     </div>
                     <div className="card-shell card-core--pad-base">
                       <span className="label-caps">Accelerated</span>
                       <p className="fin font-display text-2xl font-bold text-success mt-1">{res.months} mo</p>
-                      <p className="fin text-sm text-muted">{fmtINR(+res.total_interest)} interest</p>
+                      <p className="fin text-sm text-muted"><span className="fin">{fmtINR(+res.total_interest)}</span> interest</p>
                     </div>
                   </div>
                   <div className="card-shell card-core--pad-base mb-3">

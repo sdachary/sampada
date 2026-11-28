@@ -29,7 +29,7 @@ export default function Styleguide() {
       <section style={{ display: 'grid', gap: 12 }}>
         <h2 className="h-600-16">Cards · Stat · Progress</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(170px,1fr))', gap: 12 }}>
-          <Stat label="Net worth" value="₹4,20,000" countUp delta={15200} footnote="since last month" />
+          <Stat label="Net Worth" value="₹4,20,000" countUp delta={15200} footnote="since last month" />
           <Stat label="Debt remaining" value="₹1,84,000" />
         </div>
         <Card interactive style={{ padding: 16 }}>Interactive card (hover lift)</Card>
@@ -88,7 +88,7 @@ export default function Styleguide() {
           <Skeleton style={{ width: 220, height: 22 }} />
           <Skeleton style={{ width: '100%', height: 14 }} />
         </div>
-        <EmptyState icon={<Compass size={32} />}
+        <EmptyState illustration="debts"
           title="No payoff plans yet."
           action="Create a plan"
           onAction={() => toast('Plan editor would open here.')}>

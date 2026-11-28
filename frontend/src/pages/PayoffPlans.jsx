@@ -34,7 +34,7 @@ export default function PayoffPlans() {
       <Reveal delay={50}>
         {plans.length === 0 ? (
           <EmptyState
-            icon={<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-border" aria-hidden="true"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>}
+            illustration="debts"
             title="No payoff plans yet"
             action="+ Create Plan"
             onAction={() => setModal('new')}
@@ -88,7 +88,7 @@ export default function PayoffPlans() {
                       <p className="label-caps mb-1">Included debts</p>
                       <div className="flex flex-wrap gap-2">
                         {p.debts.map(d => (
-                          <Badge key={d.id} variant="neutral" className="text-[11px]">{d.name} · {formatAmount(d.amount)}</Badge>
+                          <Badge key={d.id} variant="neutral" className="text-[11px]">{d.name} · <span className="fin">{formatAmount(d.amount)}</span></Badge>
                         ))}
                       </div>
                     </div>

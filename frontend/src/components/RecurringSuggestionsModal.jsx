@@ -25,7 +25,7 @@ export default function RecurringSuggestionsModal({ suggestions = [], onClose, o
   return (
     <ResponsiveModal style={{ maxWidth: 560 }} open title={`Found ${suggestions.length} pattern${suggestions.length === 1 ? '' : 's'}`} onClose={onClose}>
       {suggestions.length === 0 ? (
-        <EmptyState title="Not enough history yet">
+        <EmptyState illustration="generic" title="Not enough history yet">
           Add a few transactions first — then we can look for repeating payments.
         </EmptyState>
       ) : (

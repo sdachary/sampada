@@ -73,7 +73,7 @@ export default function Dashboard() {
       <rect x="0" y="0" width="600" height="6" fill="var(--accent)"/>
       <text x="40" y="60" font-family="'Inter Tight',sans-serif" font-size="12" font-weight="600" fill="var(--muted)" letter-spacing="2">SAMPADA</text>
       <text x="40" y="90" font-family="'Inter Tight',sans-serif" font-size="11" fill="var(--muted)">Financial snapshot</text>
-      <text x="40" y="160" font-family="'Inter Tight',sans-serif" font-size="13" fill="var(--muted)" letter-spacing="1">Net worth</text>
+      <text x="40" y="160" font-family="'Inter Tight',sans-serif" font-size="13" fill="var(--muted)" letter-spacing="1">Net Worth</text>
       <text x="40" y="210" font-family="'Inter Tight',sans-serif" font-size="40" font-weight="700" fill="var(--ink)" letter-spacing="-1">${val}</text>
       <rect x="40" y="230" width="60" height="3" fill="var(--accent)" rx="1.5"/>
       <text x="40" y="265" font-family="'Inter Tight',sans-serif" font-size="12" fill="var(--muted)">Stage: <tspan fill="var(--ink)">${stage}</tspan></text>
@@ -138,9 +138,9 @@ export default function Dashboard() {
       </Reveal>
 
       <Reveal delay={150}>
-        {/* Net worth hero */}
+        {/* Net Worth hero */}
         <Card className="card-shell card-shell--elevated card-core--pad-lg">
-          <p className="text-2xs font-semibold uppercase tracking-wider text-muted mb-1">Net worth</p>
+          <p className="text-2xs font-semibold uppercase tracking-wider text-muted mb-1">Net Worth</p>
           <p className="fin font-display text-3xl font-bold tracking-tight leading-tight">{fmtINR(nw)}</p>
           {snapshots.length >= 2 && (() => {
             const prev = snapshots[snapshots.length - 2]?.net_worth || 0
@@ -166,19 +166,19 @@ export default function Dashboard() {
       </Reveal>
 
       <Reveal delay={250}>
-        {/* Net worth area chart */}
+        {/* Net Worth area chart */}
         {snapshots.length > 1 ? (
           <Card className="card-shell card-core--pad-lg">
-            <p className="label-caps mb-4">Net worth trend</p>
+            <p className="label-caps mb-4">Net Worth trend</p>
             <div role="img" aria-label="Area chart showing net worth trend over time. Coral area shows growth trajectory.">
               <Suspense fallback={<Skeleton className="skeleton-card h-44" />}>
                 <Chart data={snapshots} xKey="date" xFormatter={(d) => (d || '').slice(5)}
-                  series={[{ key: 'net_worth', name: 'Net worth', color: 'var(--accent)', area: true }]} />
+                  series={[{ key: 'net_worth', name: 'Net Worth', color: 'var(--accent)', area: true }]} />
               </Suspense>
             </div>
           </Card>
         ) : (
-          <EmptyState icon={<AlertCircle size={32} />} title="No net worth history yet" action="Add a transaction" onAction={() => setQuickOpen(true)}>
+          <EmptyState illustration="investments" title="No net worth history yet" action="Add a transaction" onAction={() => setQuickOpen(true)}>
             Your first transaction will start the trend chart.
           </EmptyState>
         )}
@@ -262,7 +262,7 @@ export default function Dashboard() {
         tabIndex={0}
         aria-label="Quick log transaction"
         title="Quick log (Alt+Q)"
-        className={`fixed quick-log-fab right-4 z-popover w-14 h-14 rounded-full border-0 bg-accent text-ink flex items-center justify-center shadow-lg btn btn--primary btn--icon transition-transform duration-base ease-spring hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.97] ${isOnline ? '' : 'opacity-50'}`}
+        className={`fixed quick-log-fab right-4 z-popover w-14 h-14 rounded-full border-0 flex items-center justify-center shadow-lg btn btn--secondary btn--icon transition-transform duration-base ease-spring hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.97] ${isOnline ? '' : 'opacity-50'}`}
       >
         <Plus size={26} strokeWidth={2.5} />
       </button>
