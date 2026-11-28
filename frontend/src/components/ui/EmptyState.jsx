@@ -1,10 +1,42 @@
-// EmptyState primitive: SVG icon, one-line explanation, one primary action (copy per §4.3).
+// EmptyState primitive: SVG illustration, one-line explanation, one primary action (copy per §4.3).
 import Button from './Button'
+import {
+  EmptyTransactions,
+  EmptyDebts,
+  EmptyBudgets,
+  EmptyGoals,
+  EmptyInvestments,
+  EmptyGeneric,
+  EmptySearch,
+  EmptyOffline,
+} from './EmptyStateIllustrations'
 
-export default function EmptyState({ icon, title, action, children, onAction, actionDisabled } = {}) {
+const illustrations = {
+  transactions: EmptyTransactions,
+  debts: EmptyDebts,
+  budgets: EmptyBudgets,
+  goals: EmptyGoals,
+  investments: EmptyInvestments,
+  generic: EmptyGeneric,
+  search: EmptySearch,
+  offline: EmptyOffline,
+}
+
+export default function EmptyState({ 
+  illustration = 'generic', 
+  title, 
+  action, 
+  children, 
+  onAction, 
+  actionDisabled,
+  size = 48
+} = {}) {
+  const Illustration = illustrations[illustration] || illustrations.generic
   return (
     <div className="empty-state">
-      {icon && <div className="empty-state__icon" aria-hidden="true">{icon}</div>}
+      <div className="empty-state__icon" aria-hidden="true">
+        <Illustration size={size} />
+      </div>
       <p className="empty-state__title">{title}</p>
       {children && <p className="empty-state__desc">{children}</p>}
       {action && onAction && (

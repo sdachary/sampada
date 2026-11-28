@@ -36,7 +36,7 @@ export default function Journey() {
       </Reveal>
       <Reveal delay={50}>
         <EmptyState
-          icon={<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-border" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>}
+          illustration="generic"
           title="Start your financial journey"
           action="Start your journey"
           onAction={() => window.location.href = '/dashboard/onboarding'}
@@ -72,17 +72,17 @@ export default function Journey() {
             <p className={`fin font-display text-xl font-semibold ${(+nw.net_worth || 0) >= 0 ? 'text-success' : 'text-danger'}`}>
               {fmtINR(+nw.net_worth || 0)}
             </p>
-            <p className="text-sm text-muted">Assets: {fmtINR(+nw.assets || 0)} · Liab: {fmtINR(+nw.liabilities || 0)}</p>
+            <p className="text-sm text-muted">Assets: <span className="fin">{fmtINR(+nw.assets || 0)}</span> · Liab: <span className="fin">{fmtINR(+nw.liabilities || 0)}</span></p>
           </Card>
           <Card className="card-shell card-core--pad-base">
             <p className="label-caps">Total Debt</p>
             <p className="fin font-display text-xl font-semibold text-danger">{fmtINR(+d.total_debt || 0)}</p>
-            {d.total_emi && <p className="text-sm text-muted">EMI: {fmtINR(+d.total_emi)}/mo</p>}
+            {d.total_emi && <p className="text-sm text-muted">EMI: <span className="fin">{fmtINR(+d.total_emi)}</span>/mo</p>}
           </Card>
           <Card className="card-shell card-core--pad-base">
             <p className="label-caps">SIP Progress</p>
             <p className="fin font-display text-xl font-semibold text-success">{sp.progress || 0}%</p>
-            <p className="text-sm text-muted">Goal: {fmtINR(+sp.monthly_goal || 0)}/mo</p>
+            <p className="text-sm text-muted">Goal: <span className="fin">{fmtINR(+sp.monthly_goal || 0)}</span>/mo</p>
           </Card>
         </div>
       </Reveal>
@@ -95,7 +95,7 @@ export default function Journey() {
         <Card className="card-shell card-core--pad-lg">
           <div className="flex justify-between items-start mb-1">
             <span className="text-base font-medium">Net Worth Target</span>
-            <span className="fin text-sm text-muted">{fmtINR(+nwp.current || 0)} / {fmtINR(+nwp.target || 0)}</span>
+            <span className="fin text-sm text-muted"><span className="fin">{fmtINR(+nwp.current || 0)}</span> / <span className="fin">{fmtINR(+nwp.target || 0)}</span></span>
           </div>
           <Progress value={nwp.progress_pct || 0} variant="success" />
           <p className="text-xs text-faint mt-2">{nwp.progress_pct || 0}% of ₹50L goal</p>
@@ -106,10 +106,10 @@ export default function Journey() {
         <Card className="card-shell card-core--pad-lg">
           <div className="flex justify-between items-start mb-1">
             <span className="text-base font-medium">Debt Reduction</span>
-            <span className="fin text-sm text-muted">{fmtINR(+dp.paid_debt || 0)} / {fmtINR(+dp.original_debt || 0)}</span>
+            <span className="fin text-sm text-muted"><span className="fin">{fmtINR(+dp.paid_debt || 0)}</span> / <span className="fin">{fmtINR(+dp.original_debt || 0)}</span></span>
           </div>
           <Progress value={dp.reduction_pct || 0} variant="danger" />
-          <p className="text-xs text-faint mt-2">{dp.reduction_pct || 0}% paid off · {fmtINR(+dp.total_debt || 0)} remaining</p>
+          <p className="text-xs text-faint mt-2">{dp.reduction_pct || 0}% paid off · <span className="fin">{fmtINR(+dp.total_debt || 0)}</span> remaining</p>
         </Card>
       </Reveal>
 

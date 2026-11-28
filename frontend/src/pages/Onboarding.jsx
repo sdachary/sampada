@@ -49,9 +49,9 @@ export default function Onboarding() {
         {/* 3-number snapshot */}
         <div className="grid gap-3 grid-cols-1 sm:grid-cols-3">
           {[
-            { label: 'Money in', value: snapshot?.money_in ?? null, hint: 'total income recorded' },
-            { label: 'Money out', value: snapshot?.money_out ?? null, hint: 'total expenses recorded' },
-            { label: 'Total owed', value: snapshot?.total_owed ?? null, hint: 'across active debts' },
+            { label: 'Total Income', value: snapshot?.money_in ?? null, hint: 'total income recorded' },
+            { label: 'Total Expenses', value: snapshot?.money_out ?? null, hint: 'total expenses recorded' },
+            { label: 'Total Owed', value: snapshot?.total_owed ?? null, hint: 'across active debts' },
           ].map(s => (
             <Card key={s.label} className="card-shell card-core--pad-base">
               <div className="text-2xs font-semibold uppercase tracking-wider text-muted">{s.label}</div>

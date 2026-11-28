@@ -23,7 +23,7 @@ export function Modal({ open, onClose, title, children, style }) {
 
   return (
     <div ref={overlayRef} style={{
-      position: 'fixed', inset: 0, zIndex: 1000,
+      position: 'fixed', inset: 0, zIndex: 'var(--z-modal)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       background: 'rgba(21,20,15,0.35)', backdropFilter: 'blur(4px)',
       padding: 16,
@@ -76,7 +76,7 @@ export function ResponsiveModal({ open, onClose, title, children, style }) {
 
   return (
     <div ref={overlayRef} style={{
-      position: 'fixed', inset: 0, zIndex: 1000,
+      position: 'fixed', inset: 0, zIndex: 'var(--z-modal)',
       display: 'flex', alignItems: isMobile ? 'flex-end' : 'center', justifyContent: 'center',
       background: 'rgba(21,20,15,0.35)', backdropFilter: 'blur(4px)',
       padding: isMobile ? 0 : 16,

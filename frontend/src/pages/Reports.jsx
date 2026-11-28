@@ -230,11 +230,11 @@ export default function Reports() {
           <div className="space-y-4">
             {goalCharts.debt_free_progress && (
               <Card className="card-shell card-core--pad-base">
-                <p className="text-sm font-semibold text-ink mb-1">Debt Free Progress</p>
+                <p className="text-sm font-semibold text-ink mb-1">Debt freedom progress</p>
                 <Progress value={Math.min(+goalCharts.debt_free_progress.progress_pct || 0, 100)} variant="success" label="Debt freedom progress" />
                 <div className="flex justify-between text-xs text-muted mt-2">
-                  <span>{fmtINR(+goalCharts.debt_free_progress.paid_so_far || 0)} paid</span>
-                  <span>{fmtINR(+goalCharts.debt_free_progress.remaining || 0)} left</span>
+                  <span><span className="fin">{fmtINR(+goalCharts.debt_free_progress.paid_so_far || 0)}</span> paid</span>
+                  <span><span className="fin">{fmtINR(+goalCharts.debt_free_progress.remaining || 0)}</span> left</span>
                 </div>
               </Card>
             )}

@@ -49,7 +49,7 @@ export default function Portfolios() {
       <Reveal delay={100}>
         {portfolios.length === 0 ? (
           <EmptyState
-            icon={<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-border" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>}
+            illustration="investments"
             title="No portfolios yet"
             action="+ Add Portfolio"
             onAction={() => setModal('new')}

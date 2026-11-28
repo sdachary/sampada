@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { m, useInView } from 'motion/react'
-import { DUR, EASE } from './motion'
+import { DUR, EASE, EASE_EXPO_OUT, EASE_SPRING, EASE_OUT } from './motion'
 
 export const prefersReducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -21,7 +21,7 @@ export function useCountUp(value, { duration = 0.9, decimals = 0, enabled = true
     const from = 0
     const tick = (now) => {
       const t = Math.min((now - start) / (duration * 1000), 1)
-      const eased = 1 - Math.pow(1 - t, 3) // ease-out cubic
+      const eased = 1 - Math.pow(1 - t, 3) // ease-out cubic (mirrors EASE_SPRING)
       setDisplay(from + (value - from) * eased)
       if (t < 1) raf.current = requestAnimationFrame(tick)
     }
@@ -33,7 +33,7 @@ export function useCountUp(value, { duration = 0.9, decimals = 0, enabled = true
 }
 
 // Single fade-up entrance, once, when scrolled into view. No repeat, no stagger.
-// FIX: If element is already in viewport on mount, show immediately without animation
+// Uses expo-out easing for premium entrance feel. Reduced motion → final state immediately.
 export function Reveal({ children, y = 12, delay = 0, ...props }) {
   const seconds = delay > 1 ? delay / 1000 : delay
   const reduce = prefersReducedMotion()
@@ -42,7 +42,7 @@ export function Reveal({ children, y = 12, delay = 0, ...props }) {
     <m.div
       initial={{ opacity: 0, y }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: DUR.slow, ease: EASE, delay: seconds }}
+      transition={{ duration: DUR.slower, ease: EASE_EXPO_OUT, delay: seconds }}
       {...props}
     >
       {children}
@@ -51,6 +51,7 @@ export function Reveal({ children, y = 12, delay = 0, ...props }) {
 }
 
 // Route change fade, ≤200 ms. Keyed by pathname so each route mounts fresh.
+// Uses ease-out for quick exit feel.
 export function PageTransition({ children }) {
   const { pathname } = useLocation()
   if (prefersReducedMotion()) return <>{children}</>
@@ -59,7 +60,7 @@ export function PageTransition({ children }) {
       key={pathname}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: DUR.base, ease: EASE }}
+      transition={{ duration: DUR.fast, ease: EASE_OUT }}
     >
       {children}
     </m.div>

@@ -41,7 +41,7 @@ export default function Households() {
           <Card className="card-shell card-core--pad-lg">
             <p className="label-caps mb-1">Household Net Worth</p>
             <p className="fin font-display text-2xl font-semibold">{detail.currency_symbol}{fmtINR(+detail.net_worth.net_worth || 0)}</p>
-            <p className="text-sm text-muted mt-1">Assets: {fmtINR(+detail.net_worth.total_assets || 0)} · Liabilities: {fmtINR(+detail.net_worth.total_liabilities || 0)}</p>
+            <p className="text-sm text-muted mt-1">Assets: <span className="fin">{fmtINR(+detail.net_worth.total_assets || 0)}</span> · Liabilities: <span className="fin">{fmtINR(+detail.net_worth.total_liabilities || 0)}</span></p>
           </Card>
         )}
       </Reveal>
@@ -61,9 +61,9 @@ export default function Households() {
                     <Badge variant="neutral" className="text-[11px] capitalize">{m.role}</Badge>
                   </div>
                   <div className="flex gap-3 mt-2 text-xs text-muted flex-wrap">
-                    <span>Debt: {fmtINR(+m.total_debt || 0)}</span>
-                    <span>Invest: {fmtINR(+m.total_investments || 0)}</span>
-                    <span>Expenses: {fmtINR(+m.monthly_expenses || 0)}/mo</span>
+                    <span>Debt: <span className="fin">{fmtINR(+m.total_debt || 0)}</span></span>
+                    <span>Invest: <span className="fin">{fmtINR(+m.total_investments || 0)}</span></span>
+                    <span>Expenses: <span className="fin">{fmtINR(+m.monthly_expenses || 0)}</span>/mo</span>
                   </div>
                 </Card>
               </Reveal>
@@ -87,7 +87,7 @@ export default function Households() {
       <Reveal delay={50}>
         {households.length === 0 ? (
           <EmptyState
-            icon={<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-border" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>}
+            illustration="generic"
             title="No households yet"
           >
             Create a household to manage shared expenses and goals.

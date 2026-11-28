@@ -91,7 +91,7 @@ export default function DebtDetail() {
 
   if (!debt) return (
     <EmptyState
-      icon={<AlertCircle size={32} />}
+      illustration="debts"
       title="Debt not found"
       action="Back to debts"
       onAction={() => window.location.href = '/dashboard/debts'}
@@ -167,7 +167,7 @@ export default function DebtDetail() {
             </div>
           </div>
 
-          <Progress value={pct} variant={pct >= 100 ? 'success' : 'accent'} label="Debt paid off" />
+          <Progress value={pct} variant={pct >= 100 ? 'success' : 'accent'} label="Debt freedom progress" />
           <div className="flex justify-between text-sm text-muted mt-2">
             <span className="fin">{pct}% paid off</span>
             {debt.debt_free_date && <span className="fin">Debt free by {new Date(debt.debt_free_date).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })} ({debt.months_remaining} mo)</span>}
@@ -202,7 +202,7 @@ export default function DebtDetail() {
           <p className="text-sm font-semibold text-ink mb-3">Payment Timeline</p>
           {timeline.length === 0 ? (
             <EmptyState
-              icon={<AlertCircle size={32} />}
+              illustration="debts"
               title="No payment history yet"
               action="Add payment"
               onAction={() => patch({ paid_amount: debt.paid_amount + (debt.emi_amount || 0) })}

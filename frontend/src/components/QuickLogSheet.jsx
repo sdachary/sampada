@@ -115,18 +115,18 @@ export default function QuickLogSheet({ open, onClose, onSaved, online }) {
   if (!open) return null
 
   const overlayStyle = isMobile
-    ? { position: 'fixed', inset: 0, background: 'rgba(21,20,15,0.4)', zIndex: 130 }
-    : { position: 'fixed', inset: 0, background: 'rgba(21,20,15,0.4)', zIndex: 130, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }
+    ? { position: 'fixed', inset: 0, background: 'rgba(21,20,15,0.4)', zIndex: 'var(--z-overlay)' }
+    : { position: 'fixed', inset: 0, background: 'rgba(21,20,15,0.4)', zIndex: 'var(--z-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }
 
   const formStyle = isMobile
     ? {
-        position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 131,
+        position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 'var(--z-modal)',
         background: 'var(--paper-card)', borderTop: '1px solid var(--line)',
         borderRadius: '16px 16px 0 0', padding: '20px 20px calc(20px + env(safe-area-inset-bottom))',
         boxShadow: '0 -8px 30px rgba(21,20,15,0.2)', maxWidth: 480, margin: '0 auto',
       }
     : {
-        position: 'fixed', zIndex: 131,
+        position: 'fixed', zIndex: 'var(--z-modal)',
         background: 'var(--paper-card)', border: '1px solid var(--line)',
         borderRadius: 16, padding: '24px 24px 28px',
         boxShadow: '0 8px 30px rgba(21,20,15,0.2)', maxWidth: 480,
